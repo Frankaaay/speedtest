@@ -1,33 +1,44 @@
 from live_bili import BiliLive
+from live import LiveResult
 import recorder
 import sys
 
 def main():
-    if len(sys.argv) != 4:
-        print("请提供三个参数: 备注名称, 浏览器, 房间号")
-        return
+    
     print("开始记录")
-    name = sys.argv[1]
-    browser = sys.argv[2].title()
-    room_id = sys.argv[3]
+    name = "any"
+    browser = "Edge"
+    room_id = None
+
+    try:
+        name = sys.argv[1]
+        browser = sys.argv[2].title()
+        room_id = sys.argv[3]
+    except Exception as e:
+        pass
     
     all_browser = ["Edge", "Chrome", "Firefox", "Ie", "Safari",]
     if browser not in all_browser:
         print(f"请使用以下浏览器之一: {all_browser}")
         return
 
-    live = BiliLive(browser, room_id)
+    obj = BiliLive(browser, room_id)
+    console = recorder.Console()
     logger = recorder.Logger(name)
-    report = recorder.Reporter(name)
+    report = recorder.Reporter(name, interval=5, threshold=3)
     try:
         while True:
-            state = live.check()
-            logger.record(state)
-            report.record(state)
+            state = obj.check()
+            logger.record(*state)
+            report.record(*state)
+            console.record(*state)
             logger.flush()
             report.flush()
+            if state[0] == LiveResult.End:
+                obj.find_available_live()
+
     except KeyboardInterrupt:
-        live.quit()
+        obj.quit()
     except Exception as e:
         raise e
     finally:

@@ -8,7 +8,7 @@ class Recorder:
     def record(self, res: live.LiveResult, message:str|None):
         pass
     def flush(self):
-        self.file.flush()
+        if self.file is not None: self.file.flush()
 
 class Console(Recorder):
     def record(self, res: live.LiveResult, message: str | None):
@@ -55,10 +55,11 @@ class Logger(Recorder):
 
 class Reporter(Recorder):
 
-    INTERVAL = 5
-    THRESHOLD = 5
-
-    def __init__(self, name):
+    def __init__(self, name, interval = 5, threshold = 5):
+        '''
+        interval:  两次间隔小于interval会被合并记录
+        threshold: 小于threshold的将不会被记录
+        '''
         time_str = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
         os.makedirs(f"reports/{name}", exist_ok=True)
         self.file = open(f"reports/{name}/{time_str}.csv","a",encoding="utf-8-sig")
@@ -66,7 +67,10 @@ class Reporter(Recorder):
         self.last_end = None
         self.count = 0
 
-    def record(self, res: live.LiveResult):
+        self.INTERVAL = interval
+        self.THRESHOLD = threshold
+
+    def record(self, res: live.LiveResult, message:str|None):
         now = datetime.datetime.now()
         
         if res == live.LiveResult.Normal:

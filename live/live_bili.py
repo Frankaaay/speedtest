@@ -4,13 +4,22 @@ from selenium.common import exceptions
 
 
 class BiliLive(live.Live):
-    def __init__(self, browser, room_id):
+    def __init__(self, browser, room_id=None):
         super().__init__(browser)
         self.driver.implicitly_wait(0.2)
-        self.driver.get(f"https://live.bilibili.com/{room_id}")
+        if room_id is None:
+            self.find_available_live()
+        else:
+            self.driver.get(f"https://live.bilibili.com/{room_id}")
 
-    def find_avaliable_live()->int:
-        pass
+    def find_available_live(self):
+
+        self.driver.implicitly_wait(5)
+        self.driver.get("https://live.bilibili.com/")
+        self.driver.find_element(By.XPATH, '/html/body/div[1]/div/div[5]/div[3]/div/div[2]/div[1]/div[1]/a[1]').click()
+        self.driver.switch_to.window(self.driver.window_handles[0])
+        self.driver.close()
+        self.driver.implicitly_wait(0.2)
 
     def check(self) -> tuple[live.LiveResult, str|None]:
         self.driver.switch_to.window(self.driver.window_handles[0])
