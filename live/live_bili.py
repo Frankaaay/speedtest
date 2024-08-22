@@ -16,12 +16,13 @@ class BiliLive(live.Live):
 
         self.driver.implicitly_wait(5)
         self.driver.get("https://live.bilibili.com/")
-        self.driver.find_element(By.XPATH, '/html/body/div[1]/div/div[5]/div[3]/div/div[2]/div[1]/div[1]/a[1]').click()
+        self.driver.find_element(
+            By.XPATH, '/html/body/div[1]/div/div[5]/div[3]/div/div[2]/div[1]/div[1]/a[1]').click()
         self.driver.switch_to.window(self.driver.window_handles[0])
         self.driver.close()
         self.driver.implicitly_wait(0.2)
 
-    def check(self) -> tuple[live.LiveResult, str|None]:
+    def check(self) -> tuple[live.LiveResult, str | None]:
         self.driver.switch_to.window(self.driver.window_handles[0])
         try:
 
@@ -35,16 +36,16 @@ class BiliLive(live.Live):
             try:
                 self.driver.find_element(
                     By.CLASS_NAME, "web-player-ending-panel")
-                return (live.LiveResult.End,None)
+                return (live.LiveResult.End, None)
             except exceptions.NoSuchElementException:
                 pass
 
             # 直播是否卡顿
             try:
                 self.driver.find_element(By.CLASS_NAME, "web-player-loading")
-                return (live.LiveResult.Stuck,None)
+                return (live.LiveResult.Stuck, None)
             except exceptions.NoSuchElementException:
-                return (live.LiveResult.Normal,None)
+                return (live.LiveResult.Normal, None)
 
         except exceptions.WebDriverException as e:
-            return (live.LiveResult.Error,str(e))
+            return (live.LiveResult.Error, str(e))

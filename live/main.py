@@ -3,8 +3,9 @@ from live import LiveResult
 import recorder
 import sys
 
+
 def main():
-    
+
     print("开始记录")
     name = "any"
     browser = "Firefox"
@@ -16,7 +17,7 @@ def main():
         room_id = sys.argv[3]
     except Exception as e:
         pass
-    
+
     all_browser = ["Edge", "Chrome", "Firefox", "Ie", "Safari",]
     if browser not in all_browser:
         print(f"请使用以下浏览器之一: {all_browser}")
@@ -47,6 +48,7 @@ def main():
         logger.flush()
         report.flush()
         print("结束记录")
+
 
 if __name__ == "__main__":
     main()
