@@ -1,5 +1,5 @@
 from live_bili import BiliLive
-from live import LiveResult
+from live_api import LiveResult
 import recorder
 import sys
 
