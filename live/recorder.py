@@ -85,16 +85,16 @@ class Reporter(Recorder):
             if self.last_end is None:
                 self.last_end = now
 
-            if self.start is not None and (self.last_end-self.start).total_seconds() > self.INTERVAL:
+            if self.start is not None and (now - self.last_end).total_seconds() > self.INTERVAL:
                 start_str = self.start.strftime("%H:%M:%S")
                 end_str = self.last_end.strftime("%H:%M:%S")
                 duration = (self.last_end - self.start).total_seconds()
 
                 if duration >= self.THRESHOLD:
-                    print(f"{self.count},{start_str},{
-                          end_str},{duration:.3f}\n")
-                    self.file.write(f"{self.count},{start_str},{
-                                    end_str},{duration:.3f}\n")
+                    print(
+                        f"{self.count},{start_str},{end_str},{duration:.3f}\n")
+                    self.file.write(
+                        f"{self.count},{start_str},{end_str},{duration:.3f}\n")
                     self.count += 1
 
                 self.start = None

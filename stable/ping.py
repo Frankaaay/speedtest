@@ -41,5 +41,5 @@ class ResultSequence(threading.Thread):
     def get_res(self, start: datetime.datetime, end: datetime.datetime):
         start -= self.range
         end += self.range
-        time.sleep(self.range.total_seconds())
+        time.sleep(max(0, (datetime.datetime.now() - end).total_seconds()))
         return [(r[0].strftime("%H:%M:%S"), r[1]) for r in self.res if start <= r[0] <= end]

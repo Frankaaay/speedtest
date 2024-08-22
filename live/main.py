@@ -25,15 +25,15 @@ def main():
 
     obj = BiliLive(browser, room_id)
     console = recorder.Console()
-    logger = recorder.Logger(name)
+    # logger = recorder.Logger(name)
     report = recorder.Reporter(name, interval=5, threshold=3)
     try:
         while True:
             state = obj.check()
-            logger.record(*state)
+            # logger.record(*state)
             report.record(*state)
             console.record(*state)
-            logger.flush()
+            # logger.flush()
             report.flush()
             if state[0] == LiveResult.End:
                 obj.find_available_live()
@@ -41,11 +41,11 @@ def main():
     except KeyboardInterrupt:
         obj.quit()
     except Exception as e:
-        logger.flush()
+        # logger.flush()
         report.flush()
         raise e
     finally:
-        logger.flush()
+        # logger.flush()
         report.flush()
         print("结束记录")
 
