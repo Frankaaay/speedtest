@@ -16,9 +16,9 @@ class Console(Recorder):
         if res == live.LiveResult.Normal:
             print(f"{time_str} 正常")
         elif res == live.LiveResult.Stuck:
-            print(f"{time_str} 卡顿")
+            print(f"{time_str} 直播卡顿")
         elif res == live.LiveResult.End:
-            print(f"{time_str} 直播结束")
+            print(f"{time_str} 直播结束 {message}")
         elif res == live.LiveResult.Error:
             print(f"{time_str} 错误 {message}")
 
@@ -45,11 +45,12 @@ class Logger(Recorder):
             self.start = now
             self.file.write(f"{self.count},{time_str},开始\n")
 
-        elif res == live.LiveResult.Error:
-            self.file.write(f"-,{time_str},结束,{message}")
+        elif res == live.LiveResult.End:
+            self.file.write(f"-,{time_str},结束,{repr(message)}")
+            
         elif res == live.LiveResult.Error:
             if self.start is not None:
-                self.file.write(f"{self.count},{time_str},错误,{repr(message)}\n")
+                self.file.write(f"-,{time_str},错误,{repr(message)}\n")
                 self.start = now
 
 

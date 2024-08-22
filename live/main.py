@@ -7,7 +7,7 @@ def main():
     
     print("开始记录")
     name = "any"
-    browser = "Edge"
+    browser = "Firefox"
     room_id = None
 
     try:
@@ -40,6 +40,8 @@ def main():
     except KeyboardInterrupt:
         obj.quit()
     except Exception as e:
+        logger.flush()
+        report.flush()
         raise e
     finally:
         logger.flush()

@@ -23,7 +23,6 @@ class BiliLive(live.Live):
 
     def check(self) -> tuple[live.LiveResult, str|None]:
         self.driver.switch_to.window(self.driver.window_handles[0])
-        # 捕获未知错误
         try:
 
             # 网页正确打开
