@@ -6,7 +6,7 @@ import os
 
 class Recorder:
     file = None
-
+    
     def record(self, res: live_api.LiveResult, message: str | None):
         pass
 
@@ -59,9 +59,7 @@ class Logger(Recorder):
                 self.file.write(f"-,{time_str},错误,{repr(message)}\n")
                 self.start = now
 
-
-class Reporter(Recorder):
-
+class MergeResult(Recorder):
     def __init__(self, name, interval=5, threshold=5):
         '''
         interval:  两次间隔小于interval会被合并记录
@@ -78,7 +76,7 @@ class Reporter(Recorder):
         self.INTERVAL = interval
         self.THRESHOLD = threshold
 
-    def record(self, res: live_api.LiveResult, message: str | None):
+    def record(self, res: live_api.LiveResult, message: str | None) :
         now = datetime.datetime.now()
 
         if res == live_api.LiveResult.Normal:
@@ -90,15 +88,17 @@ class Reporter(Recorder):
                 end_str = self.last_end.strftime("%H:%M:%S")
                 duration = (self.last_end - self.start).total_seconds()
 
+                going_to_return = None
+
                 if duration >= self.THRESHOLD:
-                    print(
-                        f"{self.count},{start_str},{end_str},{duration:.3f}\n")
-                    self.file.write(
-                        f"{self.count},{start_str},{end_str},{duration:.3f}\n")
+                    going_to_return = (self.count,start_str,end_str)
                     self.count += 1
 
                 self.start = None
                 self.last_end = None
+                
+                return going_to_return
+
 
         elif res == live_api.LiveResult.Stuck:
             self.last_end = None
@@ -110,3 +110,26 @@ class Reporter(Recorder):
 
         elif res == live_api.LiveResult.Error:
             pass
+
+
+
+class Reporter(MergeResult):
+
+    def __init__(self, name, interval=5, threshold=5):
+        super().__init__(name, interval, threshold)
+        time_str = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+        os.makedirs(f"reports/{name}", exist_ok=True)
+        self.file = open(
+            f"reports/{name}/{time_str}.csv", "a", encoding="utf-8-sig")
+
+    def record(self, res: live_api.LiveResult, message: str | None) :
+        merged = super().record(res, message)
+        if merged is not None:
+            count,start,end = merged
+
+            start_str = start.strftime("%H:%M:%S")
+            end_str = end.strftime("%H:%M:%S")
+            duration = (end - start).total_seconds()
+
+            self.file.write(f"{count},{start_str},{end_str},{duration:.3f}\n")
+            
