@@ -5,10 +5,10 @@ from threading import Thread
 
 class Sequence(Thread):
     def __init__(self, tester: SpeedTester, interval = datetime.timedelta(minutes=5)):
-        super().__init__(self)
+        super().__init__()
         self.tester = tester
         self.interval = interval
-        self.last_run = datetime.datetime.now()
+        self.last_run = datetime.datetime.now() - self.interval
         self.results = []
         self.stopped = False
 

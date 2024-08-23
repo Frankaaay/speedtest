@@ -28,12 +28,12 @@ urls = [
         ]
 
 class SpeedTester:
-    def __init__(self, browser = 'Edge', headless = True):
-        self.driver : webdriver.Edge
-        self.option: webdriver.EdgeOptions 
+    def __init__(self, browser='Edge', headless=True):
+        self.driver: webdriver.Edge = None
+        self.option: webdriver.EdgeOptions = None
 
         exec(f"self.option = webdriver.{browser}Options()")
-        if headless: self.option.add_argument('--headless')
+        if headless : self.option.add_argument('--headless')
         exec(f"self.driver = webdriver.{browser}(options=self.option)")
 
         self.driver.implicitly_wait(5)
@@ -52,5 +52,3 @@ class SpeedTester:
         dl = self.driver.find_element(By.ID,"dlText").text
         ul = self.driver.find_element(By.ID,"ulText").text
         return SpeedTestResult(float(lag), float(jit), float(dl), float(ul))
-        
-print(SpeedTester().speed_test())
