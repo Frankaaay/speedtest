@@ -9,16 +9,16 @@ class LiveResult:
 
 
 class Live:
-    driver = None
+    driver: webdriver.Edge # OR any other browser
 
     def __init__(self, browser):
         exec(f"self.driver = webdriver.{browser}()")
 
     def find_available_live(self):
-        raise "Overwrite is needed"
+        raise "Overwrite me🥰"
 
     def check(self) -> tuple[LiveResult, str | None]:
-        raise "Overwrite is needed"
+        raise "Overwrite me🥰"
 
     def quit(self):
         self.driver.quit()

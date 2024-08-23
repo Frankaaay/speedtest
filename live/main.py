@@ -1,5 +1,6 @@
 from live_bili import BiliLive
-from live_api import LiveResult
+from live_douyin import DouyinLive
+from live.api import LiveResult
 import recorder
 import sys
 
@@ -23,7 +24,7 @@ def main():
         print(f"请使用以下浏览器之一: {all_browser}")
         return
 
-    obj = BiliLive(browser, room_id)
+    obj = DouyinLive(browser, room_id)
     console = recorder.Console()
     # logger = recorder.Logger(name)
     report = recorder.Reporter(name, interval=5, threshold=3)
