@@ -2,3 +2,4 @@
 logs/
 reports/
 *_rs
+*.csv
