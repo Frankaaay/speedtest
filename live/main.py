@@ -1,6 +1,6 @@
 from live_bili import BiliLive
 from live_douyin import DouyinLive
-from live.api import LiveResult
+from api import LiveResult
 import recorder
 import sys
 
@@ -32,7 +32,7 @@ def main():
         while True:
             state = obj.check()
             # logger.record(*state)
-            report.record(*state)
+            report.merge(*state)
             console.record(*state)
             # logger.flush()
             report.flush()
