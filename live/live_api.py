@@ -9,7 +9,7 @@ class LiveResult:
 
 
 class Live:
-    driver = None
+    driver: webdriver.Edge
 
     def __init__(self, browser):
         exec(f"self.driver = webdriver.{browser}()")
