@@ -1,96 +1,26 @@
-# import matplotlib.pyplot as plt
-# import csv
-
-# # with open('your_file.csv', mode='r') as file:
-# #     csv_reader = csv.reader(file)
-# #     for row in csv_reader:
-# #         second_number = row[3]
-# #         print(second_number)
-
-
-
-# import time
-# from ping3 import ping
-
-
-# # Set the target website
-# website = 'live.bilibili.com'
-
-# # Initialize lists to store latency and jitter values
-# latencies = []
-# jitters = []
-
-# # Measure latency over a number of pings
-# num_pings = 100
-# previous_latency = None
-
-# for i in range(num_pings):
-#     print(i)
-#     latency = ping(website)
-    
-#     if latency is not None:
-#         latencies.append(latency)
-        
-#         # Calculate jitter as the absolute difference between current and previous latency
-#         if previous_latency is not None:
-#             jitter = abs(latency - previous_latency)
-#             jitters.append(jitter)
-#         previous_latency = latency
-#     else:
-#         latencies.append(float('nan'))  # Handle cases where ping fails
-#         jitters.append(float('nan'))
-
-#     time.sleep(1)  # Wait a bit between pings to simulate real-world conditions
-
-# # Create a time axis for plotting
-# time_axis = list(range(len(latencies)))
-
-# # Plotting latency
-# plt.figure(figsize=(14, 7))
-
-# plt.subplot(2, 1, 1)
-# plt.plot(time_axis, latencies, marker='o', linestyle='-', color='b')
-# plt.title('Latency Over Time')
-# plt.ylabel('Latency (seconds)')
-# plt.grid(True)
-
-# # Plotting jitter
-# plt.subplot(2, 1, 2)
-# plt.plot(time_axis[1:], jitters, marker='o', linestyle='-', color='r')
-# plt.title('Jitter Over Time')
-# plt.xlabel('Ping Attempt')
-# plt.ylabel('Jitter (seconds)')
-# plt.grid(True)
-
-# # Display the plots
-# plt.tight_layout()
-# plt.show()
-
+import csv
 import time
 from ping3 import ping
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
 import numpy as np
+from matplotlib.widgets import Button
 
 # Set the target website
 website = 'cn-jsyz-ct-03-70.bilivideo.com'
 router_ip = '192.168.1.1'
 
-# Initialize lists to store latency and jitter values
-latencies = []
-jitters = []
-router_latencies = []
-
 # Set the number of points to display in the live plot
-display_points = 1000
+display_points = 100
+duration = 20
 
 # Create a figure and axis for plotting
 fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(10, 8))
 fig.suptitle('Live Latency and Jitter Tester')
 
 # Initialize plots for latency and jitter
-latency_line, = ax1.plot([], [], 'b-o', label='Latency',  linestyle='-', marker='')
-jitter_line, = ax2.plot([], [], 'r-o', label='Jitter',  linestyle='-', marker='')
+latency_line, = ax1.plot([], [], 'b-o', label='Latency', linestyle='-', marker='')
+jitter_line, = ax2.plot([], [], 'r-o', label='Jitter', linestyle='-', marker='')
 
 # Function to initialize the plot
 def init():
@@ -109,36 +39,59 @@ def init():
 
     return latency_line, jitter_line
 
-# Function to update the plot
-def update(frame):
-    latency = ping(website)
-    
-    if latency is not None:
-        latencies.append(latency)
+
+class Draw:
+    def __init__(self, writer) -> None:
+        self.writer = writer
+        # Initialize lists to store latency and jitter values
+        self.latencies = []
+        self.jitters = []
+        self.latency = 0
+        self.jitter = 0
+
+    # Function to update the plot
+    def update(self, frame):
+        self.latency = ping(website)
         
-        if len(latencies) > 1:
-            jitter = abs(latency - latencies[-2])
-            jitters.append(jitter)
+        if self.latency is not None:
+            self.latencies.append(self.latency)
+            
+            if len(self.latencies) > 1:
+                self.jitter = abs(self.latency - self.latencies[-2])
+                self.jitters.append(self.jitter)
+            else:
+                self.jitters.append(0)  # No jitter for the first point
         else:
-            jitters.append(0)  # No jitter for the first point
-    else:
-        latencies.append(np.nan)
-        jitters.append(np.nan)
+            self.latencies.append(np.nan)
+            self.jitters.append(np.nan)
 
-    # Keep only the last `display_points` number of data points
-    latencies_to_display = latencies[-display_points:]
-    jitters_to_display = jitters[-display_points:]
+        writer.writerow([round(self.latency, 3),round(self.jitter, 4)])
 
-    latency_line.set_data(range(len(latencies_to_display)), latencies_to_display)
-    jitter_line.set_data(range(len(jitters_to_display)), jitters_to_display)
+        # Keep only the last `display_points` number of data points
+        latencies_to_display = self.latencies[-display_points:]
+        jitters_to_display = self.jitters[-display_points:]
 
-    ax1.set_ylim(0, max(latencies_to_display) * 1.2 if latencies_to_display else 1)
-    ax2.set_ylim(0, max(jitters_to_display) * 1.2 if jitters_to_display else 0.2)
+        latency_line.set_data(range(len(latencies_to_display)), latencies_to_display)
+        jitter_line.set_data(range(len(jitters_to_display)), jitters_to_display)
 
-    return latency_line, jitter_line
+        ax1.set_ylim(0, max(latencies_to_display) * 1.2 if latencies_to_display else 1)
+        ax2.set_ylim(0, max(jitters_to_display) * 1.2 if jitters_to_display else 0.2)
 
-# Create an animation that calls the `update` function every second
-ani = FuncAnimation(fig, update, init_func=init, interval=50, blit=True)
+        return latency_line, jitter_line
 
-# Display the live plot
-plt.show()
+
+
+with open('latency_jitter_data.csv', mode='w', newline='') as file:
+    writer = csv.writer(file)
+    draw = Draw(writer)
+    
+    # Create an animation that calls the `update` function every second
+    ani = FuncAnimation(fig, draw.update, init_func=init, interval=1000, blit=True)
+
+    # # Add a stop button
+    # ax_button = plt.axes([0.8, 0.02, 0.1, 0.04])
+    # stop_button = Button(ax_button, 'Stop', color='red', hovercolor='green')
+    # stop_button.on_clicked(stop)
+
+    # Display the live plot
+    plt.show()

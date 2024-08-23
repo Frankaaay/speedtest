@@ -6,11 +6,13 @@ import numpy as np
 
 # Set the target website and router IP
 website = 'cn-jsyz-ct-03-70.bilivideo.com'
-router_ip = '192.168.1.1'
+# router_ip = '192.168.1.1'
 
 # Initialize lists to store latency values
-router_latencies = []
+# router_latencies = []
 website_latencies = []
+# router_jitters = []
+website_jitters = []
 
 # Set the number of points to display in the live plot
 display_points = 1000
