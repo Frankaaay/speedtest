@@ -17,7 +17,7 @@ class DouyinLive(live_api.Live):
         self.driver.implicitly_wait(5)
         self.driver.get("https://live.douyin.com/")
         url = self.driver.find_element(
-            By.XPATH, '//main/div[3]/div/div/div/div[1]/div[1]/div[2]/div[1]/div/div/div/div[1]/a/').get_attribute("href")
+            By.XPATH, '/html/body/div[2]/div[2]/div/main/div[3]/div/div/div/div[1]/div[1]/div[2]/div[1]/div/div/div/div[1]/a').get_attribute("href")
         room_id = re.findall(r'live.douyin.com/(\d+)', url)[0]
         self.driver.get(f"https://live.douyin.com/{room_id}")
         self.driver.implicitly_wait(0.2)
