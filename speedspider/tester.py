@@ -52,3 +52,6 @@ class SpeedTester:
         dl = self.driver.find_element(By.ID,"dlText").text
         ul = self.driver.find_element(By.ID,"ulText").text
         return SpeedTestResult(float(lag), float(jit), float(dl), float(ul))
+    
+    def close(self):
+        self.driver.close()

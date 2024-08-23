@@ -29,5 +29,6 @@ class Sequence(Thread):
 
     def stop(self):
         self.stopped = True
-        time.sleep(2)
+        self.tester.close()
+        time.sleep(1)
     

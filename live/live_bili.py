@@ -19,7 +19,7 @@ class BiliLive(api.Live):
             By.XPATH, '/html/body/div[1]/div/div[5]/div[3]/div/div[2]/div[1]/div[1]/a[1]').click()
         self.driver.switch_to.window(self.driver.window_handles[0])
         self.driver.close()
-        self.driver.implicitly_wait(0.2)
+        self.driver.implicitly_wait(self.interval)
 
     def check(self) -> tuple[api.LiveResult, str | None]:
         self.driver.switch_to.window(self.driver.window_handles[0])
