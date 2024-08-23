@@ -1,6 +1,6 @@
 from live_bili import BiliLive
 from live_douyin import DouyinLive
-from live_api import LiveResult
+from live.api import LiveResult
 import recorder
 import sys
 

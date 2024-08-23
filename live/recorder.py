@@ -1,4 +1,4 @@
-import live_api
+import api
 import datetime
 from selenium.common.exceptions import WebDriverException
 import os
@@ -7,8 +7,8 @@ import os
 class Recorder:
     file = None
     
-    def record(self, res: live_api.LiveResult, message: str | None):
-        pass
+    def record(self, res: api.LiveResult, message: str | None):
+        raise "Override me🥰"
 
     def flush(self):
         if self.file is not None:
@@ -16,15 +16,15 @@ class Recorder:
 
 
 class Console(Recorder):
-    def record(self, res: live_api.LiveResult, message: str | None):
+    def record(self, res: api.LiveResult, message: str | None):
         time_str = datetime.datetime.now().strftime("%H:%M:%S")
-        if res == live_api.LiveResult.Normal:
+        if res == api.LiveResult.Normal:
             print(f"{time_str} 正常")
-        elif res == live_api.LiveResult.Stuck:
+        elif res == api.LiveResult.Stuck:
             print(f"{time_str} 直播卡顿")
-        elif res == live_api.LiveResult.End:
+        elif res == api.LiveResult.End:
             print(f"{time_str} 直播结束 {message}")
-        elif res == live_api.LiveResult.Error:
+        elif res == api.LiveResult.Error:
             print(f"{time_str} 错误 {message}")
 
 
@@ -37,24 +37,24 @@ class Logger(Recorder):
         self.start = None
         self.count = 0
 
-    def record(self, res: live_api.LiveResult, message: str | None):
+    def record(self, res: api.LiveResult, message: str | None):
         now = datetime.datetime.now()
         time_str = now.strftime("%H:%M:%S")
 
-        if res == live_api.LiveResult.Normal and self.start is not None:
+        if res == api.LiveResult.Normal and self.start is not None:
             self.file.write(
                 f"{self.count},{time_str},结束,{(now-self.start).total_seconds():.3f}\n")
             self.start = None
             self.count += 1
 
-        elif res == live_api.LiveResult.Stuck and self.start is None:
+        elif res == api.LiveResult.Stuck and self.start is None:
             self.start = now
             self.file.write(f"{self.count},{time_str},开始\n")
 
-        elif res == live_api.LiveResult.End:
+        elif res == api.LiveResult.End:
             self.file.write(f"-,{time_str},结束,{repr(message)}")
 
-        elif res == live_api.LiveResult.Error:
+        elif res == api.LiveResult.Error:
             if self.start is not None:
                 self.file.write(f"-,{time_str},错误,{repr(message)}\n")
                 self.start = now
@@ -76,10 +76,10 @@ class MergeResult(Recorder):
         self.INTERVAL = interval
         self.THRESHOLD = threshold
 
-    def record(self, res: live_api.LiveResult, message: str | None) :
+    def record(self, res: api.LiveResult, message: str | None) :
         now = datetime.datetime.now()
 
-        if res == live_api.LiveResult.Normal:
+        if res == api.LiveResult.Normal:
             if self.last_end is None:
                 self.last_end = now
 
@@ -100,15 +100,15 @@ class MergeResult(Recorder):
                 return going_to_return
 
 
-        elif res == live_api.LiveResult.Stuck:
+        elif res == api.LiveResult.Stuck:
             self.last_end = None
             if self.start is None:
                 self.start = now
 
-        elif res == live_api.LiveResult.End:
+        elif res == api.LiveResult.End:
             pass
 
-        elif res == live_api.LiveResult.Error:
+        elif res == api.LiveResult.Error:
             pass
 
 
@@ -122,7 +122,7 @@ class Reporter(MergeResult):
         self.file = open(
             f"reports/{name}/{time_str}.csv", "a", encoding="utf-8-sig")
 
-    def record(self, res: live_api.LiveResult, message: str | None) :
+    def record(self, res: api.LiveResult, message: str | None) :
         merged = super().record(res, message)
         if merged is not None:
             count,start,end = merged
