@@ -22,13 +22,13 @@ class Live:
             self.goto_room(room_id)
     
     def goto_room(self, room_id):
-        raise "Overwrite me🥰"
+        raise "Override me🥰"
 
     def find_available_live(self):
-        raise "Overwrite me🥰"
+        raise "Override me🥰"
 
     def check(self) -> tuple[LiveResult, str | None]:
-        raise "Overwrite me🥰"
+        raise "Override me🥰"
 
     def quit(self):
         self.driver.quit()
