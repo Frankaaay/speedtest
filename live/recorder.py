@@ -1,5 +1,5 @@
 from io import TextIOWrapper
-from sys import stdout
+import sys
 import api
 import datetime
 from selenium.common.exceptions import WebDriverException
@@ -19,8 +19,8 @@ class Recorder:
 
 
 class Console(Recorder):
-    def __init__(self):
-        super().__init__(stdout)
+    def __init__(self, file = sys.stderr):
+        super().__init__(file)
 
     def record(self, res: api.LiveResult, message: str | None):
         time_str = datetime.datetime.now().strftime("%H:%M:%S")
@@ -35,11 +35,9 @@ class Console(Recorder):
 
 
 class Logger(Recorder):
-    def __init__(self, name):
-        time_str = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-        os.makedirs(f"logs/{name}", exist_ok=True)
-        self.file = open(
-            f"logs/{name}/{time_str}.csv","a", encoding="utf-8-sig")
+    def __init__(self, file):
+        super().__init__(file)
+        self.file.write("count,time,result,message\n")
         self.start = None
         self.count = 0
 
@@ -66,7 +64,7 @@ class Logger(Recorder):
                 self.start = now
 
 class MergeResult:
-    def __init__(self, name, interval=5, threshold=5):
+    def __init__(self, interval=5, threshold=5):
         '''
         interval:  两次间隔小于interval会被合并记录
         threshold: 小于threshold的将不会被记录
@@ -112,12 +110,10 @@ class MergeResult:
 
 class Reporter(Recorder):
 
-    def __init__(self, name, interval=5, threshold=5):
-        self.merge = MergeResult(name, interval, threshold)
-        time_str = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-        os.makedirs(f"reports/{name}", exist_ok=True)
-        self.file = open(
-            f"reports/{name}/{time_str}.csv", "a", encoding="utf-8-sig")
+    def __init__(self, file, interval=5, threshold=5):
+        super().__init__(file)
+        self.file.write("count,start,end,duration\n")
+        self.merge = MergeResult(interval, threshold)
 
     def record(self, res: api.LiveResult, message: str | None) :
         merged_res = self.merge.merge(res, message)
