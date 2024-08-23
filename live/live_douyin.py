@@ -1,16 +1,15 @@
 import api
+from datetime import timedelta
 from selenium.webdriver.common.by import By
 from selenium.common import exceptions
 import re
 
 class DouyinLive(api.Live):
-    def __init__(self, browser, room_id=None):
-        super().__init__(browser)
-        self.driver.implicitly_wait(0.2)
-        if room_id is None:
-            self.find_available_live()
-        else:
-            self.driver.get(f"https://live.douyin.com/{room_id}")
+    def __init__(self, browser:str, headless:bool=False, room_id=None, detect_interval=timedelta(milliseconds=200)):
+        super().__init__(browser, headless, room_id, detect_interval)
+        
+    def goto_room(self, room_id):
+        self.driver.get(f"https://live.douyin.com/{room_id}")
 
     def find_available_live(self):
 
@@ -30,6 +29,7 @@ class DouyinLive(api.Live):
                 end_text = self.driver.find_element(
                     By.XPATH, '//*[@id="pip-anchor"]/div/pace-island[1]/div/span').text()
                 if end_text == '直播已结束':
+                    self.find_available_live()
                     return (api.LiveResult.End, None)
             except exceptions.NoSuchElementException:
                 pass
