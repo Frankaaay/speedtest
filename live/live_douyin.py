@@ -1,11 +1,11 @@
-import api
+from live import api
 from datetime import timedelta
 from selenium.webdriver.common.by import By
 from selenium.common import exceptions
 import re
 
 class DouyinLive(api.Live):
-    def __init__(self, browser:str, headless:bool=False, room_id=None, detect_interval=timedelta(milliseconds=200)):
+    def __init__(self, browser:str, headless:bool=False, room_id=None, detect_interval=timedelta(milliseconds=100)):
         super().__init__(browser, headless, room_id, detect_interval)
         
     def goto_room(self, room_id):

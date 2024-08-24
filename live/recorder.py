@@ -1,9 +1,7 @@
 from io import TextIOWrapper
+from live import api
 import sys
-import api
 import datetime
-from selenium.common.exceptions import WebDriverException
-import os
 
 
 class Recorder:
