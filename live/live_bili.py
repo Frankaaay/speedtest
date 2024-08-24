@@ -12,11 +12,10 @@ class BiliLive(api.Live):
         self.driver.get(f"https://live.bilibili.com/{room_id}")
 
     def find_available_live(self):
-
         self.driver.implicitly_wait(5)
         self.driver.get("https://live.bilibili.com/")
         self.driver.find_element(
-            By.XPATH, '/html/body/div[1]/div/div[5]/div[3]/div/div[2]/div[1]/div[1]/a[last()]').click()
+            By.XPATH, '/html/body/div[1]/div/div[5]/div[3]/div/div[2]/div[1]/div[1]/a[3]').click()
         self.driver.switch_to.window(self.driver.window_handles[0])
         self.driver.close()
         self.driver.implicitly_wait(self.interval)

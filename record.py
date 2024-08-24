@@ -23,7 +23,15 @@ def main():
     pings = Log(open(f"log/{now}/ping.csv",'w',encoding='utf-8-sig'))
     lives = live.Reporter(open(f"log/{now}/stuck.csv",'w',encoding='utf-8-sig'))
 
-    living = live.BiliLive('Firefox',False)
+    browser = input("浏览器？ (Edge/Chrome/Firefox): ").title()
+    platform = input("平台？ [b]B站/[d]抖音/[x]西瓜/[a]爱奇艺").lower()
+    if platform == 'b':
+        living = live.BiliLive(browser, False)
+    elif platform == 'd':
+        living = live.DouyinLive(browser, False)
+    else:
+        living = live.BiliLive(browser, False)
+    
 
     try: 
         while True:
