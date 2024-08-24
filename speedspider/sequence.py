@@ -1,4 +1,4 @@
-from tester import SpeedTester
+from speedspider.tester import SpeedTester,SpeedTestResult
 import time
 import datetime
 from threading import Thread
@@ -24,7 +24,7 @@ class Sequence(Thread):
     def __len__(self):
         return len(self.results)
 
-    def consume(self):
+    def consume(self) -> SpeedTestResult | None:
         return  self.results.pop(0) if len(self.results)>0 else None
 
     def stop(self):

@@ -1,2 +1,2 @@
-from tester import SpeedTester, SpeedTestResult
-from sequence import Sequence
+from speedspider.tester import SpeedTester, SpeedTestResult
+from speedspider.sequence import Sequence

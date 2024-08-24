@@ -1,28 +1,28 @@
-import api
+from live import api
 from datetime import timedelta
 from selenium.webdriver.common.by import By
 from selenium.common import exceptions
 
 
 class BiliLive(api.Live):
-    def __init__(self, browser:str, headless:bool=False, room_id=None, detect_interval=timedelta(milliseconds=200)):
+    def __init__(self, browser:str, headless:bool=False, room_id=None, detect_interval=timedelta(milliseconds=100)):
         super().__init__(browser, headless, room_id, detect_interval)
         
     def goto_room(self, room_id):
         self.driver.get(f"https://live.bilibili.com/{room_id}")
 
     def find_available_live(self):
-
         self.driver.implicitly_wait(5)
         self.driver.get("https://live.bilibili.com/")
         self.driver.find_element(
-            By.XPATH, '/html/body/div[1]/div/div[5]/div[3]/div/div[2]/div[1]/div[1]/a[1]').click()
+            By.XPATH, '/html/body/div[1]/div/div[5]/div[3]/div/div[2]/div[1]/div[1]/a[3]').click()
         self.driver.switch_to.window(self.driver.window_handles[0])
         self.driver.close()
-        self.driver.implicitly_wait(0.2)
+        self.driver.implicitly_wait(self.interval)
+        self.driver.switch_to.window(self.driver.window_handles[0])
 
     def check(self) -> tuple[api.LiveResult, str | None]:
-        self.driver.switch_to.window(self.driver.window_handles[0])
+        # self.driver.switch_to.window(self.driver.window_handles[0])
         try:
 
             # 直播是否结束

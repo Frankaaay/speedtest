@@ -1,9 +1,7 @@
 from io import TextIOWrapper
+from live import api
 import sys
-import api
 import datetime
-from selenium.common.exceptions import WebDriverException
-import os
 
 
 class Recorder:
@@ -112,7 +110,7 @@ class Reporter(Recorder):
 
     def __init__(self, file, interval=5, threshold=5):
         super().__init__(file)
-        self.file.write("count,start,end,duration\n")
+        self.file.write("start,end,duration\n")
         self.merge = MergeResult(interval, threshold)
 
     def record(self, res: api.LiveResult, message: str | None) :
@@ -122,9 +120,9 @@ class Reporter(Recorder):
         
         count,start,end = merged_res
 
-        start_str = start.strftime("%H:%M:%S")
-        end_str = end.strftime("%H:%M:%S")
+        start_str = start.strftime("%m-%d %H:%M:%S")
+        end_str = end.strftime("%m-%d %H:%M:%S")
         duration = (end - start).total_seconds()
 
-        self.file.write(f"{count},{start_str},{end_str},{duration:.3f}\n")
+        self.file.write(f"{start_str},{end_str},{duration:.3f}\n")
             
