@@ -1,9 +1,10 @@
-from live import api
+from . import api
 from datetime import timedelta, datetime
 from selenium.webdriver.common.by import By
 from selenium.common import exceptions
 import threading
-
+import random 
+import re
 class BiliLive(api.Live):
     def __init__(self, browser:str, headless:bool=False, room_id=None, detect_interval=timedelta(milliseconds=100)):
         super().__init__(browser, headless, room_id, detect_interval)
@@ -15,23 +16,23 @@ class BiliLive(api.Live):
     def find_available_live(self):
         self.driver.implicitly_wait(5)
         self.driver.get("https://live.bilibili.com/")
-        self.driver.find_element(
-            By.XPATH, '/html/body/div[1]/div/div[5]/div[3]/div/div[2]/div[1]/div[1]/a[3]').click()
-        self.driver.switch_to.window(self.driver.window_handles[0])
-        self.driver.close()
-        self.driver.implicitly_wait(self.interval)
-        self.driver.switch_to.window(self.driver.window_handles[0])
-        self.anti_afk = datetime.now()
+        i = random.randint(2,5)
+        url = self.driver.find_element(
+            By.XPATH, f'/html/body/div[1]/div/div[5]/div[3]/div/div[2]/div[1]/div[1]/a[{i}]').get_attribute('href')
+        room_id = re.findall(r'live.bilibili.com/(\d+)', url)[0]
+        self.goto_room(room_id)
+        self.driver.implicitly_wait(self.interval.total_seconds())
 
     def check(self) -> tuple[api.LiveResult, str | None]:
         # self.driver.switch_to.window(self.driver.window_handles[0])
 
         now = datetime.now()
-        if now - self.anti_afk > timedelta(minutes=1):
+        if now - self.anti_afk > timedelta(hours=1):
+            self.anti_afk = now
             threading.Thread(target=self.find_available_live).start()
-            return (api.LiveResult.End, None)
+            return (api.LiveResult.End, "anti afk")
         
-        if now - self.anti_afk < timedelta(seconds=self.interval*2):
+        if now - self.anti_afk < self.interval*2:
             return (api.LiveResult.Normal, None)
         
         try:

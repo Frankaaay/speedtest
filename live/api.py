@@ -12,10 +12,19 @@ class Live:
     option: webdriver.EdgeOptions # OR any other browser option
 
     def __init__(self, browser:str, headless:bool, room_id, detect_interval:timedelta):
-        exec(f"self.option = webdriver.{browser}Options()")
+        browser = browser.title()
+
+        if browser == "Edge" or browser == "Chrome":
+            exec(f"self.option = webdriver.{browser}Options()")
+            self.option.add_argument('--log-level=off')
+        elif browser == "Firefox":
+            self.option = webdriver.FirefoxOptions()
+            self.option.log.level = "off"
+            
         if headless: self.option.add_argument('--headless')
+
         exec(f"self.driver = webdriver.{browser}(options=self.option)")
-        self.interval = detect_interval.total_seconds()
+        self.interval = detect_interval
         if room_id is None:
             self.find_available_live()
         else:

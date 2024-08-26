@@ -1,4 +1,4 @@
-from live import api
+from . import api
 from datetime import timedelta, datetime
 from selenium.webdriver.common.by import By
 from selenium.common import exceptions
@@ -20,19 +20,19 @@ class DouyinLive(api.Live):
         url = self.driver.find_element(
             By.XPATH, '/html/body/div[2]/div[2]/div/main/div[3]/div/div/div/div[1]/div[1]/div[2]/div[1]/div/div/div/div[1]/a').get_attribute("href")
         room_id = re.findall(r'live.douyin.com/(\d+)', url)[0]
-        self.driver.get(f"https://live.douyin.com/{room_id}")
-        self.driver.implicitly_wait(self.interval)
-        self.anti_afk = datetime.now()
+        self.goto_room(room_id)
+        self.driver.implicitly_wait(self.interval.total_seconds())
 
     def check(self) -> tuple[api.LiveResult, str | None]:
         # self.driver.switch_to.window(self.driver.window_handles[0])
 
         now = datetime.now()
         if now - self.anti_afk > timedelta(minutes=1):
+            self.anti_afk = now
             threading.Thread(target=self.find_available_live).start()
-            return (api.LiveResult.End, None)
+            return (api.LiveResult.End, "anti afk")
         
-        if now - self.anti_afk < timedelta(seconds=self.interval*2):
+        if now - self.anti_afk < self.interval*2:
             return (api.LiveResult.Normal, None)
         
         try:
