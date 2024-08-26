@@ -1,5 +1,5 @@
 from selenium import webdriver
-from datetime import timedelta
+from datetime import timedelta, datetime
 class LiveResult:
     Normal = 0
     Stuck = 1
@@ -29,6 +29,8 @@ class Live:
             self.find_available_live()
         else:
             self.goto_room(room_id)
+        
+        self.anti_afk = self.last_ok = datetime.now()
     
     def goto_room(self, room_id):
         raise "Override me🥰"
