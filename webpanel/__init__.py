@@ -103,6 +103,7 @@ class Sequence(Thread):
 
     def run(self):
         while not self.stopped:
+            self.obj.update()
             self.res = self.obj.get()
             time.sleep(1 - (datetime.datetime.now().microsecond/1000000))
 
