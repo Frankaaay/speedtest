@@ -55,9 +55,9 @@ def main():
         pass
     finally:
         print("Exiting...")
-        living.quit()
         live_log.flush()
         ping_log.flush()
+        living.quit()
         
     
 

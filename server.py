@@ -70,7 +70,7 @@ class DataPing:
             y=inf_values_192,
             mode='markers',
             marker=dict(color='#ff0000', size=15),
-            # name='192网络不可达'
+            name='192网络不可达'
         ))
 
         for highlight in highlights:
@@ -116,7 +116,7 @@ app.layout = html.Div([
     dcc.Slider(0, 1,
         step=1e-6,
         marks=None,
-        value=1,
+        value=0.2,
         id='range-raw',
         # updatemode='drag',
     ),
@@ -169,14 +169,5 @@ def update_range(range_raw, start_raw, active_cell, table):
 
     return f"显示范围: {start_time} - {end_time}", data_ping.graph_ping, stuck.to_dict('records')
 
-
-# @app.callback(
-#     Output('pings', 'figure'),
-#     Input('stuck-table', 'active_cell'),
-# )
-# def highlight_stuck(data):
-#     print(data)
-#     # data_ping.highlight_stuck(data)
-#     return data_ping.graph_ping
 if __name__ == '__main__':
     app.run_server(debug=True)
