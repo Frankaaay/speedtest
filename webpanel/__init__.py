@@ -1,10 +1,6 @@
 import socket
-import xml.etree
-import xml.etree.ElementTree
 import lxml.etree
 import requests
-# import selenium
-# from selenium import webdriver
 import re
 import lxml
 
@@ -40,10 +36,11 @@ class WebPanelResult:
 
 class WebPanel_FM:
     def __init__(self):
-        print("请在*任意*设备上登录web页")
+        print("请在*本*设备上任意浏览器手动登录web页")
         print("登录完成后，可关闭页面")
-        # input("等待登录")
-
+        input("等待登录 (Enter)")
+        self.ip = which_is_fm_ip()
+        print(f"设备IP: {self.ip}")
         self.tree :dict = None
 
     def update(self):
@@ -56,9 +53,13 @@ class WebPanel_FM:
             'Authorization':'Digest username="admin", realm="Highwmg", nonce="57263", uri="/cgi/xml_action.cgi", response="7e50a2c227adae5b48fc3ceed4186fe0", qop=auth, nc=0000006D, cnonce="3624919b183e7e43"',
             'X-Requested-With': 'XMLHttpRequest'
         }
-        res = requests.get("http://192.168.0.1/xml_action.cgi", params, headers=headers, timeout=1)
-        res = res.content.decode()
-        self.tree = xml_to_dict(lxml.etree.fromstring(res))
+        res = requests.get(f"http://{self.ip}/xml_action.cgi", params, headers=headers)
+        # print(res.content)
+        try:
+            res = res.content.decode()
+            self.tree = xml_to_dict(lxml.etree.fromstring(res))
+        except:
+            raise "无法连接到设备" + self.ip + "可能需要重新登录"
 
     def get(self): 
         if self.tree is None:
@@ -84,9 +85,28 @@ class WebPanel_FM:
             'Content-len': len(data),
         }
         
-        res = requests.post("http://192.168.0.1/xml_action.cgi", data, params, headers=headers,timeout=1)
+        res = requests.post(f"http://{self.ip}/xml_action.cgi", data, params, headers=headers)
         print(res.content)
         self.update()
-a = WebPanel_FM()
-print(a.get())
-print(a.set_band('3'))
+
+import time
+import datetime
+from threading import Thread
+
+class Sequence(Thread):
+    def __init__(self, obj: WebPanel_FM, interval = datetime.timedelta(seconds=1)):
+        super().__init__()
+        self.obj = obj
+        self.interval = interval
+        self.res = obj.get()
+        self.stopped = False
+
+    def run(self):
+        while not self.stopped:
+            self.res = self.obj.get()
+            time.sleep(1 - (datetime.datetime.now().microsecond/1000000))
+
+    def stop(self):
+        self.stopped = True
+        time.sleep(self.interval.total_seconds())
+    
