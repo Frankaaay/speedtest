@@ -5,6 +5,7 @@ import numpy as np
 import plotly.graph_objs as go
 import sys
 import datetime
+from stable import summary
 
 class DataPing:
     def __init__(self, data: pd.DataFrame):
@@ -14,6 +15,12 @@ class DataPing:
         self.display_range = len(self.data)
         self.graph_ping = None
         self.raw_len = len(self.data)
+        self.infwww = 0
+        self.inf192 = 0
+        self.stats192 = [0, 0, 0, 0]
+        self.statswww = [0, 0, 0, 0]
+        self.lag192 = 0
+        self.lagwww = 0
 
     def update_graph(self, highlights):
         self.graph_ping = go.Figure()
@@ -43,8 +50,12 @@ class DataPing:
             if np.isinf(row[1]['pingwww']):
                 inf_indices_www.append(row[1]['time'])
                 inf_values_www.append(temp)
+                self.infwww += 1
             else:
                 temp= row[1]['pingwww']
+                if row[1]["pingwww"] >= 100:
+                    self.lagwww += 1
+                    
                 
         inf_indices_192 = []
         inf_values_192 = []
@@ -53,10 +64,12 @@ class DataPing:
             if np.isinf(row[1]['ping192']):
                 inf_indices_192.append(row[1]['time'])
                 inf_values_192.append(temp)
+                self.inf192 += 1
             else:
                 temp= row[1]['ping192']
+                if row[1]["ping192"] >= 100:
+                    self.lag192 += 1
 
-        
         self.graph_ping.add_trace(go.Scatter(
             x=inf_indices_www,
             y=inf_values_www,
@@ -82,6 +95,10 @@ class DataPing:
                 line_width=0
             )
 
+        self.stats192 = summary.summarize(data, "ping192")
+        self.statswww = summary.summarize(data, "pingwww")
+        
+
 class DataStuck:
     def __init__(self, data: pd.DataFrame):
         # data['start']=pd.to_datetime(data['start'], format='%m-%d %H:%M:%S')
@@ -96,7 +113,8 @@ class DataStuck:
         return data
 
 
-path = sys.argv[1]
+# path = sys.argv[1]
+path = r"D:\fly\speedtest\log\08-24_18-13"
 data_ping = DataPing(pd.read_csv(f'{path}/ping.csv'))
 data_stuck = DataStuck(pd.read_csv(f'{path}/stuck.csv'))
 
@@ -104,7 +122,28 @@ app = Dash(__name__)
 
 # Layout of the app
 app.layout = html.Div([
-    html.H2("显示起点"),
+    html.H1(f"192断网次数:            {data_ping.inf192},     高延迟： {data_ping.lag192}", id = "192c"),
+    html.H1(f"www断网次数:            {data_ping.infwww}      高延迟： {data_ping.lagwww}", id = "wwwc"),
+    html.H1("192:"),
+    # mean, max, low, std
+    html.H1(
+        f"  平均值: {data_ping.stats192[0]}   "
+        f"  最大值: {data_ping.stats192[1]}   "
+        f"  最小值: {data_ping.stats192[2]}   "
+        f"  平均差: {data_ping.stats192[3]}   ",
+        id="stats192",
+        style={'whiteSpace': 'pre-line'}
+    ),
+    html.H1("www:"),
+    html.H1(
+        f"  平均值: {data_ping.statswww[0]}"
+        f"  最大值: {data_ping.statswww[1]}"
+        f"  最小值: {data_ping.statswww[2]}"
+        f"  平均差: {data_ping.statswww[3]}",
+        id="statswww",
+        style={'whiteSpace': 'pre-line'}
+    ),
+    html.H1("显示起点"),
     dcc.Slider(0, 1,
         step=1e-6,
         marks=None,
@@ -112,7 +151,7 @@ app.layout = html.Div([
         id='start-from-raw',
         # updatemode='drag',
     ),
-    html.H2("显示范围"),
+    html.H1("显示范围"),
     dcc.Slider(0, 1,
         step=1e-6,
         marks=None,
@@ -120,22 +159,29 @@ app.layout = html.Div([
         id='range-raw',
         # updatemode='drag',
     ),
-    html.H2(id='range-display'),
+
+    
+    html.H1(id='range-display'),
     dcc.Graph(id='pings'),
-    html.H2("直播卡顿"),
+    html.H1("直播卡顿"),
     dash_table.DataTable(
         id='stuck-table',
         data=data_stuck.data.to_dict('records'),
         columns=[{"name": i, "id": i} for i in data_stuck.data.columns],
         filter_action='native',
     ),
-    ])
+], style={'textAlign': 'center', 'font-size': '10px', 'marginTop': '50px', 'marginBottom': '20px'})
+
 
 # Callback to update the output based on the selected datetime
 @app.callback(
     Output('range-display', 'children'),
     Output('pings', 'figure'),
     Output('stuck-table', 'data'),
+    Output("192c", "children"),
+    Output("wwwc", "children"),
+    Output("stats192", "children"),
+    Output("statswww", "children"),
     Input('range-raw', 'value'), 
     Input('start-from-raw', 'value'),
     Input('stuck-table', 'active_cell'),
@@ -167,7 +213,22 @@ def update_range(range_raw, start_raw, active_cell, table):
     stuck = data_stuck.get_range(start_time,end_time)
 
 
-    return f"显示范围: {start_time} - {end_time}", data_ping.graph_ping, stuck.to_dict('records')
+    return (f"显示范围: {start_time} - {end_time}", 
+            data_ping.graph_ping, stuck.to_dict('records'),
+            f"192断网次数:            {data_ping.inf192},     高延迟： {data_ping.lag192}",
+            f"www断网次数:            {data_ping.infwww}      高延迟： {data_ping.lagwww}",  
+            f"  平均值: {data_ping.stats192[0]}   "
+            f"  最大值: {data_ping.stats192[1]}   "
+            f"  最小值: {data_ping.stats192[2]}   "
+            f"  平均差: {data_ping.stats192[3]}   ",
+            f"  平均值: {data_ping.statswww[0]}"
+            f"  最大值: {data_ping.statswww[1]}"
+            f"  最小值: {data_ping.statswww[2]}"
+            f"  平均差: {data_ping.statswww[3]}"
+            )
+            
+            
+
 
 if __name__ == '__main__':
     app.run_server(debug=True)
