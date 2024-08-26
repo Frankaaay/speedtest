@@ -1,6 +1,7 @@
 import live
 import stable
 import speedspider
+import webpanel
 import datetime
 import time
 import os
@@ -15,6 +16,9 @@ class Log:
 
     def flush(self):
         self.f.flush()
+
+ip_192 = webpanel.which_is_fm_ip()
+ip_www = "www.baidu.com"
 
 def main():
     now = datetime.datetime.now().strftime("%m-%d_%H-%M")
@@ -43,7 +47,7 @@ def main():
         while True:
             now = datetime.datetime.now()
             res,msg = living.check()
-            ping_log.record(now.strftime("%m-%d %H:%M:%S"),stable.ping('127.0.0.1'),stable.ping('www.baidu.com'))
+            ping_log.record(now.strftime("%m-%d %H:%M:%S"),stable.ping(ip_192),stable.ping(ip_www))
             live_console.record(res,msg)
             live_log.record(res,msg)
 
