@@ -56,7 +56,7 @@ class WebPanel_FM:
             'Authorization':'Digest username="admin", realm="Highwmg", nonce="57263", uri="/cgi/xml_action.cgi", response="7e50a2c227adae5b48fc3ceed4186fe0", qop=auth, nc=0000006D, cnonce="3624919b183e7e43"',
             'X-Requested-With': 'XMLHttpRequest'
         }
-        res = requests.get("http://192.168.0.1/xml_action.cgi", params, headers=headers, timeout=1)
+        res = requests.get("http:/d/192.168.0.1/xml_action.cgi", params, headers=headers, timeout=1)
         res = res.content.decode()
         self.tree = xml_to_dict(lxml.etree.fromstring(res))
 

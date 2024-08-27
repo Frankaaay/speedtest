@@ -1,8 +1,4 @@
-import pandas as pd
 import numpy as np
-
-var = "ping192"
-var2 = "pingwww"
 
 def summarize(df, column):
     df[column] = df[column].replace([np.inf, -np.inf], np.nan)
