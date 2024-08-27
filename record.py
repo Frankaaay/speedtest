@@ -32,7 +32,7 @@ def main():
     
     browser = "Edge".title()
     platform = input("平台 [b]站/[d]抖音/[x]西瓜/[a]爱奇艺:").lower()
-    room_id = input("房间号 (可不填)：").strip()
+    room_id = input("房间号 (可不填):").strip()
 
 
     if len(room_id) == 0:
@@ -50,9 +50,6 @@ def main():
     ping_log = Log(open(f"log/{now}/ping.csv",'w',encoding='utf-8-sig'))
     live_log = live.Reporter(open(f"log/{now}/stuck.csv",'w',encoding='utf-8-sig'),threshold=3)
     live_console = live.Console()
-
-    # living = live.Sequence(living,interval=datetime.timedelta(seconds=1))
-    # living.start()
     
     def record_live():
         try: 

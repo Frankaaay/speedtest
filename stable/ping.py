@@ -6,8 +6,10 @@ import threading
 
 
 def ping(target):
-    delay = ping3.ping(target, unit='ms', timeout=1)
+    delay = ping3.ping(target, unit='ms', timeout=0.8)
     delay = round(delay,1) if isinstance(delay, float) else float('inf')
+    # Why there is data like 10000ms ????
+    if delay > 0.8:  delay = float('inf')
     return delay
 
 class ResultsAtRange:
