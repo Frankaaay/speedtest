@@ -4,6 +4,7 @@ from selenium.webdriver.common.by import By
 from selenium.common import exceptions
 import threading
 import random 
+import time
 import re
 class BiliLive(api.Live):
     def __init__(self, browser:str, headless:bool=False, room_id=None, detect_interval=timedelta(milliseconds=100)):
@@ -33,6 +34,7 @@ class BiliLive(api.Live):
             return (api.LiveResult.End, "anti afk")
         
         if now - self.anti_afk < timedelta(seconds=5):
+            time.sleep(self.interval.total_seconds())
             return (api.LiveResult.Normal, None)
         
         try:

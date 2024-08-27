@@ -3,6 +3,7 @@ from datetime import timedelta, datetime
 from selenium.webdriver.common.by import By
 from selenium.common import exceptions
 import threading
+import time
 import re
 
 class DouyinLive(api.Live):
@@ -33,6 +34,7 @@ class DouyinLive(api.Live):
             return (api.LiveResult.End, "anti afk")
         
         if now - self.anti_afk < timedelta(seconds=5):
+            time.sleep(self.interval.total_seconds())
             return (api.LiveResult.Normal, None)
         
         try:
