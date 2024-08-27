@@ -3,27 +3,31 @@ from dash import Dash, dcc, html, dash_table, Input, Output, State
 import math
 import numpy as np
 import plotly.graph_objs as go
-import sys
 import datetime
 from stable import summary
 import bisect
 
+#storing data for updating graphs
 class DataPing:
     def __init__(self, data: pd.DataFrame):
-        self.data = data
+        self.data = data                             #all data
         self.display_start = 0
         self.display_range = len(self.data)
-        self.graph_ping = None
-        self.graph_ping2 = None
+        self.graph_ping = None                       #the main graph
+        self.graph_ping2 = None                      #the detail graph
         self.raw_len = len(self.data)
 
-        self.infwww = 0
-        self.inf192 = 0
+        self.infwww = 0     #how many times www disconnection
+        self.inf192 = 0     #how many times 192 disconnection
+
+        #stats contains mean, max, min, std
         self.stats192 = [0, 0, 0, 0]
         self.statswww = [0, 0, 0, 0]
+        #lags
         self.lag192 = 0
         self.lagwww = 0
 
+        #all xy of dots on graphs
         self.inf_indices_www = []
         self.inf_values_www = []
         self.inf_indices_192 = []
@@ -31,6 +35,7 @@ class DataPing:
 
     def construct_data(self):
         # 标记 inf 值# 获取所有 inf 的索引
+        #wws
         temp = 0
         for row in self.data.iterrows():
             if np.isinf(row[1]['pingwww']):
@@ -41,7 +46,7 @@ class DataPing:
                 temp= row[1]['pingwww']
                 if row[1]["pingwww"] >= 100:
                     self.lagwww += 1
-
+        #192s
         temp = 0
         for row in self.data.iterrows():
             if np.isinf(row[1]['ping192']):
@@ -53,6 +58,8 @@ class DataPing:
                 if row[1]["ping192"] >= 100:
                     self.lag192 += 1
 
+    #update everytimes the state changes, works for both graph, 
+    # 1 is the main graph, 2 is the sub graph
 
     def update_graph(self, which_graph, s = "", e = ""):
         if which_graph == 1:
@@ -80,19 +87,23 @@ class DataPing:
         start_192 = bisect.bisect_right(self.inf_indices_192, start_time)
         end_192 = bisect.bisect_right(self.inf_indices_192, end_time)
 
+        #cut the graph in the range we need
         inf_indices_www = self.inf_indices_www[start_www : end_www]
         inf_values_www = self.inf_values_www[start_www : end_www]
         inf_indices_192 = self.inf_indices_192[start_192 : end_192]
         inf_values_192 = self.inf_values_192[start_192 : end_192]
-
         
+        hovertext = [f"Band: {row['band']}<br>SINR: {row['sinr']}<br>RSRP: {row['rsrp']}" 
+        for index, row in data.iterrows()]
+
+        #drawing lines
         graph.add_trace(go.Scatter(
             x=data['time'],
             y=data['pingwww'],
             mode='lines',
             name='pingwww',
             marker=dict(color='#22aaff'),
-            hovertext = "band"
+            hovertext = hovertext,
         ))
         graph.add_trace(go.Scatter(
             x=data['time'],
@@ -100,10 +111,10 @@ class DataPing:
             mode='lines',
             name='ping192',
             marker=dict(color='#8888ff'),
-            hovertext = "band"
+            hovertext = hovertext
         ))
 
-
+        #drawing disconnection dots
         graph.add_trace(go.Scatter(
             x=inf_indices_www,
             y=inf_values_www,
@@ -120,6 +131,7 @@ class DataPing:
             name='192网络不可达'
         ))
 
+        #stats
         self.stats192 = summary.summarize(data, "ping192")
         self.statswww = summary.summarize(data, "pingwww")
 
@@ -216,6 +228,7 @@ app.layout = html.Div([
     # 获取筛选后的数据 ??? stupid things!!!
     State('stuck-table', 'derived_viewport_data')
 )
+#getting the new range for updating the graph(two bars)
 def update_range(range_raw, start_raw, active_cell, table):
     global data_ping, data_stuck
 
@@ -228,6 +241,7 @@ def update_range(range_raw, start_raw, active_cell, table):
     if start_raw is not None:
         data_ping.display_start = math.ceil(start_raw * (data_ping.raw_len - data_ping.display_range))
 
+    #parameter: mode(which graph)
     data_ping.update_graph(1)
     start_time = data_ping.data['time'][data_ping.display_start]
     end_time = data_ping.data['time'][data_ping.display_start+data_ping.display_range - 1]
@@ -249,6 +263,7 @@ def update_range(range_raw, start_raw, active_cell, table):
             f"  平均差: {data_ping.statswww[3]}"
             )
             
+#second graph's callback
 @app.callback(
     Output("range_graph", "figure"),
     Input('stuck-table', 'active_cell'),
