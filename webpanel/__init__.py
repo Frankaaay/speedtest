@@ -43,12 +43,13 @@ class WebPanel_FM:
     def __init__(self):
         print("请在*本*设备上任意浏览器手动登录web页")
         print("登录完成后，可关闭页面")
+        # input("按回车继续")
         self.ip = which_is_fm_ip()
         print(f"设备IP: {self.ip}")
         self.tree: dict = None
         self.res = WebPanelResult('nan', 'nan', 'nan')
 
-    def update(self):
+    def update(self,timeout=None):
             params ={
                 'method': 'get',
                 'module': 'duster',
@@ -60,13 +61,14 @@ class WebPanel_FM:
             }
             try:
                 try:
-                    res = requests.get(f"http://{self.ip}/xml_action.cgi", params, headers=headers,timeout=1)
+                    res = requests.get(f"http://{self.ip}/xml_action.cgi", params, headers=headers, timeout=timeout)
                     # print(res.content)
                 except requests.exceptions.Timeout:
                     print("连接到设备超时")
                     return
                 res = res.content.decode()
                 self.tree = xml_to_dict(lxml.etree.fromstring(res))
+                # print(self.tree)
                 self.res = WebPanelResult(
                     rsrp=self.tree['wan']['lte_rsrp'],
                     sinr=self.tree['wan']['lte_sinr'],
@@ -109,7 +111,7 @@ import datetime
 from threading import Thread
 
 class Sequence(Thread):
-    def __init__(self, obj: WebPanel_FM, interval = datetime.timedelta(seconds=1)):
+    def __init__(self, obj: WebPanel_FM, interval = datetime.timedelta(seconds=2)):
         super().__init__()
         self.obj = obj
         self.interval = interval
@@ -118,9 +120,10 @@ class Sequence(Thread):
 
     def run(self):
         while not self.stopped:
-            self.obj.update()
+            now = time.time()
+            self.obj.update(self.interval.total_seconds())
             self.res = self.obj.get()
-            time.sleep(1 - (datetime.datetime.now().microsecond/1000000))
+            time.sleep(max(0, self.interval.total_seconds() - (time.time() - now)))
 
     def stop(self):
         self.stopped = True
@@ -128,8 +131,6 @@ class Sequence(Thread):
 
 from selenium import webdriver
 from selenium.webdriver.common.by import By
-from selenium.webdriver.support.wait import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
 
 def login_FM(version:str=None,user:str='admin',pwd:str='admin'):
     if version is None:

@@ -27,13 +27,12 @@ def main():
 
     device = None
     if input("记录设备状态 [Y/n] 默认启用:").lower() != 'n':
-        device = webpanel.Sequence(webpanel.WebPanel_FM(),interval=datetime.timedelta(seconds=1))
+        device = webpanel.Sequence(webpanel.WebPanel_FM(),interval=datetime.timedelta(seconds=3))
         device.start()
     
     browser = "Edge".title()
     platform = input("平台 [b]站/[d]抖音/[x]西瓜/[a]爱奇艺:").lower()
     room_id = input("房间号 (可不填):").strip()
-
 
     if len(room_id) == 0:
         room_id = None
@@ -48,25 +47,24 @@ def main():
     now = datetime.datetime.now().strftime("%m-%d_%H-%M")
     os.makedirs(f"log/{now}/",exist_ok=True)
     ping_log = Log(open(f"log/{now}/ping.csv",'w',encoding='utf-8-sig'))
-    live_log = live.Reporter(open(f"log/{now}/stuck.csv",'w',encoding='utf-8-sig'),threshold=3)
-    live_console = live.Console()
+
+    living.add_recorder(live.Reporter(open(f"log/{now}/stuck.csv",'w',encoding='utf-8-sig'),threshold=3))
+    living.add_recorder(live.Console())
     
     def record_live():
         try: 
             while True:
                 now = datetime.datetime.now()
 
-                res,msg = living.check()
-                live_console.record(res,msg)
-                live_log.record(res,msg)
+                res,msg = living.check_and_record()
 
-                if now.second == 0 or res!=live.api.LiveResult.Normal:
-                    live_log.flush()
+                if now.second == 0 or res!=live.LiveResult.Normal:
+                    living.flush()
         except KeyboardInterrupt:
             pass
         finally:
             print("Exiting(2/2)")
-            live_log.flush()
+            living.flush()
             time.sleep(3)
             sys.exit()
 
