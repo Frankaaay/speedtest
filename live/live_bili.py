@@ -28,7 +28,7 @@ class BiliLive(api.Live):
         # self.driver.switch_to.window(self.driver.window_handles[0])
 
         now = datetime.now()
-        if now - self.anti_afk > timedelta(minutes=30):
+        if now - self.anti_afk > timedelta(minutes=20):
             self.anti_afk = now
             threading.Thread(target=self.driver.refresh).start()
             return (api.LiveResult.End, "anti afk")

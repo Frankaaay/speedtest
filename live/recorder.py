@@ -1,34 +1,23 @@
-from io import TextIOWrapper
-from live import api
+from live.api import LiveResult,Recorder
 import sys
 import datetime
 
 
-class Recorder:
-    def __init__(self, file: TextIOWrapper):
-        self.file = file
-    
-    def record(self, res: api.LiveResult, message: str | None):
-        raise "Override me🥰"
-
-    def flush(self):
-        if self.file is not None:
-            self.file.flush()
 
 
 class Console(Recorder):
     def __init__(self, file = sys.stderr):
         super().__init__(file)
 
-    def record(self, res: api.LiveResult, message: str | None):
+    def record(self, res: LiveResult, message: str | None):
         time_str = datetime.datetime.now().strftime("%H:%M:%S")
-        if res == api.LiveResult.Normal:
+        if res == LiveResult.Normal:
             self.file.write(f"{time_str} 正常\n")
-        elif res == api.LiveResult.Stuck:
+        elif res == LiveResult.Stuck:
             self.file.write(f"{time_str} 直播卡顿\n")
-        elif res == api.LiveResult.End:
+        elif res == LiveResult.End:
             self.file.write(f"{time_str} 直播结束 {message}\n")
-        elif res == api.LiveResult.Error:
+        elif res == LiveResult.Error:
             self.file.write(f"{time_str} 直播错误 {message}\n")
 
 
@@ -39,24 +28,24 @@ class Logger(Recorder):
         self.start = None
         self.count = 0
 
-    def record(self, res: api.LiveResult, message: str | None):
+    def record(self, res: LiveResult, message: str | None):
         now = datetime.datetime.now()
         time_str = now.strftime("%H:%M:%S")
 
-        if res == api.LiveResult.Normal and self.start is not None:
+        if res == LiveResult.Normal and self.start is not None:
             self.file.write(
                 f"{self.count},{time_str},结束,{(now-self.start).total_seconds():.3f}\n")
             self.start = None
             self.count += 1
 
-        elif res == api.LiveResult.Stuck and self.start is None:
+        elif res == LiveResult.Stuck and self.start is None:
             self.start = now
             self.file.write(f"{self.count},{time_str},开始\n")
 
-        elif res == api.LiveResult.End:
+        elif res == LiveResult.End:
             self.file.write(f"-,{time_str},结束,{repr(message)}")
 
-        elif res == api.LiveResult.Error:
+        elif res == LiveResult.Error:
             if self.start is not None:
                 self.file.write(f"-,{time_str},错误,{repr(message)}\n")
                 self.start = now
@@ -74,10 +63,10 @@ class MergeResult:
         self.INTERVAL = interval
         self.THRESHOLD = threshold
 
-    def merge(self, res: api.LiveResult, message: str | None)  -> tuple[int, datetime.datetime, datetime.datetime] | None:
+    def merge(self, res: LiveResult, message: str | None)  -> tuple[int, datetime.datetime, datetime.datetime] | None:
         now = datetime.datetime.now()
 
-        if res == api.LiveResult.Normal:
+        if res == LiveResult.Normal:
             if self.last_end is None:
                 self.last_end = now
 
@@ -95,13 +84,13 @@ class MergeResult:
                 
                 return going_to_return
 
-        elif res == api.LiveResult.Stuck:
+        elif res == LiveResult.Stuck:
             self.last_end = None
             if self.start is None:
                 self.start = now
-        elif res == api.LiveResult.End:
+        elif res == LiveResult.End:
             pass
-        elif res == api.LiveResult.Error:
+        elif res == LiveResult.Error:
             pass
 
 
@@ -113,7 +102,7 @@ class Reporter(Recorder):
         self.file.write("start,end,duration\n")
         self.merge = MergeResult(interval, threshold)
 
-    def record(self, res: api.LiveResult, message: str | None) :
+    def record(self, res: LiveResult, message: str | None) :
         merged_res = self.merge.merge(res, message)
         if merged_res is None:
             return
