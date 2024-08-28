@@ -38,24 +38,24 @@ class DataPing:
         #wws
         temp = 0
         for row in self.data.iterrows():
-            if np.isinf(row[1]['pingwww']):
+            if np.isinf(row[1]['ip_www']):
                 self.inf_indices_www.append(row[1]['time'])
                 self.inf_values_www.append(temp)
                 self.infwww += 1
             else:
-                temp= row[1]['pingwww']
-                if row[1]["pingwww"] >= 100:
+                temp= row[1]['ip_www']
+                if row[1]["ip_www"] >= 100:
                     self.lagwww += 1
         #192s
         temp = 0
         for row in self.data.iterrows():
-            if np.isinf(row[1]['ping192']):
+            if np.isinf(row[1]['ip_192']):
                 self.inf_indices_192.append(row[1]['time'])
                 self.inf_values_192.append(temp)
                 self.inf192 += 1
             else:
-                temp= row[1]['ping192']
-                if row[1]["ping192"] >= 100:
+                temp= row[1]['ip_192']
+                if row[1]["ip_192"] >= 100:
                     self.lag192 += 1
 
     #update everytimes the state changes, works for both graph, 
@@ -99,17 +99,17 @@ class DataPing:
         #drawing lines
         graph.add_trace(go.Scatter(
             x=data['time'],
-            y=data['pingwww'],
+            y=data['ip_www'],
             mode='lines',
-            name='pingwww',
+            name='ip_www',
             marker=dict(color='#22aaff'),
             hovertext = hovertext,
         ))
         graph.add_trace(go.Scatter(
             x=data['time'],
-            y=data['ping192'],
+            y=data['ip_192'],
             mode='lines',
-            name='ping192',
+            name='ip_192',
             marker=dict(color='#8888ff'),
             hovertext = hovertext
         ))
@@ -132,8 +132,8 @@ class DataPing:
         ))
 
         #stats
-        self.stats192 = summary.summarize(data, "ping192")
-        self.statswww = summary.summarize(data, "pingwww")
+        self.stats192 = summary.summarize(data, "ip_192")
+        self.statswww = summary.summarize(data, "ip_www")
 
         return graph
         
@@ -150,7 +150,7 @@ class DataStuck:
 
 
 # path = sys.argv[1]
-path = r"D:\fly\speedtest\log\08-26_18-06"
+path = r"D:\fly\speedtest\log\2024-08-27_17-53"
 data_ping = DataPing(pd.read_csv(f'{path}/ping.csv'))
 data_stuck = DataStuck(pd.read_csv(f'{path}/stuck.csv'))
 data_ping.construct_data()
