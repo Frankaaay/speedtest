@@ -18,7 +18,8 @@ class Recorder:
 
     def close(self):
         self.flush()
-        self.file.close()
+        if self.file is not None:
+            self.file.close()
 
     def __enter__(self):
         return self
@@ -80,7 +81,7 @@ class Sequence(Thread, Producer):
                 self.obj.record()
                 sleep(max(0, self.interval.total_seconds() - (time() - now)))
         except KeyboardInterrupt:
-            self.stopped = True
+            self.stop()
         finally:
             self.obj.stop()
 

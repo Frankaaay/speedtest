@@ -60,3 +60,8 @@ class Live(Producer):
             self.res = (LiveState.Normal, "anti afk refreshing")
             return True
         return False
+
+    def stop(self):
+        self.res = (LiveState.End, "stopped")
+        super().stop()
+        self.driver.quit()

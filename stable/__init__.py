@@ -1,5 +1,6 @@
 import ping3
 from common import *
+from utils import ThreadWithReturn
 
 
 def ping(target, timeout=timedelta(seconds=0.75)):
@@ -12,20 +13,6 @@ def ping(target, timeout=timedelta(seconds=0.75)):
         return delay
     except ping3.errors.PingError:
         return float('inf')
-
-
-class PingSingle(Thread):
-    def __init__(self, target, timeout=timedelta(seconds=0.75)):
-        super().__init__()
-        self.target = target
-        self.timeout = timeout
-
-    def run(self) -> None:
-        self._return = ping(self.target, self.timeout)
-
-    def join(self) -> float:
-        super().join()
-        return self._return
 
 
 class Pings(Producer):
@@ -42,7 +29,8 @@ class Pings(Producer):
         super().update()
         handles: dict[str, Thread] = {}
         for target in self.target:
-            handles[target] = PingSingle(target, self.timeout)
+            handles[target] = ThreadWithReturn(
+                target=ping, args=(target, self.timeout))
             handles[target].start()
 
         res: dict[str, float] = {}

@@ -1,3 +1,4 @@
+import threading
 import socket
 import re
 import time
@@ -50,3 +51,22 @@ def which_is_device_ip():
     ip = min(ip_addresses)
     print(f"设备IP: {ip}")
     return ip
+
+
+class ThreadWithReturn(threading.Thread):
+    def __init__(self, group=None, target=None, name=None,
+                 args=(), kwargs=None, *, daemon=None):
+        super().__init__(group=group, target=target, name=name,
+                         args=args, kwargs=kwargs, daemon=daemon)
+        self._return = None
+
+    def run(self):
+        try:
+            if self._target is not None:
+                self._return = self._target(*self._args, **self._kwargs)
+        finally:
+            del self._target, self._args, self._kwargs
+
+    def join(self, timeout=None):
+        super().join(timeout)
+        return self._return

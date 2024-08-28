@@ -111,6 +111,8 @@ def main():
             log.flush()
             living.flush()
     except KeyboardInterrupt:
+        pass
+    finally:
         print("Exiting ...")
         # sleep(3)
         living.stop()
