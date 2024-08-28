@@ -1,81 +1,67 @@
+from typing import Callable
+from common import *
 from selenium import webdriver
-from datetime import timedelta, datetime
+from selenium.webdriver.common.by import By
+from selenium.common import exceptions as SEexceptions
+import utils
+import re
 
-class LiveResult:
-    Normal = 0
-    Stuck = 1
-    End = 2
-    Error = 3
 
-from io import TextIOWrapper
-class Recorder:
-    def __init__(self, file: TextIOWrapper):
-        self.file = file
-    
-    def record(self, res: LiveResult, message: str | None):
-        raise "Override me🥰"
+class LiveState:
+    Normal = 0,
+    Stuck = 1,
+    End = 2,
+    Error = 3,
 
-    def flush(self):
-        if self.file is not None:
-            self.file.flush()
 
-class Live:
-    driver: webdriver.Edge # OR any other browser
-    option: webdriver.EdgeOptions # OR any other browser option
-
-    def __init__(self, browser:str, headless:bool, room_id, detect_interval:timedelta):
-        browser = browser.title()
-
-        if browser == "Edge":
-            option = webdriver.EdgeOptions()
-            option.add_argument('--log-level=off')
-        elif browser == "Chrome":
-            option = webdriver.ChromeOptions()
-            option.add_argument('--log-level=off')
-        elif browser == "Firefox":
-            option = webdriver.FirefoxOptions()
-            option.log.level = "fatal"
-            
-        if headless: option.add_argument('--headless')
-
-        if browser == "Edge":
-            self.driver = webdriver.Edge(options=option)
-        elif browser == "Chrome":
-            self.driver = webdriver.Chrome(options=option)
-        elif browser == "Firefox":
-            self.driver = webdriver.Firefox(options=option)
-
-        self.interval = detect_interval
+class Live(Producer):
+    def __init__(self, browser_name: str, base_url, room_id=None, interval=timedelta(seconds=0.1)):
+        super().__init__()
+        self.base_url = base_url
+        self.driver = utils.web_driver(browser_name)
+        self.res: tuple[LiveState, str | None] = (
+            LiveState.Error, "initializing")
+        self.interval = interval.total_seconds()
         if room_id is None:
             self.find_available_live()
         else:
             self.goto_room(room_id)
-        
-        self.anti_afk = datetime.now()
-        self.recorders:list[Recorder] = []
-    
-    def goto_room(self, room_id):
-        pass
 
-    def find_available_live(self):
-        pass
+        self.afk_since = time()
 
-    def check(self) -> tuple[LiveResult, str | None]:
-        pass
+    def find_available_live(self, get_url: Callable[[webdriver.Edge], str]):
+        self.driver.implicitly_wait(5)
+        self.driver.get(self.base_url)
+        url: str = get_url(self.driver)
+        room_id = re.findall(self.base_url + r'(\d+)', url)[0]
+        self.driver.implicitly_wait(self.interval)
+        self.goto_room(room_id)
 
-    def check_and_record(self):
-        result, msg = self.check()
-        for recorder in self.recorders:
-            recorder.record(result, msg)
-        return result, msg
+    def goto_room(self, room_id: str):
+        self.afk_since = time()
+        self.driver.get(self.base_url + room_id)
 
-    def flush(self):
-        for recorder in self.recorders:
-            recorder.flush()
-    
-    def add_recorder(self, recorder:Recorder):
-        self.recorders.append(recorder)
-    
+    def refresh(self):
+        self.afk_since = time()
+        self.driver.refresh()
 
-    def quit(self):
+    def update(self):
+        super().update()
+        if self.afk_check():
+            return
+
+    def afk_check(self) -> bool:
+        if time() - self.afk_since > timedelta(minutes=20).total_seconds():
+            self.refresh()  # refresh page to prevent afk
+            self.afk_since = time()
+            self.res = (LiveState.End, "anti afk")
+            return True
+        elif time() - self.afk_since < timedelta(seconds=5).total_seconds():
+            self.res = (LiveState.Normal, "anti afk refreshing")
+            return True
+        return False
+
+    def stop(self):
+        self.res = (LiveState.End, "stopped")
+        super().stop()
         self.driver.quit()
