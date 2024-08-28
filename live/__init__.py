@@ -1,4 +1,5 @@
-from live.api import LiveResult
-from live.live_bili import BiliLive
-from live.live_douyin import DouyinLive
-from live.recorder import MergeResult, Console, Reporter
+from .api import LiveState, Live
+from .bili import BiliLive
+from .douyin import DouyinLive
+
+from .recorder import Console, Logger, Reporter

@@ -3,3 +3,6 @@ logs/
 reports/
 *_rs
 *.csv
+build/
+dist/
+*.spec
