@@ -7,8 +7,8 @@ import requests
 import lxml.etree
 
 
-def login_FM(version: str | None = None, user: str = 'admin', pwd: str = 'admin'):
-    driver = web_driver('Edge', True)
+def login_FM(version: str | None = None,  user: str = 'admin', pwd: str = 'admin'):
+    driver = web_driver(True)
     if version is None:
         try:
             print(f"尝试登录版本 1.3")
@@ -64,7 +64,7 @@ class WebPanel_FM(WebPanel):
     def __init__(self, timeout=timedelta(seconds=5)):
         print("请在*本*设备上任意浏览器手动登录web页")
         print("登录完成后，可关闭页面")
-        input("按回车继续")
+        # input("按回车继续")
         super().__init__(timeout)
 
     def update(self):
@@ -99,7 +99,6 @@ class WebPanel_FM(WebPanel):
             print("无法连接到设备" + self.ip + "可能需要重新登录")
             print("正在重新登录")
             login_FM()
-            self.update()
 
     def set_band(self, band=0):
         raise NotImplementedError()
