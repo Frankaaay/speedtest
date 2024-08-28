@@ -11,7 +11,8 @@ class DouyinLive(Live):
     def find_available(self):
         i = random.randint(2, 5)
         super().find_available(lambda driver: driver.find_element(
-            By.XPATH, '/html/body/div[2]/div[2]/div/main/div[3]/div/div/div/div[1]/div[1]/div[2]/div[1]/div/div/div/div[1]/a').get_attribute("href"))
+            By.XPATH, '//*[@id="player_div"]/div[1]/div/div/div//a').get_attribute("href"))
+        # Stupid path that is different in Edge and Firefox
 
     def update(self):
         if self.afk_check():
