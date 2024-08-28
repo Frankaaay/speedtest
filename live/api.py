@@ -6,18 +6,21 @@ from selenium.common import exceptions as SEexceptions
 import utils
 import re
 
+
 class LiveState:
     Normal = 0,
     Stuck = 1,
     End = 2,
     Error = 3,
 
+
 class Live(Producer):
-    def __init__(self, browser_name: str, base_url, room_id = None, interval = timedelta(seconds=0.1)):
+    def __init__(self, browser_name: str, base_url, room_id=None, interval=timedelta(seconds=0.1)):
         super().__init__()
         self.base_url = base_url
         self.driver = utils.web_driver(browser_name)
-        self.res: tuple[LiveState, str|None] = (LiveState.Error, "initializing")
+        self.res: tuple[LiveState, str | None] = (
+            LiveState.Error, "initializing")
         self.interval = interval.total_seconds()
         if room_id is None:
             self.find_available_live()
@@ -26,7 +29,7 @@ class Live(Producer):
 
         self.afk_since = time()
 
-    def find_available_live(self, get_url: Callable[[webdriver.Edge],str]):
+    def find_available_live(self, get_url: Callable[[webdriver.Edge], str]):
         self.driver.implicitly_wait(5)
         self.driver.get(self.base_url)
         url: str = get_url(self.driver)
@@ -34,10 +37,10 @@ class Live(Producer):
         self.driver.implicitly_wait(self.interval)
         self.goto_room(room_id)
 
-    def goto_room(self, room_id:str):
+    def goto_room(self, room_id: str):
         self.afk_since = time()
         self.driver.get(self.base_url + room_id)
-    
+
     def refresh(self):
         self.afk_since = time()
         self.driver.refresh()
@@ -49,7 +52,7 @@ class Live(Producer):
 
     def afk_check(self) -> bool:
         if time() - self.afk_since > timedelta(minutes=20).total_seconds():
-            self.refresh() # refresh page to prevent afk
+            self.refresh()  # refresh page to prevent afk
             self.afk_since = time()
             self.res = (LiveState.End, "anti afk")
             return True

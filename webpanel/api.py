@@ -1,10 +1,12 @@
 from common import *
 from utils import which_is_device_ip
 
+
 def xml_to_dict(element):
     if len(element) == 0:
         return element.text
     return {child.tag: xml_to_dict(child) for child in element}
+
 
 class WebPanelState:
     rsrp: str
@@ -23,15 +25,16 @@ class WebPanelState:
         if isinstance(value, WebPanelState):
             return self.rsrp == value.rsrp and self.sinr == value.sinr and self.band == value.band
         return False
-    
+
     def shrink_invalid(self):
-        if self.rsrp is None :
+        if self.rsrp is None:
             self.rsrp = '-'
-        if self.sinr is None :
+        if self.sinr is None:
             self.sinr = '-'
-        if self.band is None :
+        if self.band is None:
             self.band = '-'
         return self
+
 
 class WebPanel(Producer):
     def __init__(self, timeout=timedelta(seconds=5)):
@@ -44,7 +47,5 @@ class WebPanel(Producer):
     def update(self):
         super().update()
 
-    def set_band(self,band):
+    def set_band(self, band):
         pass
-
-
