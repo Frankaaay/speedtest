@@ -1,10 +1,12 @@
 import sys
 from common import *
+import live.xigua
 import utils
 import live
 import webpanel
 import stable
 import os
+import tomllib
 
 
 class PingAndState(Producer):
@@ -23,6 +25,12 @@ class PingAndState(Producer):
         else:
             empty = webpanel.WebPanelState('-', '-', '-')
             self.res = (now, self.ping.get(), empty)
+
+    def stop(self):
+        super().stop()
+        self.ping.stop()
+        if self.device is not None:
+            self.device.stop()
 
 
 class Log(Recorder):
@@ -64,62 +72,50 @@ ips = {
 }
 
 
-def main():
+class Main:
+    def __init__(self, record_device: bool, platform: str, room_id: str | None = None):
+        if record_device:
+            device = Sequence(webpanel.WebPanel_FM(),
+                              interval=timedelta(seconds=2))
+            device.start()
+        else:
+            device = None
 
-    device = None
+        if len(room_id) == 0:
+            room_id = None
 
-    if input("记录设备状态 [Y/n] 默认启用:").lower() != 'n':
-        device = Sequence(webpanel.WebPanel_FM(),
-                          interval=timedelta(seconds=3))
-        device.start()
+        if platform == 'B站':
+            living = live.BiliLive(room_id)
+        elif platform == '抖音':
+            living = live.DouyinLive(room_id)
+        elif platform == '西瓜':
+            living = live.Xigua(room_id)
+        else:
+            living = live.BiliLive(room_id)
 
-    browser = "Edge".title()
-    platform = input("平台 [b]站/[d]抖音/[x]西瓜/[a]爱奇艺:").lower()
-    room_id = input("房间号 (可不填):").strip()
+        now = datetime.now().strftime("%Y-%m-%d_%H-%M")
 
-    if len(room_id) == 0:
-        room_id = None
+        os.makedirs(f"log/{now}/", exist_ok=True)
 
-    if platform == 'b':
-        living = live.BiliLive(browser, room_id)
-    elif platform == 'd':
-        living = live.DouyinLive(browser, room_id)
-    else:
-        living = live.BiliLive(browser, room_id)
+        living.add_recorder(live.Reporter(
+            open(f"log/{now}/stuck.csv", 'w', encoding='utf-8-sig'), threshold=1))
+        living.add_recorder(live.Console(file=sys.stdout))
+        # living = AutoFlush(living, timedelta(seconds=5))
+        living = Sequence(living, interval=timedelta(seconds=0.2))
+        living.start()
 
-    now = datetime.now().strftime("%Y-%m-%d_%H-%M")
+        log = PingAndState(stable.Pings(list(ips.values())), device)
+        log = AutoFlush(log, timedelta(seconds=5))
+        log.add_recorder(
+            Log(open(f"log/{now}/ping.csv", 'w', encoding='utf-8-sig'), ips))
+        log.add_recorder(Console(sys.stdout, ips))
 
-    os.makedirs(f"log/{now}/", exist_ok=True)
+        log = SequenceFullSecond(log, interval=timedelta(seconds=1))
+        log.start()
 
-    living.add_recorder(live.Reporter(
-        open(f"log/{now}/stuck.csv", 'w', encoding='utf-8-sig'), threshold=1))
-    living.add_recorder(live.Console())
-    living = Sequence(living, interval=timedelta(seconds=0.2))
-    living.start()
+        self.log = log
+        self.living = living
 
-    log = PingAndState(stable.Pings(list(ips.values())), device)
-    log.add_recorder(
-        Log(open(f"log/{now}/ping.csv", 'w', encoding='utf-8-sig'), ips))
-    log.add_recorder(Console(sys.stderr, ips))
-
-    log = SequenceFullSecond(log, interval=timedelta(seconds=1))
-    log.start()
-
-    try:
-        while True:
-            sleep(60)
-            log.flush()
-            living.flush()
-    except KeyboardInterrupt:
-        pass
-    finally:
-        print("Exiting ...")
-        # sleep(3)
-        living.stop()
-        log.stop()
-        if device is not None:
-            device.stop()
-
-
-if __name__ == '__main__':
-    main()
+    def stop(self):
+        self.log.stop()
+        self.living.stop()
