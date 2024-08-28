@@ -58,8 +58,10 @@ class Console(Recorder):
             [str(pings[self.targets[t]])+'ms' for t in self.target_name])} {state.rsrp}, {state.sinr}, {state.band}\n")
 
 
-ip_192 = utils.which_is_device_ip()
-ip_www = "www.baidu.com"
+ips = {
+    'ping_192': utils.which_is_device_ip(),
+    'ping_www': 'www.baidu.com',
+}
 
 
 def main():
@@ -90,15 +92,16 @@ def main():
     os.makedirs(f"log/{now}/", exist_ok=True)
 
     living.add_recorder(live.Reporter(
-        open(f"log/{now}/stuck.csv", 'w', encoding='utf-8-sig'), threshold=3))
+        open(f"log/{now}/stuck.csv", 'w', encoding='utf-8-sig'), threshold=1))
     living.add_recorder(live.Console())
     living = Sequence(living, interval=timedelta(seconds=0.2))
     living.start()
 
-    log = PingAndState(stable.Pings([ip_192, ip_www]), device)
-    log.add_recorder(Log(open(
-        f"log/{now}/ping.csv", 'w', encoding='utf-8-sig'), {"ip_192": ip_192, "ip_www": ip_www}))
-    log.add_recorder(Console(sys.stderr, {"ip_192": ip_192, "ip_www": ip_www}))
+    log = PingAndState(stable.Pings(list(ips.values())), device)
+    log.add_recorder(
+        Log(open(f"log/{now}/ping.csv", 'w', encoding='utf-8-sig'), ips))
+    log.add_recorder(Console(sys.stderr, ips))
+
     log = SequenceFullSecond(log, interval=timedelta(seconds=1))
     log.start()
 
