@@ -1,6 +1,6 @@
 from common import *
 from .api import *
-from utils import web_driver, which_is_device_ip
+from utils import web_driver
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 import requests
@@ -31,8 +31,8 @@ def login_FM(version: str | None = None,  user: str = 'admin', pwd: str = 'admin
     driver.close()
 
 
-def login_FM_1_3(driver: webdriver.Edge, user: str, password: str):
-    driver.get(f"http://{which_is_device_ip()}")
+def login_FM_1_3(driver: webdriver.Edge, ip: str, user: str, password: str):
+    driver.get(f"http://{ip}")
     driver.implicitly_wait(3)
     usr = driver.find_element(
         By.XPATH, '//*[@id="app"]/div/div/div[1]/div/div/div[3]/form/div[1]/div[1]/div/div[1]/div[2]/input')
@@ -47,8 +47,8 @@ def login_FM_1_3(driver: webdriver.Edge, user: str, password: str):
     time.sleep(1)
 
 
-def login_FM_1_2(driver: webdriver.Edge, user: str, password: str):
-    driver.get(f"http://{which_is_device_ip()}")
+def login_FM_1_2(driver: webdriver.Edge, ip: str, user: str, password: str):
+    driver.get(f"http://{ip}")
     driver.implicitly_wait(3)
     usr = driver.find_element(By.ID, 'tbarouter_username')
     usr.clear()
@@ -61,11 +61,11 @@ def login_FM_1_2(driver: webdriver.Edge, user: str, password: str):
 
 
 class WebPanel_FM(WebPanel):
-    def __init__(self, timeout=timedelta(seconds=5)):
+    def __init__(self, device_ip, timeout=timedelta(seconds=5)):
         print("请在*本*设备上任意浏览器手动登录web页")
         print("登录完成后，可关闭页面")
         # input("按回车继续")
-        super().__init__(timeout)
+        super().__init__(device_ip, timeout)
 
     def update(self):
         super().update()

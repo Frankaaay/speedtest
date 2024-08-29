@@ -1,5 +1,4 @@
 from common import *
-from utils import which_is_device_ip
 
 
 def xml_to_dict(element):
@@ -37,9 +36,9 @@ class WebPanelState:
 
 
 class WebPanel(Producer):
-    def __init__(self, timeout=timedelta(seconds=5)):
+    def __init__(self, device_ip, timeout=timedelta(seconds=5)):
         super().__init__()
-        self.ip = which_is_device_ip()
+        self.ip = device_ip
         self.tree: dict = None
         self.timeout = timeout.total_seconds()
         self.res = WebPanelState('0', '0', '0')

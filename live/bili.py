@@ -39,3 +39,4 @@ class BiliLive(Live):
 
         except Exception as e:
             self.res = (LiveState.Error, str(e))
+            self.find_available()

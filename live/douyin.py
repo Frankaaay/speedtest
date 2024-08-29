@@ -39,3 +39,4 @@ class DouyinLive(Live):
 
         except SEexceptions.WebDriverException as e:
             self.res = (LiveState.Error, str(e))
+            self.find_available()

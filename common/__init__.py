@@ -10,7 +10,8 @@ class Recorder:
         self.file = file
 
     def record(self, res):
-        self.file.write(f"{res}\n")
+        if self.file is not None:
+            self.file.write(f"{res}\n")
 
     def flush(self):
         if self.file is not None:
@@ -126,8 +127,3 @@ class SequenceFullSecond(Sequence):
     def update(self):
         wait_full_second(self.interval)
         self.res = self.obj.get()
-
-
-class SequenceConsumed(Sequence):
-    def update(self):
-        self.res = self.obj.consume()

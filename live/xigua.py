@@ -58,8 +58,6 @@ class Xigua(Live):
             else:
                 self.res = (LiveState.Normal, None)
 
-        except SEexceptions.WebDriverException as e:
-            self.res = (LiveState.Error, str(e))
-
         except Exception as e:
             self.res = (LiveState.Error, str(e))
+            self.goto_room('6562025890606219790')
