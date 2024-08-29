@@ -1,4 +1,4 @@
-*/__pycache__/
+__pycache__/
 logs/
 reports/
 *_rs
@@ -6,3 +6,4 @@ reports/
 build/
 dist/
 *.spec
+/whereami/*

@@ -18,10 +18,10 @@ class SpeedTestResult:
         self.ul = ul
 
     def __repr__(self) -> str:
-        return f"lag={self.lag}, jit={self.jit}, dl={self.dl}, ul={self.ul}"
+        return f"lag={self.lag} jit={self.jit} dl={self.dl} ul={self.ul}"
 
 
-default_urls = [
+URLS = [
     "http://wsus.sjtu.edu.cn/speedtest/",
     "http://speed.neu.edu.cn/",
     "http://test.ustc.edu.cn/",
@@ -31,9 +31,9 @@ default_urls = [
 
 
 class SpeedTester(Producer):
-    def __init__(self, browser='Edge', headless=True, timeout=timedelta(seconds=60), urls=default_urls):
+    def __init__(self, headless=True, timeout=timedelta(seconds=60), urls=URLS):
         super().__init__()
-        self.driver = web_driver(browser, headless)
+        self.driver = web_driver(headless)
         self.driver.implicitly_wait(5)
         self.timeout = timeout.total_seconds()
         self.urls = urls
@@ -52,5 +52,6 @@ class SpeedTester(Producer):
         jit = self.driver.find_element(By.ID, "jitText").text
         dl = self.driver.find_element(By.ID, "dlText").text
         ul = self.driver.find_element(By.ID, "ulText").text
+
         self.res = SpeedTestResult(
             float(lag), float(jit), float(dl), float(ul))

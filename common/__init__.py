@@ -10,7 +10,8 @@ class Recorder:
         self.file = file
 
     def record(self, res):
-        self.file.write(f"{res}\n")
+        if self.file is not None:
+            self.file.write(f"{res}\n")
 
     def flush(self):
         if self.file is not None:
@@ -60,6 +61,35 @@ class Producer:
             recorder.flush()
 
 
+class AutoFlush(Producer):
+    def __init__(self, obj: Producer, interval: timedelta):
+        super().__init__()
+        self.obj = obj
+        self.interval = interval
+        self.last_flush = time()
+
+    def update(self):
+        super().update()
+        self.obj.update()
+        self.res = self.obj.get()
+        if time() - self.last_flush > self.interval.total_seconds():
+            self.flush()
+            self.obj.flush()
+            self.last_flush = time()
+
+    def flush(self):
+        super().flush()
+        self.obj.flush()
+
+    def stop(self):
+        super().stop()
+        self.obj.stop()
+
+    def record(self):
+        super().record()
+        self.obj.record()
+
+
 class Sequence(Thread, Producer):
     def __init__(self, obj: Producer, interval: timedelta):
         Thread.__init__(self)
@@ -97,8 +127,3 @@ class SequenceFullSecond(Sequence):
     def update(self):
         wait_full_second(self.interval)
         self.res = self.obj.get()
-
-
-class SequenceConsumed(Sequence):
-    def update(self):
-        self.res = self.obj.consume()
