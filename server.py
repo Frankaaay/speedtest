@@ -1,11 +1,15 @@
 import pandas as pd
-from dash import Dash, dcc, html, dash_table, Input, Output, State 
+from dash import Dash, dcc, html, dash_table, Input, Output, State
 import math
 import numpy as np
 import plotly.graph_objs as go
 import datetime
 from stable import summary
 import bisect
+import os
+import threading
+import webbrowser
+
 
 #storing data for updating graphs
 class DataPing:
@@ -137,7 +141,7 @@ class DataPing:
 
         return graph
         
-        
+
 
 class DataStuck:
     def __init__(self, data: pd.DataFrame):
@@ -148,19 +152,43 @@ class DataStuck:
         data =  self.data[(self.data['start'] >= start) & (self.data['end'] <= end)]
         return data
 
+# Function to list folders in the fixed path
+def get_folders(path):
+    if os.path.isdir(path):
+        # List all folders in the given path
+        folders = [f for f in os.listdir(path) if os.path.isdir(os.path.join(path, f))]
+        return [{'label': folder, 'value': os.path.join(path, folder)} for folder in folders]
+    return []
 
-# path = sys.argv[1]
-path = r"D:\fly\speedtest\log\2024-08-27_17-53"
-data_ping = DataPing(pd.read_csv(f'{path}/ping.csv'))
-data_stuck = DataStuck(pd.read_csv(f'{path}/stuck.csv'))
-data_ping.construct_data()
 
-app = Dash(__name__)
+
+path = r".\log"
+data_ping = DataPing(pd.read_csv(r"empty\ping.csv"))
+data_stuck = DataStuck(pd.read_csv(r"empty\stuck.csv"))
+
+app = Dash(__name__, title = "耐测王")
 
 # Layout of the app
 app.layout = html.Div([
-    html.H1(f"192断网次数:            {data_ping.inf192},     高延迟： {data_ping.lag192}", id = "192c"),
-    html.H1(f"www断网次数:            {data_ping.infwww}      高延迟： {data_ping.lagwww}", id = "wwwc"),
+    dcc.Dropdown(
+        id='folders-dropdown',
+        options=get_folders(path),  # Populate with folders from the fixed path
+        value=None,
+        placeholder="Select a folder",
+        style={'fontSize': '18px', 'marginBottom': '20px'}  # Add margin bottom
+    ),
+
+    html.Button(
+        'Select Folder',
+        id='select-folder-button', 
+        n_clicks=0,
+        style={'fontSize': '18px', 'padding': '10px 20px', 'marginBottom': '30px'}  # Add margin bottom for spacing
+    ),
+
+    html.Div(id='output-folder-path', style={'marginBottom': '20px'}),  # Add margin bottom
+    
+    html.H1(f"192断网次数: {data_ping.inf192}, 高延迟： {data_ping.lag192}", id="192c", style={'marginBottom': '20px'}),  # Add margin bottom
+    html.H1(f"www断网次数: {data_ping.infwww} 高延迟： {data_ping.lagwww}", id="wwwc", style={'marginBottom': '20px'}),  # Add margin bottom
     html.H1("192:"),
     # mean, max, low, std
     html.H1(
@@ -173,15 +201,21 @@ app.layout = html.Div([
     ),
     html.H1("www:"),
     html.H1(
-        f"  平均值: {data_ping.statswww[0]}"
-        f"  最大值: {data_ping.statswww[1]}"
-        f"  最小值: {data_ping.statswww[2]}"
-        f"  平均差: {data_ping.statswww[3]}",
+        f"  平均值: {data_ping.statswww[0]}  "
+        f"最大值: {data_ping.statswww[1]}  "
+        f"最小值: {data_ping.statswww[2]}  "
+        f"平均差: {data_ping.statswww[3]}",
         id="statswww",
-        style={'whiteSpace': 'pre-line'}
+        style={'whiteSpace': 'pre-line', 'marginBottom': '20px'}  # Add margin bottom for spacing
     ),
-    html.H1("显示起点"),
-    dcc.Slider(0, 1,
+
+    html.H1(
+        "显示起点",
+        style={'marginBottom': '20px'}  # Add margin bottom for spacing
+    ),
+
+    dcc.Slider(
+        0, 1,
         step=1e-6,
         marks=None,
         value=0,
@@ -222,15 +256,20 @@ app.layout = html.Div([
     Output("wwwc", "children"),
     Output("stats192", "children"),
     Output("statswww", "children"),
+
+    Input('select-folder-button', 'n_clicks'),
     Input('range-raw', 'value'), 
     Input('start-from-raw', 'value'),
-    Input('stuck-table', 'active_cell'),
-    # 获取筛选后的数据 ??? stupid things!!!
-    State('stuck-table', 'derived_viewport_data')
+
+    State('folders-dropdown', 'value')
 )
-#getting the new range for updating the graph(two bars)
-def update_range(range_raw, start_raw, active_cell, table):
-    global data_ping, data_stuck
+#getting the new range for updating the graph(two bars), positional arguments, same order with call back
+def update_range(n_clicks, range_raw, start_raw, selected_folder):
+    global data_stuck, data_ping
+    if n_clicks > 0 and selected_folder:
+        data_ping = DataPing(pd.read_csv(f'{selected_folder}\ping.csv'))
+        data_stuck = DataStuck(pd.read_csv(f'{selected_folder}\stuck.csv'))
+        data_ping.construct_data()
 
     if range_raw is not None:
         if start_raw is None:
@@ -262,6 +301,7 @@ def update_range(range_raw, start_raw, active_cell, table):
             f"  最小值: {data_ping.statswww[2]}"
             f"  平均差: {data_ping.statswww[3]}"
             )
+
             
 #second graph's callback
 @app.callback(
@@ -280,6 +320,10 @@ def update_subgraph(active_cell, table):
 
     return (data_ping.graph_ping2)
 
+# Function to open the browser automatically
+def open_browser():
+    webbrowser.open_new("http://127.0.0.1:8050/")
 
 if __name__ == '__main__':
-    app.run_server(debug=True)
+    threading.Timer(1, open_browser).start()
+    app.run_server(debug = False)
