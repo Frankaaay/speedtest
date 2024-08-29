@@ -12,7 +12,7 @@ record_device = tk.BooleanVar(value=True)
 tk.Checkbutton(root, text="记录设备状态", variable=record_device).pack()
 
 # 输入框
-tk.Label(root, text="设备ip地址").pack()
+tk.Label(root, text="设备IP地址").pack()
 device_ip = tk.Entry(root)
 device_ip.insert(0, utils.which_is_device_ip())
 device_ip.pack()

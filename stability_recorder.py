@@ -62,8 +62,10 @@ class Console(Recorder):
     def record(self, data: tuple[datetime, dict[str, float], webpanel.WebPanelState]):
         time, pings, state = data
         time_str = time.strftime('%m-%d %H:%M:%S')
-        self.file.write(f"Ping:          {', '.join(
-            [str(pings[self.targets[t]])+'ms' for t in self.target_name])} {state.rsrp}, {state.sinr}, {state.band}\n")
+        self.file.write(
+            f"Ping: {','.join([str(pings[self.targets[t]])+'ms' for t in self.target_name])}")
+        self.file.write(
+            f"State:{state.rsrp}, {state.sinr}, {state.band}\n")
 
 
 ips = {
