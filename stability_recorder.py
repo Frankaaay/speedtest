@@ -119,3 +119,22 @@ class Main:
     def stop(self):
         self.log.stop()
         self.living.stop()
+
+
+if __name__ == '__main__':
+    device = input("记录设备状态 [Y/n] 默认启用:").lower() != 'n'
+
+    platform = input("平台 [b]站/[d]抖音/[x]西瓜/[a]爱奇艺:").lower()
+    room_id = input("房间号 (可不填):").strip()
+
+    platform = {'b': 'B站', 'd': '抖音', 'x': '西瓜',
+                'a': '爱奇艺'}.get(platform, 'B站')
+
+    try:
+        obj = Main(device, platform, room_id)
+    except KeyboardInterrupt:
+        pass
+    except Exception as e:
+        print(e)
+    finally:
+        obj.stop()
