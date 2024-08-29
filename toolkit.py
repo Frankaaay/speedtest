@@ -1,25 +1,20 @@
 import tkinter as tk
 import subprocess
+import threading
 
-def run_script_1():
-    subprocess.run(["python", "server.py"])
-
-def run_script_2():
-    subprocess.run(["python", "script2.py"])
-
-def run_script_3():
-    subprocess.run(["python", "server.py"])
+def run_script(script_name):
+    # Run the script in a separate thread
+    thread = threading.Thread(target=subprocess.run, args=(["python", script_name],))
+    thread.start()
 
 # Create the main window
 root = tk.Tk()
-root.title("Fancy Script Runner")
-
-# Set a larger window size
-root.geometry("600x400")
-root.configure(bg="#282c34")  # Dark background
+root.title("大力王")
+root.geometry("1000x800")
+root.configure(bg="#282c34")
 
 # Create a title label with fancy font and color
-title_label = tk.Label(root, text="Select a Script to Run", font=("Helvetica", 24, "bold"), fg="#61dafb", bg="#282c34")
+title_label = tk.Label(root, text="请选择你的王", font=("Helvetica", 24, "bold"), fg="#61dafb", bg="#282c34")
 title_label.pack(pady=20)
 
 # Create a frame to hold buttons with padding and background
@@ -40,17 +35,17 @@ button_style = {
 }
 
 # Create and place buttons with fancy styles
-button1 = tk.Button(button_frame, text="耐测王", command=run_script_1, **button_style)
+button1 = tk.Button(button_frame, text="耐测王", command=lambda: run_script("./gui_speed_recorder.pyw"), **button_style)
 button1.grid(row=0, column=0, padx=20, pady=10)
 
-button2 = tk.Button(button_frame, text="Run Script 2", command=run_script_2, **button_style)
+button2 = tk.Button(button_frame, text="耐看王", command=lambda: run_script("./gui_stability_recorder.pyw"), **button_style)
 button2.grid(row=0, column=1, padx=20, pady=10)
 
-button3 = tk.Button(button_frame, text="Run Script 3", command=run_script_3, **button_style)
+button3 = tk.Button(button_frame, text="金山画王", command=lambda: run_script("server.pyw"), **button_style)
 button3.grid(row=1, column=0, columnspan=2, pady=10)
 
 # Create a footer label
-footer_label = tk.Label(root, text="© 2024 My Script Runner", font=("Helvetica", 12), fg="#888", bg="#282c34")
+footer_label = tk.Label(root, text="© 2024 Flymodem", font=("Helvetica", 12), fg="#888", bg="#282c34")
 footer_label.pack(side="bottom", pady=20)
 
 # Start the GUI event loop

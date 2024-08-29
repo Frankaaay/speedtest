@@ -22,7 +22,7 @@ class Console(Recorder):
 class Main(Producer):
     def __init__(self, urls, save_log: bool):
         super().__init__()
-        self.obj = SpeedTester(False, urls=urls)
+        self.obj = SpeedTester(True, urls=urls)
         now = datetime.now().strftime("%Y-%m-%d_%H-%M")
         self.obj.add_recorder(Console(sys.stdout))
 
