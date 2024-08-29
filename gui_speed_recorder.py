@@ -27,13 +27,16 @@ def delete_item():
 
 
 class Result2Display(common.Recorder):
-    def __init__(self, table):
+    def __init__(self, table: ttk.Treeview):
         super().__init__(None)
         self.table = table
+        self.len = 0
 
     def record(self, res: speedspider.SpeedTestResult):
-        if len(self.table) > 10:
-            data.pop(0)
+        if self.len > 10:
+            self.table.delete(self.table.get_children()[0])
+        else:
+            self.len += 1
         self.table.insert("", tk.END,
                           values=(res.lag, res.jit, res.ul, res.dl))
 
@@ -121,14 +124,11 @@ edit_frame.pack()
 
 columns = ("延迟", "抖动", "上传", "下载")
 tree = ttk.Treeview(root, columns=columns, show="headings")
-data = []
 for col in columns:
     tree.heading(col, text=col)
-for row in data:
-    tree.insert("", tk.END, values=row)
 tree.pack(expand=True, fill=tk.X)
 
-copy_button = tk.Button(root, text="复制到剪贴板",
+copy_button = tk.Button(root, text="复制选中到剪贴板",
                         command=copy_selected_to_clipboard)
 copy_button.pack()
 
