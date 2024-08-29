@@ -58,8 +58,12 @@ def start_button_clicked():
     utils.browser_name = browser_option.get()
 
     obj = stability_recorder.Main(record_device.get(),
+                                  device_ip.get(),
                                   live_option.get(),
-                                  room_id.get())
+                                  room_id.get(),
+                                  {'ping_www': 'www.baidu.com',
+                                   'ping_192': device_ip.get()}
+                                  )
 
 
 def stop_button_clicked():
@@ -92,8 +96,8 @@ class StdoutRedirector:
 
     def write(self, message):
         self.text_widget.config(state="normal")  # 允许编辑
-        self.text_widget.insert("end", message)  # 在文本框末尾插入消息
-        self.text_widget.see("end")
+        self.text_widget.insert(tk.END, message)  # 在文本框末尾插入消息
+        self.text_widget.see(tk.END)
         self.text_widget.config(state="disabled")  # 禁止编辑
 
     def flush(self):

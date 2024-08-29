@@ -68,16 +68,10 @@ class Console(Recorder):
             f"State:{state.rsrp}, {state.sinr}, {state.band}\n")
 
 
-ips = {
-    'ping_192': utils.which_is_device_ip(),
-    'ping_www': 'www.baidu.com',
-}
-
-
 class Main:
-    def __init__(self, record_device: bool, platform: str, room_id: str | None = None):
+    def __init__(self, record_device: bool, device_ip: str, platform: str, room_id: str | None = None, ips: dict = dict()):
         if record_device:
-            device = Sequence(webpanel.WebPanel_FM(),
+            device = Sequence(webpanel.WebPanel_FM(device_ip),
                               interval=timedelta(seconds=2))
             device.start()
         else:
@@ -123,20 +117,27 @@ class Main:
         self.living.stop()
 
 
-if __name__ == '__main__':
-    device = input("记录设备状态 [Y/n] 默认启用:").lower() != 'n'
+# if __name__ == '__main__':
+#     device = input(
+#         f"记录设备{utils.which_is_device_ip()}状态 [Y/n] 默认启用:").lower() != 'n'
 
-    platform = input("平台 [b]站/[d]抖音/[x]西瓜/[a]爱奇艺:").lower()
-    room_id = input("房间号 (可不填):").strip()
+#     platform = input("平台 [b]站/[d]抖音/[x]西瓜/[a]爱奇艺:").lower()
+#     room_id = input("房间号 (可不填):").strip()
 
-    platform = {'b': 'B站', 'd': '抖音', 'x': '西瓜',
-                'a': '爱奇艺'}.get(platform, 'B站')
+#     platform = {'b': 'B站', 'd': '抖音', 'x': '西瓜',
+#                 'a': '爱奇艺'}.get(platform, 'B站')
 
-    try:
-        obj = Main(device, platform, room_id)
-    except KeyboardInterrupt:
-        pass
-    except Exception as e:
-        print(e)
-    finally:
-        obj.stop()
+#     try:
+#         obj = Main(device,
+#                    utils.which_is_device_ip(),
+#                    platform,
+#                    room_id,
+#                    {'ping_www': 'www.baidu.com',
+#                     'ping_192': utils.which_is_device_ip()})
+#     except KeyboardInterrupt:
+#         pass
+#     except Exception as e:
+#         print(e)
+#         raise e
+#     finally:
+#         obj.stop()
