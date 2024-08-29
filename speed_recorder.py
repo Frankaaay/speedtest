@@ -9,9 +9,9 @@ class Reporter(Recorder):
         self.file.write("time,lag,jit,download,upload\n")
 
     def record(self, res: SpeedTestResult):
-        now = datetime.now().strftime("%m/%d %H:%M:%S")
+        now = datetime.now().strftime("%m-%d %H:%M:%S")
         self.file.write(
-            f"{now},{res.lag},{res.jit},{res.download},{res.upload}\n")
+            f"{now},{res.lag},{res.jit},{res.dl},{res.ul}\n")
 
 
 class Console(Recorder):
@@ -19,20 +19,17 @@ class Console(Recorder):
         self.file.write(f"{res}\n")
 
 
-class Main(Producer):
-    def __init__(self, urls, save_log: bool):
-        super().__init__()
-        self.obj = SpeedTester(True, urls=urls)
+
+
+def Main(urls, save_log: bool) -> SpeedTester:
+        obj = SpeedTester(True, urls=urls)
         now = datetime.now().strftime("%Y-%m-%d_%H-%M")
-        self.obj.add_recorder(Console(sys.stdout))
+        obj.add_recorder(Console(sys.stdout))
 
         if save_log:
             import os
             os.makedirs(f"log/", exist_ok=True)
-            self.obj.add_recorder(
+            obj.add_recorder(
                 Reporter(open(f"log/{now}-speed.csv", 'w', encoding='utf-8-sig')))
+        return obj
 
-    def update(self):
-        super().update()
-        self.obj.update()
-        self.res = self.obj.get()
