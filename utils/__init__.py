@@ -5,10 +5,10 @@ import time
 from datetime import datetime, timedelta
 from selenium import webdriver
 
+browser_name = 'Edge'
 
-def web_driver(browser_name: str, headless: bool = False):
-    browser_name = browser_name.title()
 
+def _web_driver(browser_name, headless: bool = False):
     if browser_name == "Edge":
         options = webdriver.EdgeOptions()
         if headless:
@@ -32,6 +32,10 @@ def web_driver(browser_name: str, headless: bool = False):
         raise ValueError(f"{browser_name} is not supported")
 
 
+def web_driver(headless: bool = False):
+    return _web_driver(browser_name, headless)
+
+
 def wait_full_second(delta=timedelta(seconds=1), now=datetime.now()):
     # Calculate the time until the next second
     next_second = (now + delta).replace(microsecond=0)
@@ -49,7 +53,6 @@ def which_is_device_ip():
     # 替换 .1
     ip_addresses = [re.sub(r'\.\d+$', '.1', ip) for ip in ip_addresses]
     ip = min(ip_addresses)
-    print(f"设备IP: {ip}")
     return ip
 
 

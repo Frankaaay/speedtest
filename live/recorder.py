@@ -4,7 +4,7 @@ from time import strftime
 
 
 class Console(Recorder):
-    def __init__(self, file=sys.stderr):
+    def __init__(self, file):
         super().__init__(file)
 
     def record(self, res: tuple[LiveState, str | None]):

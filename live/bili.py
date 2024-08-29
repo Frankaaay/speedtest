@@ -5,12 +5,12 @@ from selenium.common import exceptions as SEexceptions
 
 
 class BiliLive(Live):
-    def __init__(self, browser_name: str = 'Edge', room_id=None, interval=timedelta(seconds=0.1)):
-        super().__init__(browser_name, 'https://live.bilibili.com/', room_id, interval)
+    def __init__(self, room_id=None, interval=timedelta(seconds=0.1)):
+        super().__init__('https://live.bilibili.com/', room_id, interval)
 
-    def find_available_live(self):
+    def find_available(self):
         i = random.randint(2, 5)
-        super().find_available_live(lambda driver: driver.find_element(
+        super().find_available(lambda driver: driver.find_element(
             By.XPATH, f'/html/body/div[1]/div/div[5]/div[3]/div/div[2]/div[1]/div[1]/a[{i}]').get_attribute('href'))
 
     def update(self):
@@ -22,7 +22,7 @@ class BiliLive(Live):
             try:
                 self.driver.find_element(
                     By.CLASS_NAME, "web-player-ending-panel")
-                self.find_available_live()
+                self.find_available()
                 self.res = (LiveState.End, None)
             except SEexceptions.NoSuchElementException:
                 pass
@@ -39,3 +39,4 @@ class BiliLive(Live):
 
         except Exception as e:
             self.res = (LiveState.Error, str(e))
+            self.find_available()
