@@ -45,8 +45,8 @@ class Log(Recorder):
     def record(self, data: tuple[datetime, dict[str, float], webpanel.WebPanelState]):
         time, pings, state = data
         time_str = time.strftime('%m-%d %H:%M:%S')
-        self.file.write(f"{time_str},{','.join([str(pings[self.targets[t]]) for t in self.target_name])},{
-                        state.rsrp},{state.sinr},{state.band}\n")
+        self.file.write(
+            f"{time_str},{','.join([str(pings[self.targets[t]]) for t in self.target_name])},{state.rsrp},{state.sinr},{state.band}\n")
 
 
 class Console(Recorder):
