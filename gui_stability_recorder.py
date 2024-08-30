@@ -4,6 +4,22 @@ import utils
 import sys
 import stability_recorder
 
+class StdoutRedirector:
+    def __init__(self, text_widget):
+        self.text_widget = text_widget
+
+    def write(self, message):
+        self.text_widget.config(state="normal")  # 允许编辑
+        self.text_widget.insert(tk.END, message)  # 在文本框末尾插入消息
+        self.text_widget.see(tk.END)
+        self.text_widget.config(state="disabled")  # 禁止编辑
+
+    def flush(self):
+        pass
+
+    def close(self):
+        pass
+    
 def main(root):
     root.title("直播稳定性检测")
 
@@ -18,7 +34,7 @@ def main(root):
     device_ip.pack()
 
     # 单选列表
-    options = ["B站", "抖音", "西瓜", "Youtube"]
+    options = ["B站", "抖音", "西瓜", "OFF"]
     live_option = tk.StringVar()
     live_option.set(options[0])
     live_frame = ttk.Frame(root)
@@ -91,21 +107,6 @@ def main(root):
     output_text.pack()
 
 
-    class StdoutRedirector:
-        def __init__(self, text_widget):
-            self.text_widget = text_widget
-
-        def write(self, message):
-            self.text_widget.config(state="normal")  # 允许编辑
-            self.text_widget.insert(tk.END, message)  # 在文本框末尾插入消息
-            self.text_widget.see(tk.END)
-            self.text_widget.config(state="disabled")  # 禁止编辑
-
-        def flush(self):
-            pass
-
-        def close(self):
-            pass
 
 
     # 重定向 stdout 和 stderr

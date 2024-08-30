@@ -37,7 +37,7 @@ def main(root):
             else:
                 self.len += 1
             self.table.insert("", tk.END,
-                            values=(res.lag, res.jit, res.ul, res.dl))
+                            values=(res.lag, res.jit, res.dl, res.ul))
 
 
     def start_button_clicked():
@@ -102,11 +102,12 @@ def main(root):
     delete_button.pack(side=tk.LEFT)
     edit_frame.pack()
 
-
+    no_name_frame_0 = ttk.Frame(root)
     save_log = tk.BooleanVar(value=True)
-    tk.Checkbutton(root, text="保存结果到文件", variable=save_log).pack()
+    tk.Checkbutton(no_name_frame_0, text="保存结果到文件", variable=save_log).pack(side=tk.LEFT)
     headless = tk.BooleanVar(value=True)
-    tk.Checkbutton(root, text="浏览器无头", variable=headless).pack()
+    tk.Checkbutton(no_name_frame_0, text="浏览器无头", variable=headless).pack(side=tk.LEFT)
+    no_name_frame_0.pack()
 
     custom_frame = ttk.Frame(root)
     tk.Label(custom_frame, text="每隔").pack(side=tk.LEFT)
@@ -123,7 +124,7 @@ def main(root):
     stop_button.pack(side=tk.RIGHT)
     edit_frame.pack()
 
-    columns = ("延迟", "抖动", "上传", "下载")
+    columns = ("延迟", "抖动", "下载", "上传")
     tree = ttk.Treeview(root, columns=columns, show="headings")
     for col in columns:
         tree.heading(col, text=col)
