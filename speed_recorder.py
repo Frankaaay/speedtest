@@ -22,7 +22,7 @@ class Console(Recorder):
 
 
 def Main(urls, save_log: bool, headless: bool) -> SpeedTester:
-        obj = SpeedTester(headless, urls)
+        obj = SpeedTester(headless,timedelta(minutes=2), urls)
         now = datetime.now().strftime("%Y-%m-%d_%H-%M")
         # obj.add_recorder(Console(sys.stderr))
 

@@ -5,7 +5,7 @@ import common
 from datetime import timedelta
 import speed_recorder
 
-def main():
+def main(root):
     def add_item():
         item = add_url.get()
         if item:
@@ -83,7 +83,6 @@ def main():
             print("选中的数据已复制到剪贴板")
 
 
-    root = tk.Tk()
     root.title("定时测速")
 
     # 创建默认项列表
@@ -135,7 +134,7 @@ def main():
 
     obj = None
 
-    root.mainloop()
-
 if __name__ == "__main__":
-    main()
+    root = tk.Tk()
+    main(root)
+    root.mainloop()

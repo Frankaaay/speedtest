@@ -4,8 +4,7 @@ import utils
 import sys
 import stability_recorder
 
-def main():
-    root = tk.Tk()
+def main(root):
     root.title("直播稳定性检测")
 
     # 勾选项
@@ -63,7 +62,8 @@ def main():
                                     live_option.get(),
                                     room_id.get(),
                                     {'ping_www': 'www.baidu.com',
-                                    'ping_192': device_ip.get()}
+                                    'ping_192': device_ip.get()},
+                                    stdout=StdoutRedirector(output_text),
                                     )
 
 
@@ -109,9 +109,10 @@ def main():
 
 
     # 重定向 stdout 和 stderr
-    sys.stdout = StdoutRedirector(output_text)
+    # sys.stdout = StdoutRedirector(output_text)
     # sys.stderr = StdoutRedirector(output_text)
 
-    root.mainloop()
 if __name__ == "__main__":
-    main()
+    root = tk.Tk()
+    main(root)
+    root.mainloop()

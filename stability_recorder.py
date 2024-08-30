@@ -66,7 +66,7 @@ class Console(Recorder):
 
 
 class Main:
-    def __init__(self, record_device: bool, device_ip: str, platform: str, room_id: str | None = None, ips: dict = dict()):
+    def __init__(self, record_device: bool, device_ip: str, platform: str, room_id: str | None = None, ips: dict = dict(), stdout=sys.stdout):
         if record_device:
             device = Sequence(webpanel.WebPanel_FM(device_ip),
                               interval=timedelta(seconds=2))
@@ -92,7 +92,7 @@ class Main:
 
         living.add_recorder(live.Reporter(
             open(f"log/{now}/stuck.csv", 'w', encoding='utf-8-sig'), threshold=1))
-        living.add_recorder(live.Console(file=sys.stdout))
+        living.add_recorder(live.Console(file=stdout))
         # living = AutoFlush(living, timedelta(seconds=5))
         living = Sequence(living, interval=timedelta(seconds=0.2))
         living.start()
@@ -101,7 +101,7 @@ class Main:
         log = AutoFlush(log, timedelta(seconds=5))
         log.add_recorder(
             Log(open(f"log/{now}/ping.csv", 'w', encoding='utf-8-sig'), ips))
-        log.add_recorder(Console(sys.stdout, ips))
+        log.add_recorder(Console(stdout, ips))
 
         log = SequenceFullSecond(log, interval=timedelta(seconds=1))
         log.start()
