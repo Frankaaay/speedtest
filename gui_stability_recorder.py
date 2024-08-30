@@ -9,7 +9,7 @@ def main():
     root.title("直播稳定性检测")
 
     # 勾选项
-    record_device = tk.BooleanVar(value=True)
+    record_device = tk.BooleanVar(value=False)
     tk.Checkbutton(root, text="记录设备状态", variable=record_device).pack()
 
     # 输入框
@@ -110,7 +110,7 @@ def main():
 
     # 重定向 stdout 和 stderr
     sys.stdout = StdoutRedirector(output_text)
-    sys.stderr = StdoutRedirector(output_text)
+    # sys.stderr = StdoutRedirector(output_text)
 
     root.mainloop()
 if __name__ == "__main__":

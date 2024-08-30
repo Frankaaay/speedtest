@@ -62,7 +62,7 @@ class Console(Recorder):
         self.file.write(
             f"Ping: {','.join([str(pings[self.targets[t]])+'ms' for t in self.target_name])}")
         self.file.write(
-            f"State:{state.rsrp}, {state.sinr}, {state.band}\n")
+            f"  State:{state.rsrp}, {state.sinr}, {state.band}\n")
 
 
 class Main:

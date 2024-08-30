@@ -42,24 +42,24 @@ class DataPing:
         #wws
         temp = 0
         for row in self.data.iterrows():
-            if np.isinf(row[1]['ip_www']):
+            if np.isinf(row[1]['ping_www']):
                 self.inf_indices_www.append(row[1]['time'])
                 self.inf_values_www.append(temp)
                 self.infwww += 1
             else:
-                temp= row[1]['ip_www']
-                if row[1]["ip_www"] >= 100:
+                temp= row[1]['ping_www']
+                if row[1]["ping_www"] >= 100:
                     self.lagwww += 1
         #192s
         temp = 0
         for row in self.data.iterrows():
-            if np.isinf(row[1]['ip_192']):
+            if np.isinf(row[1]['ping_192']):
                 self.inf_indices_192.append(row[1]['time'])
                 self.inf_values_192.append(temp)
                 self.inf192 += 1
             else:
-                temp= row[1]['ip_192']
-                if row[1]["ip_192"] >= 100:
+                temp= row[1]['ping_192']
+                if row[1]["ping_192"] >= 100:
                     self.lag192 += 1
 
     #update everytimes the state changes, works for both graph, 
@@ -103,17 +103,17 @@ class DataPing:
         #drawing lines
         graph.add_trace(go.Scatter(
             x=data['time'],
-            y=data['ip_www'],
+            y=data['ping_www'],
             mode='lines',
-            name='ip_www',
+            name='ping_www',
             marker=dict(color='#22aaff'),
             hovertext = hovertext,
         ))
         graph.add_trace(go.Scatter(
             x=data['time'],
-            y=data['ip_192'],
+            y=data['ping_192'],
             mode='lines',
-            name='ip_192',
+            name='ping_192',
             marker=dict(color='#8888ff'),
             hovertext = hovertext
         ))
@@ -136,8 +136,8 @@ class DataPing:
         ))
 
         #stats
-        self.stats192 = summary.summarize(data, "ip_192")
-        self.statswww = summary.summarize(data, "ip_www")
+        self.stats192 = summary.summarize(data, "ping_192")
+        self.statswww = summary.summarize(data, "ping_www")
 
         return graph
         
@@ -163,8 +163,16 @@ def get_folders(path):
 
 
 path = r".\log"
-data_ping = DataPing(pd.read_csv(r"empty\ping.csv"))
-data_stuck = DataStuck(pd.read_csv(r"empty\stuck.csv"))
+empty_ping = {
+    'time': [0],
+    'ping_www': [0],
+    'ping_192': [0],
+    'rsrp': [0],
+    'sinr': [0],
+    'band': [0],
+    }
+data_ping = DataPing(pd.DataFrame(empty_ping))
+data_stuck = DataStuck(pd.DataFrame({'start': [], 'end': [], 'duration': []}))
 
 app = Dash(__name__, title = "耐测王")
 
@@ -267,8 +275,8 @@ app.layout = html.Div([
 def update_range(n_clicks, range_raw, start_raw, selected_folder):
     global data_stuck, data_ping
     if n_clicks > 0 and selected_folder:
-        data_ping = DataPing(pd.read_csv(f'{selected_folder}\ping.csv'))
-        data_stuck = DataStuck(pd.read_csv(f'{selected_folder}\stuck.csv'))
+        data_ping = DataPing(pd.read_csv(f'{selected_folder}/ping.csv'))
+        data_stuck = DataStuck(pd.read_csv(f'{selected_folder}/stuck.csv'))
         data_ping.construct_data()
 
     if range_raw is not None:
@@ -324,6 +332,6 @@ def update_subgraph(active_cell, table):
 def open_browser():
     webbrowser.open_new("http://127.0.0.1:8050/")
 
-if __name__ == '__main__':
-    threading.Timer(1, open_browser).start()
+def main():
+    threading.Timer(0, open_browser).start()
     app.run_server(debug = False)
