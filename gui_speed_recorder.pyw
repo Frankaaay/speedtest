@@ -41,12 +41,12 @@ def main():
 
 
     def start_button_clicked():
-        nonlocal obj, url_listbox, delta_custom, save_log, tree
+        nonlocal obj, url_listbox, delta_custom, save_log, tree, headless
         if obj is not None:
             return
         delta = timedelta(minutes=float(delta_custom.get()), microseconds=1)
         obj = speed_recorder.Main(
-            url_listbox.get(0, tk.END), save_log.get())
+            url_listbox.get(0, tk.END), save_log.get(), headless.get())
 
         obj.add_recorder(Result2Display(tree))
         obj = common.AutoFlush(obj, timedelta(minutes=30))
@@ -95,7 +95,7 @@ def main():
 
     # 输入框和按钮
     edit_frame = ttk.Frame(root)
-    add_url = tk.Entry(edit_frame, width=40)
+    add_url = tk.Entry(edit_frame, width=38)
     add_url.pack(side=tk.LEFT)
     add_button = tk.Button(edit_frame, text="添加", command=add_item)
     add_button.pack(side=tk.LEFT)
@@ -106,6 +106,8 @@ def main():
 
     save_log = tk.BooleanVar(value=True)
     tk.Checkbutton(root, text="保存结果到文件", variable=save_log).pack()
+    headless = tk.BooleanVar(value=True)
+    tk.Checkbutton(root, text="浏览器无头", variable=headless).pack()
 
     custom_frame = ttk.Frame(root)
     tk.Label(custom_frame, text="每隔").pack(side=tk.LEFT)

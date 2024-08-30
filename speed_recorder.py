@@ -21,10 +21,10 @@ class Console(Recorder):
 
 
 
-def Main(urls, save_log: bool) -> SpeedTester:
-        obj = SpeedTester(headless=False, urls=urls)
+def Main(urls, save_log: bool, headless: bool) -> SpeedTester:
+        obj = SpeedTester(headless, urls)
         now = datetime.now().strftime("%Y-%m-%d_%H-%M")
-        obj.add_recorder(Console(sys.stderr))
+        # obj.add_recorder(Console(sys.stderr))
 
         if save_log:
             import os
