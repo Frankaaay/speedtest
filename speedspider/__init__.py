@@ -2,6 +2,7 @@ from common import *
 from utils import web_driver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.wait import WebDriverWait
+from selenium.common import exceptions as SEexceptions
 import random
 
 
@@ -31,7 +32,7 @@ URLS = [
 
 
 class SpeedTester(Producer):
-    def __init__(self, headless=True, timeout=timedelta(seconds=60), urls=URLS):
+    def __init__(self, headless=True, timeout=timedelta(minutes=2), urls=URLS):
         super().__init__()
         self.driver = web_driver(headless)
         self.driver.implicitly_wait(5)
@@ -45,13 +46,23 @@ class SpeedTester(Producer):
         startStopBtn = self.driver.find_element(By.ID, "startStopBtn")
         if startStopBtn.get_attribute("class") == "":
             startStopBtn.click()
-        WebDriverWait(self.driver, self.timeout).until(
-            lambda driver: int(driver.execute_script("return s.getState()")) == 4)
+        try:
+            WebDriverWait(self.driver, self.timeout).until(
+                lambda driver: int(driver.execute_script("return s.getState()")) == 4)
+            lag = self.driver.find_element(By.ID, "pingText").text
+            jit = self.driver.find_element(By.ID, "jitText").text
+            dl = self.driver.find_element(By.ID, "dlText").text
+            ul = self.driver.find_element(By.ID, "ulText").text
+        except SEexceptions.NoSuchElementException:
+            lag = jit = dl = ul = "nan"
+        except SEexceptions.TimeoutException:
+            lag = jit = dl = ul = "nan"
+        except Exception as e:
+            lag = jit = dl = ul = str(e)
 
-        lag = self.driver.find_element(By.ID, "pingText").text
-        jit = self.driver.find_element(By.ID, "jitText").text
-        dl = self.driver.find_element(By.ID, "dlText").text
-        ul = self.driver.find_element(By.ID, "ulText").text
+        try:
+            self.res = SpeedTestResult(float(lag), float(jit), float(dl), float(ul))
+        except ValueError:
+            self.res = SpeedTestResult(lag, jit, dl, ul)
+            
 
-        self.res = SpeedTestResult(
-            float(lag), float(jit), float(dl), float(ul))
