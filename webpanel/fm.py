@@ -3,29 +3,30 @@ from .api import *
 from utils import web_driver
 from selenium import webdriver
 from selenium.webdriver.common.by import By
+from selenium.common import exceptions as SEexpceptions
 import requests
 import lxml.etree
 
 
-def login_FM(version: str | None = None,  user: str = 'admin', pwd: str = 'admin'):
+def login_FM(ip, version: str | None = None,  user: str = 'admin', pwd: str = 'admin'):
     driver = web_driver(True)
     if version is None:
         try:
             print(f"尝试登录版本 1.3")
-            login_FM_1_3(driver, user, pwd)
-        except Exception as e:
+            login_FM_1_3(driver, ip, user, pwd)
+        except SEexpceptions.WebDriverException as e:
             try:
                 print(f"尝试登录版本 1.2")
-                login_FM_1_2(driver, user, pwd)
-            except Exception as e:
+                login_FM_1_2(driver, ip, user, pwd)
+            except SEexpceptions.WebDriverException  as e:
                 print(f"无法登录设备,请手动操作")
 
     else:
         try:
             if version == '1.3':
-                login_FM_1_3(driver, user, pwd)
+                login_FM_1_3(driver, ip, user, pwd)
             elif version == '1.2':
-                login_FM_1_2(driver, user, pwd)
+                login_FM_1_2(driver, ip, user, pwd)
         except Exception as e:
             print(f"无法登录设备,请手动操作")
     driver.close()
@@ -39,12 +40,11 @@ def login_FM_1_3(driver: webdriver.Edge, ip: str, user: str, password: str):
     usr.clear()
     usr.send_keys(user)
     pwd = driver.find_element(
-        By.XPATH, '//*[@id="app"]/div/div/div[1]/div/div/div[3]/form/div[2]/div[1]/div/div[1]/div[2]/input')
+        By.XPATH, '//input[@placeholder="Password"]')
     pwd.clear()
     pwd.send_keys(password)
     driver.find_element(
         By.XPATH, '//*[@id="app"]/div/div/div[1]/div/div/button').click()
-    time.sleep(1)
 
 
 def login_FM_1_2(driver: webdriver.Edge, ip: str, user: str, password: str):
@@ -57,7 +57,6 @@ def login_FM_1_2(driver: webdriver.Edge, ip: str, user: str, password: str):
     pwd.clear()
     pwd.send_keys(password)
     driver.find_element(By.ID, 'btnSignIn').click()
-    time.sleep(1)
 
 
 class WebPanel_FM(WebPanel):
@@ -92,13 +91,14 @@ class WebPanel_FM(WebPanel):
                 rsrp=self.tree['wan']['lte_rsrp'],
                 sinr=self.tree['wan']['lte_sinr'],
                 band=self.tree['wan']['lte_band'],
+                pci=self.tree['wan']['lte_pci'],
             ).shrink_invalid()
 
         except Exception as e:
             print(e)
             print("无法连接到设备" + self.ip + "可能需要重新登录")
             print("正在重新登录")
-            login_FM()
+            login_FM(self.ip)
 
     def set_band(self, band=0):
         raise NotImplementedError()
@@ -117,5 +117,23 @@ class WebPanel_FM(WebPanel):
 
         res = requests.post(
             f"http://{self.ip}/xml_action.cgi", data, params, headers=headers)
+        print(res.content)
+        self.update()
+    
+    def reboot(self):
+        raise NotImplementedError()
+        params = {
+            'method': 'get',
+            'module': 'duster',
+            'file': 'reset'
+        }
+        headers = {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'Authorization': 'Digest username="admin", realm="Highwmg", nonce="57263", uri="/cgi/xml_action.cgi", response="7e50a2c227adae5b48fc3ceed4186fe0", qop=auth, nc=0000006D, cnonce="3624919b183e7e43"',
+            'X-Requested-With': 'XMLHttpRequest',
+        }
+
+        res = requests.get(
+            f"http://{self.ip}/xml_action.cgi", params, headers=headers)
         print(res.content)
         self.update()
