@@ -52,8 +52,11 @@ def which_is_device_ip():
         '192.') and not ip.endswith('.1')]
     # 替换 .1
     ip_addresses = [re.sub(r'\.\d+$', '.1', ip) for ip in ip_addresses]
-    ip = min(ip_addresses)
-    return ip
+    if len(ip_addresses) > 0:
+        ip = min(ip_addresses)
+        return ip
+    else: 
+        return 'Not Detected'
 
 
 class ThreadWithReturn(threading.Thread):

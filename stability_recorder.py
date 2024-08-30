@@ -62,11 +62,11 @@ class Console(Recorder):
         self.file.write(
             f"Ping: {','.join([str(pings[self.targets[t]])+'ms' for t in self.target_name])}")
         self.file.write(
-            f"State:{state.rsrp}, {state.sinr}, {state.band}\n")
+            f"  State:{state.rsrp}, {state.sinr}, {state.band}\n")
 
 
 class Main:
-    def __init__(self, record_device: bool, device_ip: str, platform: str, room_id: str | None = None, ips: dict = dict()):
+    def __init__(self, record_device: bool, device_ip: str, platform: str, room_id: str | None = None, ips: dict = dict(), stdout=sys.stdout):
         if record_device:
             device = Sequence(webpanel.WebPanel_FM(device_ip),
                               interval=timedelta(seconds=2))
@@ -76,32 +76,34 @@ class Main:
 
         if len(room_id) == 0:
             room_id = None
-
-        if platform == 'B站':
-            living = live.BiliLive(room_id)
-        elif platform == '抖音':
-            living = live.DouyinLive(room_id)
-        elif platform == '西瓜':
-            living = live.Xigua(room_id)
-        else:
-            living = live.BiliLive(room_id)
-
+        
         now = datetime.now().strftime("%Y-%m-%d_%H-%M")
-
         os.makedirs(f"log/{now}/", exist_ok=True)
+        
+        if platform != 'OFF':
+            if platform == 'B站':
+                living = live.BiliLive(room_id)
+            elif platform == '抖音':
+                living = live.DouyinLive(room_id)
+            elif platform == '西瓜':
+                living = live.Xigua(room_id)
+            else:
+                living = live.BiliLive(room_id)
 
-        living.add_recorder(live.Reporter(
-            open(f"log/{now}/stuck.csv", 'w', encoding='utf-8-sig'), threshold=1))
-        living.add_recorder(live.Console(file=sys.stdout))
-        # living = AutoFlush(living, timedelta(seconds=5))
-        living = Sequence(living, interval=timedelta(seconds=0.2))
-        living.start()
+            living.add_recorder(live.Reporter(
+                open(f"log/{now}/stuck.csv", 'w', encoding='utf-8-sig'), threshold=1))
+            living.add_recorder(live.Console(file=stdout))
+            # living = AutoFlush(living, timedelta(seconds=5))
+            living = Sequence(living, interval=timedelta(seconds=0.2))
+            living.start()
+        else:
+            living = Producer()
 
         log = PingAndState(stable.Pings(list(ips.values())), device)
         log = AutoFlush(log, timedelta(seconds=5))
         log.add_recorder(
             Log(open(f"log/{now}/ping.csv", 'w', encoding='utf-8-sig'), ips))
-        log.add_recorder(Console(sys.stdout, ips))
+        log.add_recorder(Console(stdout, ips))
 
         log = SequenceFullSecond(log, interval=timedelta(seconds=1))
         log.start()

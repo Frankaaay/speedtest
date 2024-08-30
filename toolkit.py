@@ -36,11 +36,16 @@ button_style = {
     "borderwidth": 4,
 }
 
+def open_new_window(f):
+    new_window = tk.Toplevel(root)
+    f(new_window)
+    new_window.mainloop()
+
 # Create and place buttons with fancy styles
-button1 = tk.Button(button_frame, text="耐测王", command=lambda :threading.Thread(target=gui_speed_recorder.main).start(), **button_style)
+button1 = tk.Button(button_frame, text="耐测王", command=lambda :threading.Thread(target=open_new_window,args=(gui_speed_recorder.main,)).start(), **button_style)
 button1.grid(row=0, column=0, padx=20, pady=10)
 
-button2 = tk.Button(button_frame, text="耐看王", command=lambda :threading.Thread(target=gui_stability_recorder.main).start(), **button_style)
+button2 = tk.Button(button_frame, text="耐看王", command=lambda :threading.Thread(target=open_new_window,args=(gui_stability_recorder.main,)).start(), **button_style)
 button2.grid(row=0, column=1, padx=20, pady=10)
 
 button3 = tk.Button(button_frame, text="金山画王", command=lambda :threading.Thread(target=server.main).start(), **button_style)

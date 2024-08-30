@@ -163,8 +163,16 @@ def get_folders(path):
 
 
 path = r".\log"
-data_ping = DataPing(pd.read_csv(r"empty\ping.csv"))
-data_stuck = DataStuck(pd.read_csv(r"empty\stuck.csv"))
+empty_ping = {
+    'time': [0],
+    'ping_www': [0],
+    'ping_192': [0],
+    'rsrp': [0],
+    'sinr': [0],
+    'band': [0],
+    }
+data_ping = DataPing(pd.DataFrame(empty_ping))
+data_stuck = DataStuck(pd.DataFrame({'start': [], 'end': [], 'duration': []}))
 
 app = Dash(__name__, title = "耐测王")
 
@@ -267,8 +275,8 @@ app.layout = html.Div([
 def update_range(n_clicks, range_raw, start_raw, selected_folder):
     global data_stuck, data_ping
     if n_clicks > 0 and selected_folder:
-        data_ping = DataPing(pd.read_csv(f'{selected_folder}\ping.csv'))
-        data_stuck = DataStuck(pd.read_csv(f'{selected_folder}\stuck.csv'))
+        data_ping = DataPing(pd.read_csv(f'{selected_folder}/ping.csv'))
+        data_stuck = DataStuck(pd.read_csv(f'{selected_folder}/stuck.csv'))
         data_ping.construct_data()
 
     if range_raw is not None:
