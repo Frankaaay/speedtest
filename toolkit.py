@@ -1,10 +1,12 @@
 import tkinter as tk
-import subprocess
 import threading
+import server
+import gui_speed_recorder
+import gui_stability_recorder
 
-def run_script(script_name):
-    # Run the script in a separate thread
-    thread = threading.Thread(target=subprocess.run, args=(["python", script_name],))
+# Function to run a script's main function in a new thread
+def run_script(func):
+    thread = threading.Thread(target=func)
     thread.start()
 
 # Create the main window
@@ -35,13 +37,13 @@ button_style = {
 }
 
 # Create and place buttons with fancy styles
-button1 = tk.Button(button_frame, text="耐测王", command=lambda: run_script("./gui_speed_recorder.pyw"), **button_style)
+button1 = tk.Button(button_frame, text="耐测王", command=lambda :threading.Thread(target=gui_speed_recorder.main).start(), **button_style)
 button1.grid(row=0, column=0, padx=20, pady=10)
 
-button2 = tk.Button(button_frame, text="耐看王", command=lambda: run_script("./gui_stability_recorder.pyw"), **button_style)
+button2 = tk.Button(button_frame, text="耐看王", command=lambda :threading.Thread(target=gui_stability_recorder.main).start(), **button_style)
 button2.grid(row=0, column=1, padx=20, pady=10)
 
-button3 = tk.Button(button_frame, text="金山画王", command=lambda: run_script("server.pyw"), **button_style)
+button3 = tk.Button(button_frame, text="金山画王", command=lambda :threading.Thread(target=server.main).start(), **button_style)
 button3.grid(row=1, column=0, columnspan=2, pady=10)
 
 # Create a footer label
