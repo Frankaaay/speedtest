@@ -1,7 +1,7 @@
 import sys
 from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QPushButton, QVBoxLayout, QGridLayout, QFrame
 from PyQt5.QtCore import Qt, QThread, pyqtSignal
-import server
+import server_live
 import gui_speed_recorder
 import gui_stability_recorder
 
@@ -65,7 +65,7 @@ class MainWindow(QWidget):
 
         button3 = QPushButton("金山画王", self)
         button3.setStyleSheet(button_style)
-        button3.clicked.connect(lambda: self.run_script(server.main))
+        button3.clicked.connect(lambda: self.run_script(server_live.main))
         button_layout.addWidget(button3, 1, 0, 1, 2)
 
         # Footer label

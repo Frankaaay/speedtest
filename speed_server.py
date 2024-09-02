@@ -301,8 +301,8 @@ def update_range(n_clicks, range_raw, start_raw, selected_folder):
 
 # Function to open the browser automatically
 def open_browser():
-    webbrowser.open_new("http://127.0.0.1:8050/")
+    webbrowser.open_new("http://127.0.0.1:250/")
 
-# def main():
-#     threading.Timer(0, open_browser).start()
-app.run_server(debug = False)
+def main():
+    threading.Timer(0, open_browser).start()
+    app.run_server(debug = False, port = 250)

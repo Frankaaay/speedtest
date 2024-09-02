@@ -390,5 +390,5 @@ def open_browser():
 
 def main():
     threading.Timer(0, open_browser).start()
-    app.run_server(debug = True)
+    app.run_server(debug = False)
 
