@@ -199,52 +199,49 @@ app.layout = html.Div([
         'Select Folder',
         id='select-folder-button', 
         n_clicks=0,
-        style={'fontSize': '18px', 'padding': '10px 20px', 'marginBottom': '30px'}  # Add margin bottom for spacing
+        style={'fontSize': '18px', 'padding': '10px 20px', 'marginBottom': '30px'}  
     ),
 
     html.Div(id='output-folder-path', style={'marginBottom': '20px'}),  # Add margin bottom
     
-    html.H1(f"192断网次数: {data_ping.inf192_cnt}, 高延迟： {data_ping.lag192_cnt}", id="192c", style={'marginBottom': '20px'}),  # Add margin bottom
-    html.H1(f"www断网次数: {data_ping.infwww_cnt} 高延迟： {data_ping.lagwww_cnt}", id="wwwc", style={'marginBottom': '20px'}),  # Add margin bottom
-    html.H1("192:"),
-    # mean, max, low, std
+    html.H1("192断网次数高延迟", id="192c", style={'marginBottom': '20px'}),  
+    # html.H1("192:"),
     html.H1(
-        f"  平均值: {data_ping.stats192[0]}   "
-        f"  最大值: {data_ping.stats192[1]}   "
-        f"  最小值: {data_ping.stats192[2]}   "
-        f"  平均差: {data_ping.stats192[3]}   ",
+        '192统计数据',
         id="stats192",
         style={'whiteSpace': 'pre-line'}
     ),
-    html.H1("www:"),
+    # html.H1("www:"),
+    html.H1("www断网次数高延迟", id="wwwc", style={'marginBottom': '20px'}),  
     html.H1(
-        f"  平均值: {data_ping.statswww[0]}  "
-        f"最大值: {data_ping.statswww[1]}  "
-        f"最小值: {data_ping.statswww[2]}  "
-        f"平均差: {data_ping.statswww[3]}",
+        'www统计数据',
         id="statswww",
-        style={'whiteSpace': 'pre-line', 'marginBottom': '20px'}  # Add margin bottom for spacing
+        style={'whiteSpace': 'pre-line'}  
     ),
-
-    html.H1(
-        "显示起点",
-        style={'marginBottom': '20px'}  # Add margin bottom for spacing
-    ),
-
-    dcc.Slider(
-        0, 1,
-        step=1e-6,
-        marks=None,
-        value=0,
-        id='start-from-raw',
-    ),
-    html.H1("显示范围"),
-    dcc.Slider(0, 1,
-        step=1e-6,
-        marks=None,
-        value=0.2,
-        id='range-raw',
-    ),
+    html.Div([
+        html.Div([
+            html.H1(
+                "显示起点",
+                style={'marginBottom': '20px'}  
+            ),
+            dcc.Slider(
+                0, 1,
+                step=1e-6,
+                marks=None,
+                value=0,
+                id='start-from-raw',
+            )
+        ], style={}),
+        html.Div([
+            html.H1("显示范围"),
+            dcc.Slider(0, 1,
+                step=1e-6,
+                marks=None,
+                value=0.2,
+                id='range-raw',
+            ),
+        ], style={}),
+    ]),
     
     html.H1(id='range-display'),
     dcc.Graph(id='pings'),
@@ -264,6 +261,25 @@ app.layout = html.Div([
 ], style={'textAlign': 'center', 'font-size': '10px', 'marginTop': '50px', 'marginBottom': '20px'})
 
 
+
+@app.callback(
+    Output('start-from-raw', 'value'),
+    Output('range-raw', 'value'), 
+    Input('select-folder-button', 'n_clicks'),
+
+    State('folders-dropdown', 'value'),
+    prevent_initial_call=True,
+)
+def select_folder(n_clicks, selected_folder):
+    global data_stuck, data_ping
+    # print(n_clicks)
+    if n_clicks > 0 and selected_folder:
+        data_ping = DataPing(pd.read_csv(f'{selected_folder}/ping.csv'))
+        if os.path.exists(f'{selected_folder}/stuck.csv'):
+            data_stuck = DataStuck(pd.read_csv(f'{selected_folder}/stuck.csv'))
+        data_ping.construct_data()
+    return 0, 0.2
+
 # Callback to update the output based on the selected datetime
 @app.callback(
     Output('range-display', 'children'),
@@ -274,20 +290,15 @@ app.layout = html.Div([
     Output("stats192", "children"),
     Output("statswww", "children"),
 
-    Input('select-folder-button', 'n_clicks'),
+    # Input('select-folder-button', 'n_clicks'),
     Input('range-raw', 'value'), 
     Input('start-from-raw', 'value'),
-
-    State('folders-dropdown', 'value')
+    prevent_initial_call=True,
+    # State('folders-dropdown', 'value')
 )
 #getting the new range for updating the graph(two bars), positional arguments, same order with call back
-def update_range(n_clicks, range_raw, start_raw, selected_folder):
+def update_range(range_raw, start_raw):
     global data_stuck, data_ping
-    if n_clicks > 0 and selected_folder:
-        data_ping = DataPing(pd.read_csv(f'{selected_folder}/ping.csv'))
-        if os.path.exists(f'{selected_folder}/stuck.csv'):
-            data_stuck = DataStuck(pd.read_csv(f'{selected_folder}/stuck.csv'))
-        data_ping.construct_data()
 
     if range_raw is not None:
         if start_raw is None:
@@ -304,20 +315,32 @@ def update_range(n_clicks, range_raw, start_raw, selected_folder):
     end_time = data_ping.data['time'][data_ping.display_start+data_ping.display_range - 1]
 
     stuck = data_stuck.get_range(start_time,end_time)
-
-
+    # print(start_time,end_time)
+    start_time_obj = datetime.datetime.strptime(start_time, "%m-%d %H:%M:%S")
+    end_time_obj = datetime.datetime.strptime(end_time, "%m-%d %H:%M:%S")
+    total_minutes = (end_time_obj - start_time_obj).total_seconds()/60
+    per_minute = lambda n : round(n/total_minutes,2)
     return (f"显示范围: {start_time} - {end_time}", 
+            
             data_ping.graph_ping, stuck.to_dict('records'),
-            f"192断网次数:            {data_ping.inf192_cnt},     高延迟： {data_ping.lag192_cnt}",
-            f"www断网次数:            {data_ping.infwww_cnt}      高延迟： {data_ping.lagwww_cnt}",  
-            f"  平均值: {data_ping.stats192[0]}   "
-            f"  最大值: {data_ping.stats192[1]}   "
-            f"  最小值: {data_ping.stats192[2]}   "
-            f"  平均差: {data_ping.stats192[3]}   ",
-            f"  平均值: {data_ping.statswww[0]}"
-            f"  最大值: {data_ping.statswww[1]}"
-            f"  最小值: {data_ping.statswww[2]}"
-            f"  平均差: {data_ping.statswww[3]}"
+
+            "192 "\
+            f"断连{per_minute(data_ping.inf192_cnt)}次/分钟 "\
+            f"高延迟{per_minute(data_ping.lag192_cnt)}次/分钟 ",
+
+            f"平均值: {data_ping.stats192[0]} "\
+            f"最大值: {data_ping.stats192[1]} "\
+            f"最小值: {data_ping.stats192[2]} "\
+            f"平均差: {data_ping.stats192[3]} ",
+            
+            "www "\
+            f"断连{per_minute(data_ping.infwww_cnt)}次/分钟 "\
+            f"高延迟{per_minute(data_ping.lagwww_cnt)}次/分钟 ",
+
+            f"平均值: {data_ping.statswww[0]} "\
+            f"最大值: {data_ping.statswww[1]} "\
+            f"最小值: {data_ping.statswww[2]} "\
+            f"平均差: {data_ping.statswww[3]} ",
             )
 
             
@@ -341,7 +364,7 @@ def open_browser():
     webbrowser.open_new("http://127.0.0.1:8050/")
 
 def main():
-    threading.Timer(0, open_browser).start()
+    threading.Timer(1, open_browser).start()
     app.run_server(debug = True)
 
 if __name__ == '__main__':
