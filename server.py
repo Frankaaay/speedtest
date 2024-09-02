@@ -32,21 +32,22 @@ class DataPing:
         self.graph_ping_detail = None                      #the detail graph
         self.raw_len = len(self.data)
 
-        self.infwww_cnt = 0     #how many times www disconnection
-        self.inf192_cnt = 0     #how many times 192 disconnection
+        self.infwww_cnt = 0     # how many times www disconnection
+        self.inf192_cnt = 0     # in the given range
+        self.lag192_cnt = 0     #
+        self.lagwww_cnt = 0     #
 
         #stats contains mean, max, min, std
         self.stats192 = [0, 0, 0, 0]
         self.statswww = [0, 0, 0, 0]
 
-        #lags
-        self.lag192_cnt = 0
-        self.lagwww_cnt = 0
 
         #all xy of dots on graphs
         self.inf_indices_www = []
+        self.lag_indices_www = []
         self.inf_values_www = []
         self.inf_indices_192 = []
+        self.lag_indices_192 = []
         self.inf_values_192 = []
 
     def construct_data(self):
@@ -58,22 +59,24 @@ class DataPing:
             if np.isinf(row[1]['ping_www']):
                 self.inf_indices_www.append(row[1]['time'])
                 self.inf_values_www.append(temp)
-                self.infwww_cnt += 1
+                # self.infwww_cnt += 1
             else:
                 temp= row[1]['ping_www']
                 if row[1]["ping_www"] >= 100:
-                    self.lagwww_cnt += 1
+                    self.lag_indices_www.append(row[1]['time'])
+                    # self.lagwww_cnt += 1
         #192s
         temp = 0
         for row in self.data.iterrows():
             if np.isinf(row[1]['ping_192']):
                 self.inf_indices_192.append(row[1]['time'])
                 self.inf_values_192.append(temp)
-                self.inf192_cnt += 1
+                # self.inf192_cnt += 1
             else:
                 temp= row[1]['ping_192']
                 if row[1]["ping_192"] >= 20:
-                    self.lag192_cnt += 1
+                    self.lag_indices_192.append(row[1]['time'])
+                    # self.lag192_cnt += 1
 
     #update everytimes the state changes, works for both graph, 
     # 1 is the main graph, 2 is the sub graph
@@ -95,15 +98,20 @@ class DataPing:
         # Locate the indices
         start_www = bisect.bisect_right(self.inf_indices_www, start_time)
         end_www = bisect.bisect_right(self.inf_indices_www, end_time)
+        self.infwww_cnt = end_www - start_www
 
         start_192 = bisect.bisect_right(self.inf_indices_192, start_time)
         end_192 = bisect.bisect_right(self.inf_indices_192, end_time)
+        self.inf192_cnt = end_192 - start_192
 
         #cut the graph in the range we need
         inf_indices_www = self.inf_indices_www[start_www : end_www]
         inf_values_www = self.inf_values_www[start_www : end_www]
         inf_indices_192 = self.inf_indices_192[start_192 : end_192]
         inf_values_192 = self.inf_values_192[start_192 : end_192]
+
+        self.lagwww_cnt = bisect.bisect_right(self.lag_indices_www, end_time) - bisect.bisect_right(self.lag_indices_www, start_time)
+        self.lag192_cnt = bisect.bisect_right(self.lag_indices_192, end_time) - bisect.bisect_right(self.lag_indices_192, start_time)
         
         hovertext = [f"Band: {row['band']}<br>SINR: {row['sinr']}<br>RSRP: {row['rsrp']}" 
         for index, row in data.iterrows()]
@@ -178,7 +186,7 @@ def get_folders(path):
 
 
 
-path = r".\log\live"
+path = "./log/live"
 empty_ping = {
     'time': [0],
     'ping_www': [0],
@@ -210,35 +218,17 @@ app.layout = html.Div([
         placeholder="Select a folder",
         style={'fontSize': '18px', 'marginBottom': '20px'}  # Add margin bottom
     ),
-
     html.Button(
         'Select Folder',
         id='select-folder-button', 
         n_clicks=0,
         style={'fontSize': '18px', 'padding': '10px 20px', 'marginBottom': '30px'}  
-    ),
-
-    html.Div(id='output-folder-path', style={'marginBottom': '20px'}),  # Add margin bottom
-    
-    html.H1("192断网次数高延迟", id="192c", style={'marginBottom': '20px'}),  
-    # html.H1("192:"),
-    html.H1(
-        '192统计数据',
-        id="stats192",
-        style={'whiteSpace': 'pre-line'}
-    ),
-    # html.H1("www:"),
-    html.H1("www断网次数高延迟", id="wwwc", style={'marginBottom': '20px'}),  
-    html.H1(
-        'www统计数据',
-        id="statswww",
-        style={'whiteSpace': 'pre-line'}  
-    ),
+    ),# Add margin bottom
+    html.Hr(),
     html.Div([
         html.Div([
             html.H1(
                 "显示起点",
-                style={'marginBottom': '20px'}  
             ),
             dcc.Slider(
                 0, 1,
@@ -247,7 +237,7 @@ app.layout = html.Div([
                 value=0,
                 id='start-from-raw',
             )
-        ], style={}),
+        ], style={'width': '30%', 'display': 'inline-block'}),
         html.Div([
             html.H1("显示范围"),
             dcc.Slider(0, 1,
@@ -256,17 +246,38 @@ app.layout = html.Div([
                 value=0.2,
                 id='range-raw',
             ),
-        ], style={}),
+        ], style={'width': '30%', 'display': 'inline-block'}),
     ]),
     
     html.H1(id='range-display'),
     dcc.Graph(id='pings'),
-    html.H1("直播卡顿"),
+
+    html.Div([
+        html.H1("192断网次数高延迟", id="192c", style={'marginBottom': '20px'}),  
+        html.H1(
+            '192统计数据',
+            id="stats192",
+            style={'whiteSpace': 'pre-line'}
+        ),
+    ], style={'width': '50%', 'display': 'inline-block'}),
+    html.Div([
+        html.H1("www断网次数高延迟", id="wwwc", style={'marginBottom': '20px'}),  
+        html.H1(
+            'www统计数据',
+            id="statswww",
+            style={'whiteSpace': 'pre-line'}  
+        ),
+    ], style={'width': '50%', 'display': 'inline-block'}),
+    html.Hr(),
+
     html.Div([
         dcc.Graph(id='range_graph'),  # Placeholder for your graph
     ], style={'width': '50%', 'display': 'inline-block', 'vertical-align': 'top'}),
 
     html.Div([
+        html.H1("直播卡顿",
+            # style={'marginTop': '5em'}  
+            ),
         dash_table.DataTable(
             id='stuck-table',
             data=data_stuck.data.to_dict('records'),
@@ -302,15 +313,12 @@ def select_folder(n_clicks, selected_folder):
     Output('pings', 'figure'),
     Output('stuck-table', 'data'),
     Output("192c", "children"),
-    Output("wwwc", "children"),
     Output("stats192", "children"),
+    Output("wwwc", "children"),
     Output("statswww", "children"),
-
-    # Input('select-folder-button', 'n_clicks'),
     Input('range-raw', 'value'), 
     Input('start-from-raw', 'value'),
     prevent_initial_call=True,
-    # State('folders-dropdown', 'value')
 )
 #getting the new range for updating the graph(two bars), positional arguments, same order with call back
 def update_range(range_raw, start_raw):
@@ -320,7 +328,7 @@ def update_range(range_raw, start_raw):
         if start_raw is None:
             start_raw = data_ping.display_start / data_ping.raw_len
         # 指数缩放
-        data_ping.display_range = max(1, math.ceil(range_raw**2 * data_ping.raw_len))
+        data_ping.display_range = max(1, math.ceil(range_raw**2 * data_ping.raw_len))   
     
     if start_raw is not None:
         data_ping.display_start = math.ceil(start_raw * (data_ping.raw_len - data_ping.display_range))
@@ -335,7 +343,7 @@ def update_range(range_raw, start_raw):
     start_time_obj = datetime.datetime.strptime(start_time, "%m-%d %H:%M:%S")
     end_time_obj = datetime.datetime.strptime(end_time, "%m-%d %H:%M:%S")
     total_minutes = (end_time_obj - start_time_obj).total_seconds()/60
-    per_minute = lambda n : round(n/total_minutes,2)
+    per_minute = lambda n : round( n / total_minutes,2)
     return (f"显示范围: {start_time} - {end_time}", 
             
             data_ping.graph_ping, stuck.to_dict('records'),
@@ -360,11 +368,6 @@ def update_range(range_raw, start_raw):
             )
 
 
-
-
-
-
-
 #second graph's callback
 @app.callback(
     Output("range_graph", "figure"),
@@ -381,12 +384,6 @@ def update_subgraph(active_cell, table):
     return data_ping.graph_ping_detail
 
 
-
-
-
-
-
-
 # Function to open the browser automatically
 def open_browser():
     webbrowser.open_new("http://127.0.0.1:8050/")
@@ -394,3 +391,6 @@ def open_browser():
 def main():
     threading.Timer(1, open_browser).start()
     app.run_server(debug = True)
+
+if __name__ == '__main__':
+    main()
