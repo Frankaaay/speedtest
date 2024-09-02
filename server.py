@@ -279,7 +279,8 @@ def update_range(n_clicks, range_raw, start_raw, selected_folder):
     global data_stuck, data_ping
     if n_clicks > 0 and selected_folder:
         data_ping = DataPing(pd.read_csv(f'{selected_folder}/ping.csv'))
-        #data_stuck = DataStuck(pd.read_csv(f'{selected_folder}/stuck.csv'))
+        if os.path.exists(f'{selected_folder}/stuck.csv'):
+            data_stuck = DataStuck(pd.read_csv(f'{selected_folder}/stuck.csv'))
         data_ping.construct_data()
 
     if range_raw is not None:
@@ -337,4 +338,7 @@ def open_browser():
 
 def main():
     threading.Timer(0, open_browser).start()
-    app.run_server(debug = False)
+    app.run_server(debug = True)
+
+if __name__ == '__main__':
+    main()
