@@ -42,3 +42,15 @@ class Pings(Producer):
             res[target] = thread.join()
 
         self.res = res
+
+class Console(Recorder):
+    def __init__(self, file: TextIOWrapper, targets: dict[str, str]):
+        super().__init__(file)
+        self.targets = targets
+        self.target_name = list(targets.keys())
+        self.target_name.sort()
+
+    def record(self, data: dict[str, float]):
+        time, pings, state = data
+        self.file.write(
+            f"Ping: {','.join([str(pings[self.targets[t]])+'ms' for t in self.target_name])}\n")

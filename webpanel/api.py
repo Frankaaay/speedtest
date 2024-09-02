@@ -1,6 +1,15 @@
 from common import *
+import re
 
+INVALID_VALUE = '-'
 
+RE_NUMBER = re.compile(r'-?\d+')
+def find_number(s: str):
+    try:
+        return RE_NUMBER.match(s).group()
+    except:
+        return INVALID_VALUE
+        
 def xml_to_dict(element):
     if len(element) == 0:
         return element.text
@@ -13,7 +22,7 @@ class WebPanelState:
     band: str
     pci: str
 
-    def __init__(self, rsrp='-',sinr='-', band='-',pci='-'):
+    def __init__(self, rsrp=INVALID_VALUE,sinr=INVALID_VALUE, band=INVALID_VALUE,pci=INVALID_VALUE):
         self.rsrp = rsrp
         self.sinr = sinr
         self.band = band
@@ -29,13 +38,13 @@ class WebPanelState:
 
     def shrink_invalid(self):
         if self.rsrp is None:
-            self.rsrp = '-'
+            self.rsrp = INVALID_VALUE
         if self.sinr is None:
-            self.sinr = '-'
+            self.sinr = INVALID_VALUE
         if self.band is None:
-            self.band = '-'
+            self.band = INVALID_VALUE
         if self.pci is None:
-            self.pci = '-'
+            self.pci = INVALID_VALUE
         return self
 
 
@@ -55,3 +64,11 @@ class WebPanel(Producer):
 
     def reboot(self):
         pass
+
+class Console(Recorder):
+    def __init__(self, file: TextIOWrapper):
+        super().__init__(file)
+
+    def record(self, res: WebPanelState):
+        self.file.write(str(res)+'\n')
+        

@@ -60,15 +60,16 @@ def main(root):
     room_id.pack()
 
 
-    obj = None
+    obj: stability_recorder.Main|None = None
 
 
     def start_button_clicked():
         # 处理开始按钮点击事件
         nonlocal obj
         if obj is not None:
+            obj.flush()
             return
-
+        nonlocal not_stdout
         nonlocal record_device, device_ip, live_option, browser_option, room_id
         utils.browser_name = browser_option.get()
 
@@ -78,7 +79,7 @@ def main(root):
                                     room_id.get(),
                                     {'ping_www': 'www.baidu.com',
                                     'ping_192': device_ip.get()},
-                                    stdout=StdoutRedirector(output_text),
+                                    stdout=not_stdout,
                                     )
 
 
@@ -104,6 +105,8 @@ def main(root):
     # 创建一个滚动文本框
     output_text = tk.Text(root, wrap="word", height=20, width=64)
     output_text.pack()
+
+    not_stdout = StdoutRedirector(output_text)
 
 
 
