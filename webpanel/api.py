@@ -11,18 +11,20 @@ class WebPanelState:
     rsrp: str
     sinr: str
     band: str
+    pci: str
 
-    def __init__(self, rsrp, sinr, band):
+    def __init__(self, rsrp='-',sinr='-', band='-',pci='-'):
         self.rsrp = rsrp
         self.sinr = sinr
         self.band = band
+        self.pci = pci
 
     def __str__(self):
-        return f"rsrp: {self.rsrp}, sinr: {self.sinr}, band: {self.band}"
+        return f"rsrp: {self.rsrp}, pci:{self.pci} sinr: {self.sinr}, band: {self.band}"
 
     def __eq__(self, value: object) -> bool:
         if isinstance(value, WebPanelState):
-            return self.rsrp == value.rsrp and self.sinr == value.sinr and self.band == value.band
+            return self.rsrp == value.rsrp and self.sinr == value.sinr and self.band == value.band and self.pci == value.pci
         return False
 
     def shrink_invalid(self):
@@ -32,6 +34,8 @@ class WebPanelState:
             self.sinr = '-'
         if self.band is None:
             self.band = '-'
+        if self.pci is None:
+            self.pci = '-'
         return self
 
 
@@ -41,10 +45,13 @@ class WebPanel(Producer):
         self.ip = device_ip
         self.tree: dict = None
         self.timeout = timeout.total_seconds()
-        self.res = WebPanelState('0', '0', '0')
+        self.res = WebPanelState()
 
     def update(self):
         super().update()
 
     def set_band(self, band):
+        pass
+
+    def reboot(self):
         pass
