@@ -36,15 +36,16 @@ def login_FM_1_3(driver: webdriver.Edge, ip: str, user: str, password: str):
     driver.get(f"http://{ip}")
     driver.implicitly_wait(3)
     usr = driver.find_element(
-        By.XPATH, '//*[@id="app"]/div/div/div[1]/div/div/div[3]/form/div[1]/div[1]/div/div[1]/div[2]/input')
+        By.XPATH, '//input[@type="text" and @class="n-input__input-el"]')
     usr.clear()
     usr.send_keys(user)
     pwd = driver.find_element(
-        By.XPATH, '//input[@placeholder="Password"]')
+        By.XPATH, '//input[@type="password" and @class="n-input__input-el"]')
     pwd.clear()
     pwd.send_keys(password)
     driver.find_element(
         By.XPATH, '//*[@id="app"]/div/div/div[1]/div/div/button').click()
+    sleep(3)
 
 
 def login_FM_1_2(driver: webdriver.Edge, ip: str, user: str, password: str):
@@ -57,6 +58,7 @@ def login_FM_1_2(driver: webdriver.Edge, ip: str, user: str, password: str):
     pwd.clear()
     pwd.send_keys(password)
     driver.find_element(By.ID, 'btnSignIn').click()
+    sleep(3)
 
 
 class WebPanel_FM(WebPanel):
@@ -96,6 +98,7 @@ class WebPanel_FM(WebPanel):
 
         except Exception as e:
             print(e)
+            self.res = WebPanelState()
             print("无法连接到设备" + self.ip + "可能需要重新登录")
             print("正在重新登录")
             login_FM(self.ip)
