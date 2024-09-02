@@ -20,7 +20,7 @@ class Console(Recorder):
 
 
 
-
+PATH = './log/speed'
 def Main(urls, save_log: bool, headless: bool) -> SpeedTester:
         obj = SpeedTester(headless,timedelta(minutes=2), urls)
         now = datetime.now().strftime("%Y-%m-%d_%H-%M")
@@ -28,8 +28,8 @@ def Main(urls, save_log: bool, headless: bool) -> SpeedTester:
 
         if save_log:
             import os
-            os.makedirs(f"log/{now}/", exist_ok=True)
+            os.makedirs(f"{PATH}/{now}/", exist_ok=True)
             obj.add_recorder(
-                Reporter(open(f"log/{now}/speed.csv", 'w', encoding='utf-8-sig')))
+                Reporter(open(f"{PATH}/{now}/speed.csv", 'w', encoding='utf-8-sig')))
         return obj
 

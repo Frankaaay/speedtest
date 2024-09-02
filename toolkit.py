@@ -1,7 +1,7 @@
 import tkinter as tk
 import threading
 import server_live
-import speed_server
+import server_speed
 import gui_speed_recorder
 import gui_stability_recorder
 
@@ -42,6 +42,17 @@ def open_new_window(f):
     f(new_window)
     new_window.mainloop()
 
+class Lazy:
+    def __init__(self, f, default):
+        self.wait = True
+        self.f = f
+        self.default = default
+    def run(self):
+        if self.wait:
+            self.wait = False
+            self.f()
+        self.default()
+
 # Create and place buttons with fancy styles
 button1 = tk.Button(button_frame, text="间隔测速", command=lambda :threading.Thread(target=open_new_window,args=(gui_speed_recorder.main,)).start(), **button_style)
 button1.grid(row=0, column=0, padx=20, pady=10)
@@ -49,10 +60,12 @@ button1.grid(row=0, column=0, padx=20, pady=10)
 button2 = tk.Button(button_frame, text="直播数据生成", command=lambda :threading.Thread(target=open_new_window,args=(gui_stability_recorder.main,)).start(), **button_style)
 button2.grid(row=0, column=1, padx=20, pady=10)
 
-button3 = tk.Button(button_frame, text="直播数据整理", command=lambda :threading.Thread(target=server_live.main).start(), **button_style)
+server_live_obj = Lazy(lambda :threading.Thread(target=server_live.main).start(),lambda :threading.Thread(target=server_live.open_browser).start())
+button3 = tk.Button(button_frame, text="直播数据整理", command = server_live_obj.run, **button_style)
 button3.grid(row=1, column=0, padx=20, pady=10)
 
-button4 = tk.Button(button_frame, text="测速数据整理", command=lambda :threading.Thread(target=speed_server.main).start(), **button_style)
+server_speed_obj = Lazy(lambda :threading.Thread(target=server_speed.main).start(),lambda :threading.Thread(target=server_speed.open_browser).start())
+button4 = tk.Button(button_frame, text="测速数据整理", command = server_speed_obj.run, **button_style)
 button4.grid(row=1, column=1, padx=20, pady=10)
 
 # Create a footer label
