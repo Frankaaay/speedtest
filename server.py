@@ -20,6 +20,8 @@ def summarize(df, column):
     return [round(mean, 2), max, low, round(std, 2)]
 
 
+
+
 #storing data for updating graphs
 class DataPing:
     def __init__(self, data: pd.DataFrame):
@@ -149,6 +151,8 @@ class DataPing:
         
 
 
+
+
 class DataStuck:
     def __init__(self, data: pd.DataFrame):
         self.data = data 
@@ -170,7 +174,11 @@ def get_folders(path):
 
 
 
-path = r".\log"
+
+
+
+
+path = r".\log\live"
 empty_ping = {
     'time': [0],
     'ping_www': [0],
@@ -183,7 +191,15 @@ empty_ping = {
 data_ping = DataPing(pd.DataFrame(empty_ping))
 data_stuck = DataStuck(pd.DataFrame({'start': [], 'end': [], 'duration': []}))
 
-app = Dash(__name__, title = "耐测王")
+app = Dash(__name__, title = "ping数据整理")
+
+
+
+
+
+
+
+
 
 # Layout of the app
 app.layout = html.Div([
@@ -343,7 +359,12 @@ def update_range(range_raw, start_raw):
             f"平均差: {data_ping.statswww[3]} ",
             )
 
-            
+
+
+
+
+
+
 #second graph's callback
 @app.callback(
     Output("range_graph", "figure"),
@@ -359,6 +380,13 @@ def update_subgraph(active_cell, table):
     data_ping.graph_ping_detail = data_ping.gen_graph(s, e)
     return data_ping.graph_ping_detail
 
+
+
+
+
+
+
+
 # Function to open the browser automatically
 def open_browser():
     webbrowser.open_new("http://127.0.0.1:8050/")
@@ -366,6 +394,3 @@ def open_browser():
 def main():
     threading.Timer(1, open_browser).start()
     app.run_server(debug = True)
-
-if __name__ == '__main__':
-    main()
