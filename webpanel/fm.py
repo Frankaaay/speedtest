@@ -67,6 +67,7 @@ class WebPanel_FM(WebPanel):
         print("登录完成后，可关闭页面")
         # input("按回车继续")
         super().__init__(device_ip, timeout)
+        self.res = WebPanelState()
 
     def update(self):
         super().update()
@@ -90,15 +91,16 @@ class WebPanel_FM(WebPanel):
             self.tree = xml_to_dict(lxml.etree.fromstring(res))
             # print(self.tree)
             self.res = WebPanelState(
-                rsrp=self.tree['wan']['lte_rsrp'],
-                sinr=self.tree['wan']['lte_sinr'],
-                band=self.tree['wan']['lte_band'],
-                pci=self.tree['wan']['lte_pci'],
+                rsrp=str(int(x)+140) if (x:=find_number(self.tree['wan']['lte_rsrp'])) != INVALID_VALUE else x,
+                sinr=find_number(self.tree['wan']['lte_sinr']),
+                band=find_number(self.tree['wan']['lte_band']),
+                pci=find_number(self.tree['wan']['lte_pci']),
             ).shrink_invalid()
 
         except Exception as e:
             print(e)
             self.res = WebPanelState()
+            print(self.ip)
             print("无法连接到设备" + self.ip + "可能需要重新登录")
             print("正在重新登录")
             login_FM(self.ip)
