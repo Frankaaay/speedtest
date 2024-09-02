@@ -13,10 +13,13 @@ def ping(target, timeout=timedelta(seconds=0.75)):
         return delay
     except ping3.errors.PingError:
         return float('inf')
+    except Exception as e:
+        print(e)
+        return float('inf')
 
 
 class Pings(Producer):
-    def __init__(self, targets: list[str], timeout=timedelta(seconds=0.7)):
+    def __init__(self, targets: list[str], timeout=timedelta(seconds=0.75)):
         super().__init__()
         self.target = targets
         self.res: dict[str, float] = {}

@@ -11,12 +11,12 @@ def run_script(func):
 
 # Create the main window
 root = tk.Tk()
-root.title("大力王")
+root.title("Flymodem No.1")
 root.geometry("1000x800")
 root.configure(bg="#282c34")
 
 # Create a title label with fancy font and color
-title_label = tk.Label(root, text="请选择你的王", font=("Helvetica", 24, "bold"), fg="#61dafb", bg="#282c34")
+title_label = tk.Label(root, text="飞猫智联，启动！", font=("Helvetica", 24, "bold"), fg="#61dafb", bg="#282c34")
 title_label.pack(pady=20)
 
 # Create a frame to hold buttons with padding and background
@@ -36,14 +36,19 @@ button_style = {
     "borderwidth": 4,
 }
 
+def open_new_window(f):
+    new_window = tk.Toplevel(root)
+    f(new_window)
+    new_window.mainloop()
+
 # Create and place buttons with fancy styles
-button1 = tk.Button(button_frame, text="耐测王", command=lambda :threading.Thread(target=gui_speed_recorder.main).start(), **button_style)
+button1 = tk.Button(button_frame, text="间隔测速", command=lambda :threading.Thread(target=open_new_window,args=(gui_speed_recorder.main,)).start(), **button_style)
 button1.grid(row=0, column=0, padx=20, pady=10)
 
-button2 = tk.Button(button_frame, text="耐看王", command=lambda :threading.Thread(target=gui_stability_recorder.main).start(), **button_style)
+button2 = tk.Button(button_frame, text="直播数据生成", command=lambda :threading.Thread(target=open_new_window,args=(gui_stability_recorder.main,)).start(), **button_style)
 button2.grid(row=0, column=1, padx=20, pady=10)
 
-button3 = tk.Button(button_frame, text="金山画王", command=lambda :threading.Thread(target=server.main).start(), **button_style)
+button3 = tk.Button(button_frame, text="数据整理", command=lambda :threading.Thread(target=server.main).start(), **button_style)
 button3.grid(row=1, column=0, columnspan=2, pady=10)
 
 # Create a footer label

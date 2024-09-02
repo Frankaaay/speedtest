@@ -5,8 +5,7 @@ import common
 from datetime import timedelta
 import speed_recorder
 
-
-def main():
+def main(root):
     def add_item():
         item = add_url.get()
         if item:
@@ -33,23 +32,24 @@ def main():
             self.len = 0
 
         def record(self, res: speedspider.SpeedTestResult):
-            if self.len > 10:
+            if self.len > 8:
                 self.table.delete(self.table.get_children()[0])
             else:
                 self.len += 1
             self.table.insert("", tk.END,
-                            values=(res.lag, res.jit, res.ul, res.dl))
+                            values=(res.lag, res.jit, res.dl, res.ul))
 
 
     def start_button_clicked():
-        nonlocal obj, url_listbox, delta_custom, save_log, tree
+        nonlocal obj, url_listbox, delta_custom, save_log, tree, headless
         if obj is not None:
             return
         delta = timedelta(minutes=float(delta_custom.get()), microseconds=1)
         obj = speed_recorder.Main(
-            url_listbox.get(0, tk.END), save_log.get())
+            url_listbox.get(0, tk.END), save_log.get(), headless.get())
 
         obj.add_recorder(Result2Display(tree))
+        obj = common.AutoFlush(obj, timedelta(minutes=30))
         obj = common.Sequence(obj, delta)
         obj.start()
 
@@ -83,7 +83,6 @@ def main():
             print("选中的数据已复制到剪贴板")
 
 
-    root = tk.Tk()
     root.title("定时测速")
 
     # 创建默认项列表
@@ -95,7 +94,7 @@ def main():
 
     # 输入框和按钮
     edit_frame = ttk.Frame(root)
-    add_url = tk.Entry(edit_frame, width=40)
+    add_url = tk.Entry(edit_frame, width=38)
     add_url.pack(side=tk.LEFT)
     add_button = tk.Button(edit_frame, text="添加", command=add_item)
     add_button.pack(side=tk.LEFT)
@@ -103,9 +102,12 @@ def main():
     delete_button.pack(side=tk.LEFT)
     edit_frame.pack()
 
-
+    no_name_frame_0 = ttk.Frame(root)
     save_log = tk.BooleanVar(value=True)
-    tk.Checkbutton(root, text="保存结果到文件", variable=save_log).pack()
+    tk.Checkbutton(no_name_frame_0, text="保存结果到文件", variable=save_log).pack(side=tk.LEFT)
+    headless = tk.BooleanVar(value=True)
+    tk.Checkbutton(no_name_frame_0, text="浏览器无头", variable=headless).pack(side=tk.LEFT)
+    no_name_frame_0.pack()
 
     custom_frame = ttk.Frame(root)
     tk.Label(custom_frame, text="每隔").pack(side=tk.LEFT)
@@ -122,18 +124,18 @@ def main():
     stop_button.pack(side=tk.RIGHT)
     edit_frame.pack()
 
-    columns = ("延迟", "抖动", "上传", "下载")
+    columns = ("延迟", "抖动", "下载", "上传")
     tree = ttk.Treeview(root, columns=columns, show="headings")
     for col in columns:
         tree.heading(col, text=col)
     tree.pack(expand=True, fill=tk.X)
 
-    copy_button = tk.Button(root, text="复制选中到剪贴板",
-                            command=copy_selected_to_clipboard)
+    copy_button = tk.Button(root, text="复制选中到剪贴板", command=copy_selected_to_clipboard)
     copy_button.pack()
 
     obj = None
-    root.mainloop()
 
-if __name__ == '__main__':
-    main()
+if __name__ == "__main__":
+    root = tk.Tk()
+    main(root)
+    root.mainloop()

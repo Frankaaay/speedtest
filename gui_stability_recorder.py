@@ -1,15 +1,29 @@
 import tkinter as tk
 from tkinter import ttk
 import utils
-import sys
 import stability_recorder
 
-def main():
-    root = tk.Tk()
+class StdoutRedirector:
+    def __init__(self, text_widget):
+        self.text_widget = text_widget
+
+    def write(self, message):
+        self.text_widget.config(state="normal")  # 允许编辑
+        self.text_widget.insert(tk.END, message)  # 在文本框末尾插入消息
+        self.text_widget.see(tk.END)
+        self.text_widget.config(state="disabled")  # 禁止编辑
+
+    def flush(self):
+        pass
+
+    def close(self):
+        pass
+    
+def main(root):
     root.title("直播稳定性检测")
 
     # 勾选项
-    record_device = tk.BooleanVar(value=True)
+    record_device = tk.BooleanVar(value=False)
     tk.Checkbutton(root, text="记录设备状态", variable=record_device).pack()
 
     # 输入框
@@ -19,7 +33,7 @@ def main():
     device_ip.pack()
 
     # 单选列表
-    options = ["B站", "抖音", "西瓜", "Youtube"]
+    options = ["B站", "抖音", "西瓜", "OFF"]
     live_option = tk.StringVar()
     live_option.set(options[0])
     live_frame = ttk.Frame(root)
@@ -63,7 +77,8 @@ def main():
                                     live_option.get(),
                                     room_id.get(),
                                     {'ping_www': 'www.baidu.com',
-                                    'ping_192': device_ip.get()}
+                                    'ping_192': device_ip.get()},
+                                    stdout=StdoutRedirector(output_text),
                                     )
 
 
@@ -91,28 +106,13 @@ def main():
     output_text.pack()
 
 
-    class StdoutRedirector:
-        def __init__(self, text_widget):
-            self.text_widget = text_widget
-
-        def write(self, message):
-            self.text_widget.config(state="normal")  # 允许编辑
-            self.text_widget.insert(tk.END, message)  # 在文本框末尾插入消息
-            self.text_widget.see(tk.END)
-            self.text_widget.config(state="disabled")  # 禁止编辑
-
-        def flush(self):
-            pass
-
-        def close(self):
-            pass
 
 
     # 重定向 stdout 和 stderr
-    sys.stdout = StdoutRedirector(output_text)
-    sys.stderr = StdoutRedirector(output_text)
+    # sys.stdout = StdoutRedirector(output_text)
+    # sys.stderr = StdoutRedirector(output_text)
 
+if __name__ == "__main__":
+    root = tk.Tk()
+    main(root)
     root.mainloop()
-
-if __name__ == '__main__':
-    main()

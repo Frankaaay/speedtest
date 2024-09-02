@@ -1,0 +1,10 @@
+pandas
+dash
+numpy
+plotly
+bisect
+selenium
+requests
+lxml
+ping3
+random

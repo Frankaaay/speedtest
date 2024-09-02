@@ -4,11 +4,22 @@ import math
 import numpy as np
 import plotly.graph_objs as go
 import datetime
-from stable import summary
 import bisect
 import os
 import threading
 import webbrowser
+
+def summarize(df, column):
+    df[column] = df[column].replace([np.inf, -np.inf], np.nan)
+
+    mean = df[column].mean()
+    max = df[column].max()
+    low = df[column].min()
+    std = df[column].std()
+
+    return [round(mean, 2), max, low, round(std, 2)]
+
+
 
 
 #storing data for updating graphs
@@ -18,18 +29,19 @@ class DataPing:
         self.display_start = 0
         self.display_range = len(self.data)
         self.graph_ping = None                       #the main graph
-        self.graph_ping2 = None                      #the detail graph
+        self.graph_ping_detail = None                      #the detail graph
         self.raw_len = len(self.data)
 
-        self.infwww = 0     #how many times www disconnection
-        self.inf192 = 0     #how many times 192 disconnection
+        self.infwww_cnt = 0     #how many times www disconnection
+        self.inf192_cnt = 0     #how many times 192 disconnection
 
         #stats contains mean, max, min, std
         self.stats192 = [0, 0, 0, 0]
         self.statswww = [0, 0, 0, 0]
+
         #lags
-        self.lag192 = 0
-        self.lagwww = 0
+        self.lag192_cnt = 0
+        self.lagwww_cnt = 0
 
         #all xy of dots on graphs
         self.inf_indices_www = []
@@ -38,50 +50,46 @@ class DataPing:
         self.inf_values_192 = []
 
     def construct_data(self):
-        # 标记 inf 值# 获取所有 inf 的索引
-        #wws
+        # 标记 inf 值
+        # 获取所有 inf 的索引
+        #wwws
         temp = 0
         for row in self.data.iterrows():
             if np.isinf(row[1]['ping_www']):
                 self.inf_indices_www.append(row[1]['time'])
                 self.inf_values_www.append(temp)
-                self.infwww += 1
+                self.infwww_cnt += 1
             else:
                 temp= row[1]['ping_www']
                 if row[1]["ping_www"] >= 100:
-                    self.lagwww += 1
+                    self.lagwww_cnt += 1
         #192s
         temp = 0
         for row in self.data.iterrows():
             if np.isinf(row[1]['ping_192']):
                 self.inf_indices_192.append(row[1]['time'])
                 self.inf_values_192.append(temp)
-                self.inf192 += 1
+                self.inf192_cnt += 1
             else:
                 temp= row[1]['ping_192']
-                if row[1]["ping_192"] >= 100:
-                    self.lag192 += 1
+                if row[1]["ping_192"] >= 20:
+                    self.lag192_cnt += 1
 
     #update everytimes the state changes, works for both graph, 
     # 1 is the main graph, 2 is the sub graph
 
-    def update_graph(self, which_graph, s = "", e = ""):
-        if which_graph == 1:
-            self.graph_ping = go.Figure()
-            graph = self.graph_ping
-        elif which_graph == 2:
-            self.graph_ping2 = go.Figure()
-            graph = self.graph_ping2
+    def gen_graph(self, s = "", e = ""):
+        graph =  go.Figure()
 
         if not s:
-            start_time = data_ping.data['time'][data_ping.display_start]
-            end_time = data_ping.data['time'][data_ping.display_start+data_ping.display_range - 1]
+            start_time = self.data['time'][self.display_start]
+            end_time = self.data['time'][self.display_start+self.display_range - 1]
             data  = self.data[self.display_start:self.display_start+self.display_range]
         else:
             start_time = s
             end_time = e
-            index1 = self.data[self.data['time'] == start_time].index[0]
-            index2 = self.data[self.data['time'] == end_time].index[0]
+            index1 = self.data[self.data['time'] < start_time].index[-1]
+            index2 = self.data[self.data['time'] > end_time].index[1]
             data = self.data[index1 : index2]
 
         # Locate the indices
@@ -136,11 +144,13 @@ class DataPing:
         ))
 
         #stats
-        self.stats192 = summary.summarize(data, "ping_192")
-        self.statswww = summary.summarize(data, "ping_www")
+        self.stats192 = summarize(data, "ping_192")
+        self.statswww = summarize(data, "ping_www")
 
         return graph
         
+
+
 
 
 class DataStuck:
@@ -148,7 +158,9 @@ class DataStuck:
         self.data = data 
         self.year = str(datetime.datetime.now().year)
         
-    def get_range(self, start, end):
+    def get_range(self, start : str, end: str):
+        if len(self.data) == 0:
+            return pd.DataFrame()
         data =  self.data[(self.data['start'] >= start) & (self.data['end'] <= end)]
         return data
 
@@ -162,11 +174,32 @@ def get_folders(path):
 
 
 
-path = r".\log"
-data_ping = DataPing(pd.read_csv(r"empty\ping.csv"))
-data_stuck = DataStuck(pd.read_csv(r"empty\stuck.csv"))
 
-app = Dash(__name__, title = "耐测王")
+
+
+
+path = r".\log\live"
+empty_ping = {
+    'time': [0],
+    'ping_www': [0],
+    'ping_192': [0],
+    'rsrp': [0],
+    'sinr': [0],
+    'band': [0],
+    'pci' : [0]
+    }
+data_ping = DataPing(pd.DataFrame(empty_ping))
+data_stuck = DataStuck(pd.DataFrame({'start': [], 'end': [], 'duration': []}))
+
+app = Dash(__name__, title = "ping数据整理")
+
+
+
+
+
+
+
+
 
 # Layout of the app
 app.layout = html.Div([
@@ -187,8 +220,8 @@ app.layout = html.Div([
 
     html.Div(id='output-folder-path', style={'marginBottom': '20px'}),  # Add margin bottom
     
-    html.H1(f"192断网次数: {data_ping.inf192}, 高延迟： {data_ping.lag192}", id="192c", style={'marginBottom': '20px'}),  # Add margin bottom
-    html.H1(f"www断网次数: {data_ping.infwww} 高延迟： {data_ping.lagwww}", id="wwwc", style={'marginBottom': '20px'}),  # Add margin bottom
+    html.H1(f"192断网次数: {data_ping.inf192_cnt}, 高延迟： {data_ping.lag192_cnt}", id="192c", style={'marginBottom': '20px'}),  # Add margin bottom
+    html.H1(f"www断网次数: {data_ping.infwww_cnt} 高延迟： {data_ping.lagwww_cnt}", id="wwwc", style={'marginBottom': '20px'}),  # Add margin bottom
     html.H1("192:"),
     # mean, max, low, std
     html.H1(
@@ -241,7 +274,7 @@ app.layout = html.Div([
             id='stuck-table',
             data=data_stuck.data.to_dict('records'),
             columns=[{"name": i, "id": i} for i in data_stuck.data.columns],
-            filter_action='native',
+            # filter_action='native',
         ),
     ], style={'width': '50%', 'display': 'inline-block', 'vertical-align': 'top'})
 ], style={'textAlign': 'center', 'font-size': '10px', 'marginTop': '50px', 'marginBottom': '20px'})
@@ -267,8 +300,9 @@ app.layout = html.Div([
 def update_range(n_clicks, range_raw, start_raw, selected_folder):
     global data_stuck, data_ping
     if n_clicks > 0 and selected_folder:
-        data_ping = DataPing(pd.read_csv(f'{selected_folder}\ping.csv'))
-        data_stuck = DataStuck(pd.read_csv(f'{selected_folder}\stuck.csv'))
+        data_ping = DataPing(pd.read_csv(f'{selected_folder}/ping.csv'))
+        if os.path.exists(f'{selected_folder}/stuck.csv'):
+            data_stuck = DataStuck(pd.read_csv(f'{selected_folder}/stuck.csv'))
         data_ping.construct_data()
 
     if range_raw is not None:
@@ -281,7 +315,7 @@ def update_range(n_clicks, range_raw, start_raw, selected_folder):
         data_ping.display_start = math.ceil(start_raw * (data_ping.raw_len - data_ping.display_range))
 
     #parameter: mode(which graph)
-    data_ping.update_graph(1)
+    data_ping.graph_ping = data_ping.gen_graph()
     start_time = data_ping.data['time'][data_ping.display_start]
     end_time = data_ping.data['time'][data_ping.display_start+data_ping.display_range - 1]
 
@@ -290,8 +324,8 @@ def update_range(n_clicks, range_raw, start_raw, selected_folder):
 
     return (f"显示范围: {start_time} - {end_time}", 
             data_ping.graph_ping, stuck.to_dict('records'),
-            f"192断网次数:            {data_ping.inf192},     高延迟： {data_ping.lag192}",
-            f"www断网次数:            {data_ping.infwww}      高延迟： {data_ping.lagwww}",  
+            f"192断网次数:            {data_ping.inf192_cnt},     高延迟： {data_ping.lag192_cnt}",
+            f"www断网次数:            {data_ping.infwww_cnt}      高延迟： {data_ping.lagwww_cnt}",  
             f"  平均值: {data_ping.stats192[0]}   "
             f"  最大值: {data_ping.stats192[1]}   "
             f"  最小值: {data_ping.stats192[2]}   "
@@ -302,7 +336,12 @@ def update_range(n_clicks, range_raw, start_raw, selected_folder):
             f"  平均差: {data_ping.statswww[3]}"
             )
 
-            
+
+
+
+
+
+
 #second graph's callback
 @app.callback(
     Output("range_graph", "figure"),
@@ -315,10 +354,15 @@ def update_subgraph(active_cell, table):
     if active_cell is not None and active_cell['row'] < len(table):
         s = table[active_cell['row']]['start']
         e = table[active_cell['row']]['end']
+    data_ping.graph_ping_detail = data_ping.gen_graph(s, e)
+    return data_ping.graph_ping_detail
 
-    data_ping.update_graph(2, s, e)
 
-    return (data_ping.graph_ping2)
+
+
+
+
+
 
 # Function to open the browser automatically
 def open_browser():
@@ -326,4 +370,4 @@ def open_browser():
 
 def main():
     threading.Timer(0, open_browser).start()
-    app.run_server(debug = False)
+    app.run_server(debug = True)

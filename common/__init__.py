@@ -18,9 +18,9 @@ class Recorder:
             self.file.flush()
 
     def close(self):
-        self.flush()
         if self.file is not None:
             self.file.close()
+            self.file = None
 
     def __enter__(self):
         return self
@@ -33,6 +33,7 @@ class Producer:
     def __init__(self):
         self.res = None
         self.recorders: list[Recorder] = []
+        self.stopped = False
 
     def update(self):
         pass
@@ -53,6 +54,7 @@ class Producer:
             recorder.record(self.get())
 
     def stop(self):
+        self.stopped = True
         for recorder in self.recorders:
             recorder.close()
 
@@ -111,12 +113,11 @@ class Sequence(Thread, Producer):
                 self.obj.record()
                 sleep(max(0, self.interval.total_seconds() - (time() - now)))
         except KeyboardInterrupt:
-            self.stop()
+            pass
         finally:
+            self.stop()
             self.obj.stop()
 
-    def stop(self):
-        self.stopped = True
 
     def flush(self):
         super().flush()
