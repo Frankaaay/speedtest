@@ -1,7 +1,6 @@
 import tkinter as tk
 from tkinter import ttk
 import utils
-import sys
 import stability_recorder
 
 class StdoutRedirector:

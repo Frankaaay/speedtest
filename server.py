@@ -148,7 +148,9 @@ class DataStuck:
         self.data = data 
         self.year = str(datetime.datetime.now().year)
         
-    def get_range(self, start, end):
+    def get_range(self, start : str, end: str):
+        if len(self.data) == 0:
+            return pd.DataFrame()
         data =  self.data[(self.data['start'] >= start) & (self.data['end'] <= end)]
         return data
 
@@ -170,6 +172,7 @@ empty_ping = {
     'rsrp': [0],
     'sinr': [0],
     'band': [0],
+    'pci' : [0]
     }
 data_ping = DataPing(pd.DataFrame(empty_ping))
 data_stuck = DataStuck(pd.DataFrame({'start': [], 'end': [], 'duration': []}))
@@ -249,7 +252,7 @@ app.layout = html.Div([
             id='stuck-table',
             data=data_stuck.data.to_dict('records'),
             columns=[{"name": i, "id": i} for i in data_stuck.data.columns],
-            filter_action='native',
+            # filter_action='native',
         ),
     ], style={'width': '50%', 'display': 'inline-block', 'vertical-align': 'top'})
 ], style={'textAlign': 'center', 'font-size': '10px', 'marginTop': '50px', 'marginBottom': '20px'})
@@ -276,7 +279,7 @@ def update_range(n_clicks, range_raw, start_raw, selected_folder):
     global data_stuck, data_ping
     if n_clicks > 0 and selected_folder:
         data_ping = DataPing(pd.read_csv(f'{selected_folder}/ping.csv'))
-        data_stuck = DataStuck(pd.read_csv(f'{selected_folder}/stuck.csv'))
+        #data_stuck = DataStuck(pd.read_csv(f'{selected_folder}/stuck.csv'))
         data_ping.construct_data()
 
     if range_raw is not None:
