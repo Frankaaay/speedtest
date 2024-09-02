@@ -4,10 +4,11 @@ import stable
 import live
 import sys
 import os
+import re
 
 
 class PingAndState(Producer):
-    def __init__(self, ping: Producer, device: Producer | None):
+    def __init__(self, ping: stable.Pings, device: webpanel.WebPanel | None):
         super().__init__()
         self.ping = ping
         self.device = device
@@ -49,68 +50,77 @@ class Log(Recorder):
             f"{time_str},{','.join([str(pings[self.targets[t]]) for t in self.target_name])},{state.rsrp},{state.sinr},{state.band},{state.pci}\n")
 
 
-class Console(Recorder):
-    def __init__(self, file: TextIOWrapper, targets: dict[str, str]):
-        super().__init__(file)
-        self.targets = targets
-        self.target_name = list(targets.keys())
-        self.target_name.sort()
 
+PATH = './log/live'
+
+def gen_live(platform: str, room_id: str | None = None,) -> Sequence:
+    if len(room_id) == 0:
+        room_id = None
+
+    if platform != 'OFF':
+        if platform == 'B站':
+            living = live.BiliLive(room_id)
+        elif platform == '抖音':
+            living = live.DouyinLive(room_id)
+        elif platform == '西瓜':
+            living = live.Xigua(room_id)
+        else:
+            living = live.BiliLive(room_id)
+
+    else:
+        living = Producer()
+    return living
+
+def gen_device(record_device: bool,device_ip: str) -> Sequence:
+    if record_device:
+        device = webpanel.WebPanel_FM(device_ip)
+    else:
+        device = Producer()
+        device.res = webpanel.WebPanelState()
+    return device
+
+class Console(Recorder):
     def record(self, data: tuple[datetime, dict[str, float], webpanel.WebPanelState]):
         time, pings, state = data
         time_str = time.strftime('%m-%d %H:%M:%S')
-        self.file.write(
-            f"Ping: {','.join([str(pings[self.targets[t]])+'ms' for t in self.target_name])}")
-        self.file.write(
-            f"  State:{state.rsrp}, {state.sinr}, {state.band}, {state.pci}\n")
 
-PATH = './log/live'
+
 class Main:
     def __init__(self, record_device: bool, device_ip: str, platform: str, room_id: str | None = None, ips: dict = dict(), stdout=sys.stdout):
-        if record_device:
-            device = Sequence(webpanel.WebPanel_FM(device_ip),
-                              interval=timedelta(seconds=2))
-            device.start()
-        else:
-            device = None
-
-        if len(room_id) == 0:
-            room_id = None
-        
         now = datetime.now().strftime("%Y-%m-%d_%H-%M")
         os.makedirs(f"{PATH}/{now}/", exist_ok=True)
         
-        if platform != 'OFF':
-            if platform == 'B站':
-                living = live.BiliLive(room_id)
-            elif platform == '抖音':
-                living = live.DouyinLive(room_id)
-            elif platform == '西瓜':
-                living = live.Xigua(room_id)
-            else:
-                living = live.BiliLive(room_id)
+        device = gen_device(record_device,device_ip)
+        device.add_recorder(webpanel.Console(stdout))
+        # device = AutoFlush(device, timedelta(seconds=5))
+        device = SequenceFullSecond(device, timedelta(seconds=1))
+        device.start()
 
-            living.add_recorder(live.Reporter(
-                open(f"{PATH}/{now}/stuck.csv", 'w', encoding='utf-8-sig'), threshold=1))
-            living.add_recorder(live.Console(file=stdout))
-            # living = AutoFlush(living, timedelta(seconds=5))
-            living = Sequence(living, interval=timedelta(seconds=0.2))
-            living.start()
-        else:
-            living = Producer()
+        living = gen_live(platform, room_id)
+        living.add_recorder(live.Reporter(
+            open(f"{PATH}/{now}/stuck.csv", 'w', encoding='utf-8-sig'), threshold=1))
+        living.add_recorder(live.Console(stdout))
+        living = AutoFlush(living, timedelta(seconds=5))
+        living = Sequence(living, interval=timedelta(seconds=0.3))
+        living.start()
 
-        log = PingAndState(stable.Pings(list(ips.values())), device)
-        log = AutoFlush(log, timedelta(seconds=5))
-        log.add_recorder(
+
+        ping_device = PingAndState(stable.Pings(list(ips.values())), device)
+        ping_device = AutoFlush(ping_device, timedelta(seconds=5))
+        ping_device.add_recorder(
             Log(open(f"{PATH}/{now}/ping.csv", 'w', encoding='utf-8-sig'), ips))
-        log.add_recorder(Console(stdout, ips))
+        ping_device.add_recorder(stable.Console(stdout, ips))
 
-        log = SequenceFullSecond(log, interval=timedelta(seconds=1))
-        log.start()
+        ping_device = SequenceFullSecond(ping_device, interval=timedelta(seconds=1))
+        ping_device.start()
 
-        self.log = log
+        self.obj = ping_device
         self.living = living
 
+    def flush(self):
+        self.obj.flush()
+        self.living.flush()
+    
     def stop(self):
-        self.log.stop()
+        self.obj.stop()
         self.living.stop()
