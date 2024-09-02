@@ -4,13 +4,20 @@ import math
 import numpy as np
 import plotly.graph_objs as go
 import datetime
-from stable import summary
 import bisect
 import os
 import threading
 import webbrowser
 
+def summarize(df, column):
+    df[column] = df[column].replace([np.inf, -np.inf], np.nan)
 
+    mean = df[column].mean()
+    max = df[column].max()
+    low = df[column].min()
+    std = df[column].std()
+
+    return [round(mean, 2), max, low, round(std, 2)]
 
 #storing data for updating graphs
 class Speed:
@@ -18,7 +25,8 @@ class Speed:
         self.data = data                             #all data
         self.display_start = 0
         self.display_range = len(self.data)
-        self.graph_ping = None                       #the main graph
+        self.graph_speed = None 
+        self.graph_lag = None                      #the main graph
         self.raw_len = len(self.data)
 
         #stats contains mean, max, min, std
@@ -34,6 +42,7 @@ class Speed:
 
     def update_graph(self):
         self.graph_speed = go.Figure()
+        self.graph_lag = go.Figure()
         data  = self.data[self.display_start:self.display_start+self.display_range]
 
         #drawing lines
@@ -52,15 +61,31 @@ class Speed:
             name='Download',
             marker=dict(color='#8888ff'),
         ))
+        
+        self.graph_lag.add_trace(go.Scatter(
+            x=data['time'],
+            y=data['lag'],
+            mode='lines',
+            name='Lag',
+            marker=dict(color='#8888ff'),
+        ))
+
+        self.graph_lag.add_trace(go.Scatter(
+            x=data['time'],
+            y=data['jit'],
+            mode='lines',
+            name='Jit',
+            marker=dict(color='#8888ff'),
+        ))
 
         #stats
-        self.upload = summary.summarize(data, "upload")
-        self.download = summary.summarize(data, "download")
+        self.upload = summarize(data, "upload")
+        self.download = summarize(data, "download")
 
-        self.lag = summary.summarize(data, "lag")
-        self.jit = summary.summarize(data, "jit")
+        self.lag = summarize(data, "lag")
+        self.jit = summarize(data, "jit")
 
-        return self.graph_speed
+        return self.graph_speed, self.graph_lag
 
 
 
@@ -81,6 +106,7 @@ app = Dash(__name__, title = "测速数据整理")
 
 
 speed = Speed(pd.DataFrame({'time': [0], 'lag': [0], 'jit': [0], 'download': [0], 'upload': [0]}))
+
 
 # Layout of the app
 app.layout = html.Div([
@@ -126,9 +152,63 @@ app.layout = html.Div([
         id='range-raw',
     ),
     
+
+    html.Table([
+        html.Thead(
+            html.Tr([
+                html.Th(""),
+                html.Th("Upload"),
+                html.Th("Download"),
+                html.Th("Jit"),
+                html.Th("Lag")
+            ])
+        ),
+        html.Tbody([
+            html.Tr([
+                html.Td("平均值"),
+                html.Td(speed.upload[0]),
+                html.Td(speed.download[0]),
+                html.Td(speed.jit[0]),
+                html.Td(speed.lag[0])
+            ]),
+            html.Tr([
+                html.Td("最大值"),
+                html.Td(speed.upload[1]),
+                html.Td(speed.download[1]),
+                html.Td(speed.jit[1]),
+                html.Td(speed.lag[1])
+            ]),
+            html.Tr([
+                html.Td("最小值"),
+                html.Td(speed.upload[2]),
+                html.Td(speed.download[2]),
+                html.Td(speed.jit[2]),
+                html.Td(speed.lag[2])
+            ]),
+            html.Tr([
+                html.Td("平均差"),
+                html.Td(speed.upload[3]),
+                html.Td(speed.download[3]),
+                html.Td(speed.jit[3]),
+                html.Td(speed.lag[3])
+            ])
+        ])
+    ], style = {
+        'width': '50%',
+        'border': '1px solid black',
+        'borderCollapse': 'collapse',
+        'textAlign': 'center',
+        'margin': '0 auto',
+        'fontSize': '20px',
+    },
+    id = "upload"),
+
+    html.H1(""),
     #speed graph
-    html.H1(id='range-display'),
-    dcc.Graph(id='speed'),
+    html.H1(id = 'range-display'),
+
+    dcc.Graph(id = 'speed'),
+    dcc.Graph(id = 'lag'),
 
 ], style={'textAlign': 'center', 'font-size': '10px', 'marginTop': '50px', 'marginBottom': '20px'})
 
@@ -137,6 +217,8 @@ app.layout = html.Div([
 @app.callback(
     Output('range-display', 'children'),
     Output('speed', 'figure'),
+    Output('lag', 'figure'),
+    Output('upload', 'children'),
 
     Input('select-folder-button', 'n_clicks'),
     Input('range-raw', 'value'), 
@@ -144,6 +226,8 @@ app.layout = html.Div([
 
     State('folders-dropdown', 'value')
 )
+
+
 #getting the new range for updating the graph(two bars), positional arguments, same order with call back
 def update_range(n_clicks, range_raw, start_raw, selected_folder):
     global speed
@@ -165,8 +249,53 @@ def update_range(n_clicks, range_raw, start_raw, selected_folder):
     end_time = speed.data['time'][speed.display_start+speed.display_range - 1]
 
 
+    table_header = [
+        html.Thead(
+            html.Tr([
+                html.Th(""),
+                html.Th("Upload"),
+                html.Th("Download"),
+                html.Th("Jit"),
+                html.Th("Lag")
+            ])
+        )
+    ]
+    table_body = [html.Tbody([
+            html.Tr([
+                html.Td("平均值"),
+                html.Td(speed.upload[0]),
+                html.Td(speed.download[0]),
+                html.Td(speed.jit[0]),
+                html.Td(speed.lag[0])
+            ]),
+            html.Tr([
+                html.Td("最大值"),
+                html.Td(speed.upload[1]),
+                html.Td(speed.download[1]),
+                html.Td(speed.jit[1]),
+                html.Td(speed.lag[1])
+            ]),
+            html.Tr([
+                html.Td("最小值"),
+                html.Td(speed.upload[2]),
+                html.Td(speed.download[2]),
+                html.Td(speed.jit[2]),
+                html.Td(speed.lag[2])
+            ]),
+            html.Tr([
+                html.Td("平均差"),
+                html.Td(speed.upload[3]),
+                html.Td(speed.download[3]),
+                html.Td(speed.jit[3]),
+                html.Td(speed.lag[3])
+            ])
+        ])
+    ]
+
     return (f"显示范围: {start_time} - {end_time}", 
-            speed.graph_speed
+            speed.graph_speed,
+            speed.graph_lag,
+            table_header + table_body
             )
 
 
@@ -176,4 +305,4 @@ def open_browser():
 
 # def main():
 #     threading.Timer(0, open_browser).start()
-app.run_server(debug = True)
+app.run_server(debug = False)
