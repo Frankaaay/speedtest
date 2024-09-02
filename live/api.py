@@ -51,7 +51,7 @@ class Live(Producer):
             return
 
     def afk_check(self) -> bool:
-        if time() - self.afk_since > timedelta(hours=20).total_seconds():
+        if time() - self.afk_since > timedelta(minutes=20).total_seconds():
             self.refresh()  # refresh page to prevent afk
             self.afk_since = time()
             self.res = (LiveState.End, "anti afk")
