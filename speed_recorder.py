@@ -28,8 +28,8 @@ def Main(urls, save_log: bool, headless: bool) -> SpeedTester:
 
         if save_log:
             import os
-            os.makedirs(f"log/", exist_ok=True)
+            os.makedirs(f"log/{now}/", exist_ok=True)
             obj.add_recorder(
-                Reporter(open(f"log/{now}-speed.csv", 'w', encoding='utf-8-sig')))
+                Reporter(open(f"log/{now}/speed.csv", 'w', encoding='utf-8-sig')))
         return obj
 
