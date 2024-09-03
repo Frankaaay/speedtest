@@ -1,32 +1,31 @@
 import sys
 from common import *
 from speedspider import SpeedTester, SpeedTestResult
-from webpanel import WebPanelState, WebPanel_FM
+from panel import PanelState, Panel_FM
 
 
 class Reporter(Recorder):
     def __init__(self, f):
         super().__init__(f)
-        self.file.write("time,lag,jit,download,upload,rsrp,sinr,band,pci\n")
+        self.file.write("time,lag,jit,download,upload,"+
+                        ','.join(DEVICE_INFOS)+"\n")
 
-    def record(self, res: tuple[SpeedTestResult, WebPanelState]):
+    def record(self, res: tuple[SpeedTestResult, PanelState]):
         now = datetime.now().strftime("%m-%d %H:%M:%S")
-        speed_res, device_res = res
-        self.file.write(
-            f"{now},"
-            f"{speed_res.lag},{speed_res.jit},{speed_res.dl},{speed_res.ul},"
-            f"{device_res.rsrp},{device_res.sinr},{device_res.band},{device_res.pci}"
-            "\n")
+        speed, state = res
+        self.file.write(now+","+
+            f"{speed.lag},{speed.jit},{speed.dl},{speed.ul},"+
+            ','.join(state.get(i) for i in DEVICE_INFOS)+"\n")
 
 
 class Console(Recorder):
-    def record(self, res: tuple[SpeedTestResult,WebPanelState]):
+    def record(self, res: tuple[SpeedTestResult,PanelState]):
         speed_res, device_res = res
         self.file.write(f"{speed_res}\n")
         self.file.write(f"{device_res}\n")
 
 class SpeedAndState(Producer):
-    def __init__(self, speed: SpeedTester, device: WebPanel_FM):
+    def __init__(self, speed: SpeedTester, device: Panel_FM):
         super().__init__()
         self.speed = speed
         self.device = device
@@ -39,10 +38,10 @@ class SpeedAndState(Producer):
 
 def gen_device(record_device: bool,device_ip: str) -> Sequence:
     if record_device:
-        device = WebPanel_FM(device_ip)
+        device = Panel_FM(device_ip)
     else:
         device = Producer()
-        device.res = WebPanelState()
+        device.res = PanelState()
     return device
 
 PATH = './log/speed'

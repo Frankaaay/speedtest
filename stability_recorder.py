@@ -1,5 +1,5 @@
 from common import *
-import webpanel
+import panel
 import stable
 import live
 import sys
@@ -8,7 +8,7 @@ import re
 
 
 class PingAndState(Producer):
-    def __init__(self, ping: stable.Pings, device: webpanel.WebPanel | None):
+    def __init__(self, ping: stable.Pings, device: panel.Panel | None):
         super().__init__()
         self.ping = ping
         self.device = device
@@ -21,7 +21,7 @@ class PingAndState(Producer):
             self.device.update()
             self.res = (now, self.ping.get(), self.device.get())
         else:
-            empty = webpanel.WebPanelState()
+            empty = panel.PanelState()
             self.res = (now, self.ping.get(), empty)
 
     def stop(self):
@@ -31,7 +31,7 @@ class PingAndState(Producer):
             self.device.stop()
 
 
-class Log(Recorder):
+class Reporter(Recorder):
     def __init__(self, file: TextIOWrapper, targets: dict[str, str]):
         super().__init__(file)
         # targets = {
@@ -40,14 +40,15 @@ class Log(Recorder):
         self.targets = targets
         self.target_name = list(targets.keys())
         self.target_name.sort()
-        self.file.write("time," + ','.join(self.target_name) +
-                        ',rsrp,sinr,band,pci\n')
+        self.file.write("time," + ','.join(self.target_name) +','+
+                        ','.join(DEVICE_INFOS)+"\n")
 
-    def record(self, data: tuple[datetime, dict[str, float], webpanel.WebPanelState]):
+    def record(self, data: tuple[datetime, dict[str, float], panel.PanelState]):
         time, pings, state = data
         time_str = time.strftime('%m-%d %H:%M:%S')
-        self.file.write(
-            f"{time_str},{','.join([str(pings[self.targets[t]]) for t in self.target_name])},{state.rsrp},{state.sinr},{state.band},{state.pci}\n")
+        self.file.write(time_str+","+
+            ','.join([str(pings[self.targets[t]]) for t in self.target_name])+","+
+            ','.join(state.get(i) for i in DEVICE_INFOS)+"\n")
 
 
 
@@ -74,14 +75,14 @@ def gen_live(platform: str, room_id: str | None = None,) -> Sequence:
 
 def gen_device(record_device: bool,device_ip: str) -> Sequence:
     if record_device:
-        device = webpanel.WebPanel_FM(device_ip)
+        device = panel.Panel_FM(device_ip)
     else:
         device = Producer()
-        device.set_default(webpanel.WebPanelState())
+        device.set_default(panel.PanelState())
     return device
 
 class Console(Recorder):
-    def record(self, data: tuple[datetime, dict[str, float], webpanel.WebPanelState]):
+    def record(self, data: tuple[datetime, dict[str, float], panel.PanelState]):
         time, pings, state = data
         time_str = time.strftime('%m-%d %H:%M:%S')
 
@@ -92,8 +93,8 @@ class Main:
         os.makedirs(f"{PATH}/{now}/", exist_ok=True)
         
         device = gen_device(record_device,device_ip)
-        device.add_recorder(webpanel.Console(stdout))
-        # device = AutoFlush(device, timedelta(seconds=5))
+        device.add_recorder(panel.Console(stdout))
+        # device = AutoFlush(device, timedelta(minutes=5))
         device = SequenceFullSecond(device, timedelta(seconds=1))
         device.start()
 
@@ -101,15 +102,15 @@ class Main:
         living.add_recorder(live.Reporter(
             open(f"{PATH}/{now}/stuck.csv", 'w', encoding='utf-8-sig'), threshold=1))
         living.add_recorder(live.Console(stdout))
-        living = AutoFlush(living, timedelta(seconds=5))
+        living = AutoFlush(living, timedelta(minutes=5))
         living = Sequence(living, interval=timedelta(seconds=0.3))
         living.start()
 
 
         ping_device = PingAndState(stable.Pings(list(ips.values())), device)
-        ping_device = AutoFlush(ping_device, timedelta(seconds=5))
+        ping_device = AutoFlush(ping_device, timedelta(minutes=5))
         ping_device.add_recorder(
-            Log(open(f"{PATH}/{now}/ping.csv", 'w', encoding='utf-8-sig'), ips))
+            Reporter(open(f"{PATH}/{now}/ping.csv", 'w', encoding='utf-8-sig'), ips))
         ping_device.add_recorder(stable.Console(stdout, ips))
 
         ping_device = SequenceFullSecond(ping_device, interval=timedelta(seconds=1))

@@ -4,7 +4,7 @@ import speedspider
 import common
 from datetime import timedelta
 import utils
-import webpanel
+import panel
 import speed_recorder
 
 class StdoutRedirector:
@@ -58,7 +58,7 @@ def main(root: tk.Tk):
             self.table = table
             # self.len = 0
 
-        def record(self, res: tuple[speedspider.SpeedTestResult,webpanel.WebPanelState]):
+        def record(self, res: tuple[speedspider.SpeedTestResult,panel.PanelState]):
             res_speed,res_device = res
             # if self.len > 8:
             #     self.table.delete(self.table.get_children()[0])
@@ -84,7 +84,7 @@ def main(root: tk.Tk):
         
 
         obj.add_recorder(Result2Display(tree))
-        obj = common.AutoFlush(obj, timedelta(minutes=30))
+        obj = common.AutoFlush(obj, timedelta(minutes=20))
         obj = common.Sequence(obj, delta)
         obj.start()
 
