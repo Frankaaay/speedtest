@@ -47,14 +47,14 @@ def main(root):
         def __init__(self, table: ttk.Treeview):
             super().__init__(None)
             self.table = table
-            self.len = 0
+            # self.len = 0
 
         def record(self, res: tuple[speedspider.SpeedTestResult,webpanel.WebPanelState]):
             res_speed,res_device = res
-            if self.len > 8:
-                self.table.delete(self.table.get_children()[0])
-            else:
-                self.len += 1
+            # if self.len > 8:
+            #     self.table.delete(self.table.get_children()[0])
+            # else:
+            #     self.len += 1
             self.table.insert("", tk.END,
                             values=(res_speed.lag, res_speed.jit, res_speed.dl, res_speed.ul))
 
