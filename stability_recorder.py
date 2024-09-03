@@ -69,6 +69,7 @@ def gen_live(platform: str, room_id: str | None = None,) -> Sequence:
 
     else:
         living = Producer()
+        living.set_default((live.LiveState.Normal,'OFF'))
     return living
 
 def gen_device(record_device: bool,device_ip: str) -> Sequence:
@@ -76,7 +77,7 @@ def gen_device(record_device: bool,device_ip: str) -> Sequence:
         device = webpanel.WebPanel_FM(device_ip)
     else:
         device = Producer()
-        device.res = webpanel.WebPanelState()
+        device.set_default(webpanel.WebPanelState())
     return device
 
 class Console(Recorder):

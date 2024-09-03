@@ -54,7 +54,8 @@ class WebPanel(Producer):
         self.ip = device_ip
         self.tree: dict = None
         self.timeout = timeout.total_seconds()
-        self.res = WebPanelState()
+        self.set_default(WebPanelState())
+        self.set_ttl(timedelta(minutes=1))
 
     def update(self):
         super().update()

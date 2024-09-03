@@ -67,7 +67,6 @@ class WebPanel_FM(WebPanel):
         print("登录完成后，可关闭页面")
         # input("按回车继续")
         super().__init__(device_ip, timeout)
-        self.res = WebPanelState()
 
     def update(self):
         super().update()
