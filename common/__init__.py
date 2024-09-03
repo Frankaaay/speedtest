@@ -3,10 +3,40 @@ from threading import Thread
 from time import sleep, time
 from datetime import datetime, timedelta
 from utils import wait_full_second
+import sys
 
+class StupidClassExistOnlyForDebug:
+    _StupidClass_name = ""
+    _StupidClass_debug = True
 
-class Recorder:
+    def __get_caller(self):
+        frame = sys._getframe(1)
+        while frame.f_back and frame.f_back.f_code.co_name.startswith('__'):
+            frame = frame.f_back
+        return frame
+    
+    def __display_stack(self):
+        f = self.__get_caller()
+        print(f'    at "{f.f_code.co_filename}", line {f.f_lineno}, in {f.f_code.co_name}')
+
+    def __init__(self) -> None:
+        if self._StupidClass_debug:
+            print(f"constructing {type(self).__name__} {self._StupidClass_name}")
+            self.__display_stack()
+            print()
+
+    def __del__(self) -> None:
+        if self._StupidClass_debug:
+            print(f"destructing {type(self).__name__} {self._StupidClass_name}")
+            # self.__display_stack()
+            # print()
+
+    def set_name(self, name: str=""):
+        self._StupidClass_name = str(name)
+
+class Recorder(StupidClassExistOnlyForDebug):
     def __init__(self, file: TextIOWrapper):
+        super().__init__()
         self.file = file
 
     def record(self, res):
@@ -27,10 +57,14 @@ class Recorder:
 
     def __exit__(self):
         self.close()
+    
+    def __del__(self):
+        self.close()
+        return super().__del__()
 
-
-class Producer:
+class Producer(StupidClassExistOnlyForDebug):
     def __init__(self):
+        super().__init__()
         self.res = None
         self.recorders: list[Recorder] = []
         self.stopped = False
@@ -61,6 +95,11 @@ class Producer:
     def flush(self):
         for recorder in self.recorders:
             recorder.flush()
+        
+    
+    def __del__(self):
+        self.stop()
+        return super().__del__()
 
 
 class AutoFlush(Producer):
@@ -92,10 +131,11 @@ class AutoFlush(Producer):
         self.obj.record()
 
 
-class Sequence(Thread, Producer):
+class Sequence(Thread, Producer, StupidClassExistOnlyForDebug):
     def __init__(self, obj: Producer, interval: timedelta):
         Thread.__init__(self)
         Producer.__init__(self)
+        StupidClassExistOnlyForDebug.__init__(self)
         self.obj = obj
         self.interval = interval
         self.res = obj.get()

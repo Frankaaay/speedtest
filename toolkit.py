@@ -13,8 +13,6 @@ def run_script(func):
     thread.start()
 
 
-
-
 if  not random.randint(0, 99) <= 5:
     # Create the main window
     root = tk.Tk()
