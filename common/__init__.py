@@ -100,6 +100,7 @@ class Sequence(Thread, Producer):
         self.interval = interval
         self.res = obj.get()
         self.stopped = False
+        self.last_run = time()-self.interval.total_seconds()
 
     def update(self):
         self.res = self.obj.get()
@@ -108,10 +109,14 @@ class Sequence(Thread, Producer):
         try:
             while not self.stopped:
                 now = time()
+                if now < self.last_run + self.interval.total_seconds():
+                    sleep(max(0, min(1, self.last_run + self.interval.total_seconds() - now)))
+                    continue
+                self.last_run = now
                 self.obj.update()
                 self.update()
                 self.obj.record()
-                sleep(max(0, self.interval.total_seconds() - (time() - now)))
+                # sleep(max(0, self.interval.total_seconds() - (now - now)))
         except KeyboardInterrupt:
             pass
         finally:
@@ -122,7 +127,6 @@ class Sequence(Thread, Producer):
     def flush(self):
         super().flush()
         self.obj.flush()
-
 
 class SequenceFullSecond(Sequence):
     def update(self):

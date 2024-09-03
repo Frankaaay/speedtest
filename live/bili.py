@@ -6,6 +6,8 @@ from selenium.common import exceptions as SEexceptions
 
 class BiliLive(Live):
     def __init__(self, room_id=None, interval=timedelta(seconds=0.1)):
+        if room_id is None:
+            room_id = '31539256'
         super().__init__('https://live.bilibili.com/', room_id, interval)
 
     def find_available(self):
@@ -22,10 +24,17 @@ class BiliLive(Live):
             try:
                 self.driver.find_element(
                     By.CLASS_NAME, "web-player-ending-panel")
-                self.find_available()
                 self.res = (LiveState.End, None)
+                self.find_available()
             except SEexceptions.NoSuchElementException:
                 pass
+
+            # 直播是否断开
+            try:
+                self.driver.find_element(
+                    By.XPATH, '//@[id="live-player"]/video')
+            except SEexceptions.NoSuchElementException:
+                raise "找不到视频元素"
 
             # 直播是否卡顿
             try:
@@ -33,9 +42,6 @@ class BiliLive(Live):
                 self.res = (LiveState.Stuck, None)
             except SEexceptions.NoSuchElementException:
                 self.res = (LiveState.Normal, None)
-
-        except SEexceptions.WebDriverException as e:
-            self.res = (LiveState.Error, str(e))
 
         except Exception as e:
             self.res = (LiveState.Error, str(e))
