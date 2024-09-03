@@ -14,12 +14,13 @@ def run_script(func):
 
 
 
-
-if  not random.randint(0, 99) <= 5:
+#5% chance to open mysterious page
+if  random.randint(0, 99) <= 5:
     # Create the main window
     root = tk.Tk()
     root.title("Flymodem No.1")
     root.geometry("1000x800")
+
     # Load the background image
     background_image = Image.open("splash.png")
     background_image = background_image.resize((1000, 800), Image.LANCZOS)  # Resize image to fit the window
@@ -149,5 +150,8 @@ else:
     # Create a footer label
     footer_label = tk.Label(root, text="© 2024 Flymodem", font=("Helvetica", 12), fg="#888", bg="#282c34")
     footer_label.pack(side="bottom", pady=20)
-    # Start the GUI event loop
+
+
+
+# Start the GUI event loop
 root.mainloop()
