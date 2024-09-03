@@ -12,6 +12,7 @@ class Xigua(Live):
         super().__init__('https://www.ixigua.com/', season_id, interval)
 
     def find_available(self):
+        print('finding available...')
         self.episode += 1
         self.driver.implicitly_wait(5)
         try:
