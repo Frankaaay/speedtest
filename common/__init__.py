@@ -58,9 +58,6 @@ class Recorder(StupidClassExistOnlyForDebug):
     def __exit__(self):
         self.close()
     
-    def __del__(self):
-        self.close()
-        return super().__del__()
 
 class Producer(StupidClassExistOnlyForDebug):
     def __init__(self):
@@ -97,9 +94,6 @@ class Producer(StupidClassExistOnlyForDebug):
             recorder.flush()
         
     
-    def __del__(self):
-        self.stop()
-        return super().__del__()
 
 
 class AutoFlush(Producer):
