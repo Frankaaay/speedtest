@@ -15,7 +15,7 @@ class Reporter(Recorder):
         self.file.write(
             f"{now},"
             f"{speed_res.lag},{speed_res.jit},{speed_res.dl},{speed_res.ul},"
-            f"{device_res.rsrp},{device_res.sinr},{device_res.band},{device_res.pci},"
+            f"{device_res.rsrp},{device_res.sinr},{device_res.band},{device_res.pci}"
             "\n")
 
 

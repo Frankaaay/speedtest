@@ -1,10 +1,8 @@
 import pandas as pd
-from dash import Dash, dcc, html, dash_table, Input, Output, State
+from dash import Dash, dcc, html, Input, Output, State
 import math
 import numpy as np
 import plotly.graph_objs as go
-import datetime
-import bisect
 import os
 import threading
 import webbrowser
@@ -61,13 +59,29 @@ class Speed:
             name='Download',
             marker=dict(color='#8888ff'),
         ))
+
+        self.graph_speed.add_trace(go.Scatter(
+            x=data['time'],
+            y=data['rsrp'],
+            mode='lines',
+            name='rsrp',
+            marker=dict(color='#FF0000'),
+        ))
+
+        self.graph_speed.add_trace(go.Scatter(
+            x=data['time'],
+            y=data['sinr'],
+            mode='lines',
+            name='sinr',
+            marker=dict(color='#FFFF00'),
+        ))
         
         self.graph_lag.add_trace(go.Scatter(
             x=data['time'],
             y=data['lag'],
             mode='lines',
             name='Lag',
-            marker=dict(color='#8888ff'),
+            marker=dict(color='#22aaff'),
         ))
 
         self.graph_lag.add_trace(go.Scatter(
@@ -105,7 +119,7 @@ path = r".\log\speed"
 app = Dash(__name__, title = "测速数据整理")
 
 
-speed = Speed(pd.DataFrame({'time': [0], 'lag': [0], 'jit': [0], 'download': [0], 'upload': [0]}))
+speed = Speed(pd.DataFrame({'time': [0], 'lag': [0], 'jit': [0], 'download': [0], 'upload': [0],'rsrp': [0], 'sinr': [0]}))
 
 
 # Layout of the app
@@ -148,7 +162,7 @@ app.layout = html.Div([
     dcc.Slider(0, 1,
         step=1e-6,
         marks=None,
-        value=0.2,
+        value=1,
         id='range-raw',
     ),
     
@@ -301,8 +315,7 @@ def update_range(n_clicks, range_raw, start_raw, selected_folder):
 
 # Function to open the browser automatically
 def open_browser():
-    webbrowser.open_new("http://127.0.0.1:8050/")
+    webbrowser.open_new("http://127.0.0.1:250/")
 
-# def main():
-#     threading.Timer(0, open_browser).start()
-app.run_server(debug = False)
+def main():
+    app.run_server(debug = False, port = 250)
