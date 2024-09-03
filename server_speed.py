@@ -4,7 +4,6 @@ import math
 import numpy as np
 import plotly.graph_objs as go
 import os
-import threading
 import webbrowser
 
 def summarize(df, column):
@@ -16,6 +15,13 @@ def summarize(df, column):
     std = df[column].std()
 
     return [round(mean, 2), max, low, round(std, 2)]
+
+def score(download, lag):
+    if download != 0.0 and lag != 0.0:
+        download_score = 100 / download
+        lag_score = 1- (100 / lag)
+        return (0.5 * download_score) + (0.5 * lag_score)
+    return 0
 
 #storing data for updating graphs
 class Speed:
@@ -35,6 +41,8 @@ class Speed:
         self.jit = [0, 0, 0, 0]
         self.lag = [0, 0, 0, 0]
 
+        #score
+        self.score = []
 
     #update everytimes the state changes 
 
@@ -43,6 +51,16 @@ class Speed:
         self.graph_lag = go.Figure()
         data  = self.data[self.display_start:self.display_start+self.display_range]
 
+        hovertext = [f"Band: {row['band']}<br>PCI: {row['pci']}" 
+        for index, row in data.iterrows()]
+
+        # Apply score function to each row
+        for _, row in data.iterrows():
+            calculated_score = score(row['download'], row['lag'])
+            self.score.append(calculated_score)
+
+        
+
         #drawing lines
         self.graph_speed.add_trace(go.Scatter(
             x=data['time'],
@@ -50,6 +68,7 @@ class Speed:
             mode='lines',
             name='Upload',
             marker=dict(color='#22aaff'),
+            hovertext = hovertext
         ))
 
         self.graph_speed.add_trace(go.Scatter(
@@ -58,6 +77,7 @@ class Speed:
             mode='lines',
             name='Download',
             marker=dict(color='#8888ff'),
+            hovertext = hovertext
         ))
 
         self.graph_speed.add_trace(go.Scatter(
@@ -66,6 +86,7 @@ class Speed:
             mode='lines',
             name='rsrp',
             marker=dict(color='#FF0000'),
+            hovertext = hovertext
         ))
 
         self.graph_speed.add_trace(go.Scatter(
@@ -74,6 +95,7 @@ class Speed:
             mode='lines',
             name='sinr',
             marker=dict(color='#FFFF00'),
+            hovertext = hovertext
         ))
         
         self.graph_lag.add_trace(go.Scatter(
@@ -119,7 +141,7 @@ path = r".\log\speed"
 app = Dash(__name__, title = "测速数据整理")
 
 
-speed = Speed(pd.DataFrame({'time': [0], 'lag': [0], 'jit': [0], 'download': [0], 'upload': [0],'rsrp': [0], 'sinr': [0]}))
+speed = Speed(pd.DataFrame({'time': [0], 'lag': [0], 'jit': [0], 'download': [0], 'upload': [0],'rsrp': [0], 'sinr': [0],'band': [0], 'pci': [0]}))
 
 
 # Layout of the app

@@ -20,7 +20,7 @@ class StdoutRedirector:
         pass
     
 def main(root):
-    root.title("直播稳定性检测")
+    # root.title("直播稳定性检测")
 
     # 勾选项
     record_device = tk.BooleanVar(value=False)

@@ -6,7 +6,6 @@ import plotly.graph_objs as go
 import datetime
 import bisect
 import os
-import threading
 import webbrowser
 
 
