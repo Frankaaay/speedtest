@@ -6,6 +6,8 @@ from selenium.common import exceptions as SEexceptions
 
 class BiliLive(Live):
     def __init__(self, room_id=None, interval=timedelta(seconds=0.1)):
+        if room_id is None:
+            room_id = '31539256'
         super().__init__('https://live.bilibili.com/', room_id, interval)
 
     def find_available(self):
