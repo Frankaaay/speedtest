@@ -23,22 +23,31 @@ class StdoutRedirector:
     def close(self):
         pass
 
-def main(root):
+def main(root: tk.Tk):
+    try:
+        root.title("直播稳定性检测")
+    except:
+        pass
+
     def add_item():
+        nonlocal not_stdout
         item = add_url.get()
         if item:
             url_listbox.insert(tk.END, item)
             add_url.delete(0, tk.END)
         else:
+            not_stdout.write("请输入要添加的网站！\n")
             pass
             # messagebox.showwarning("警告", "请输入要添加的项！")
 
 
     def delete_item():
+        nonlocal not_stdout
         selected_index = url_listbox.curselection()
         if selected_index:
             url_listbox.delete(selected_index)
         else:
+            not_stdout.write("请输入要删除的网站！\n")
             pass
             # messagebox.showwarning("警告", "请选择要删除的项！")
 
