@@ -30,6 +30,8 @@ class Live(Producer):
         self.afk_since = time()
 
     def find_available(self, get_url: Callable[[webdriver.Edge], str]):
+        print('finding available...')
+        self.driver.switch_to.window(self.driver.window_handles[0])
         self.driver.implicitly_wait(5)
         self.driver.get(self.base_url)
         url: str = get_url(self.driver)
@@ -38,10 +40,12 @@ class Live(Producer):
         self.goto_room(room_id)
 
     def goto_room(self, room_id: str):
+        print("goto room", room_id)
         self.afk_since = time()
         self.driver.get(self.base_url + room_id)
 
     def refresh(self):
+        print("refreshing...")
         self.afk_since = time()
         self.driver.refresh()
 

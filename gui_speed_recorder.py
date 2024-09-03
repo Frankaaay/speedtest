@@ -47,22 +47,25 @@ def main(root):
         def __init__(self, table: ttk.Treeview):
             super().__init__(None)
             self.table = table
-            self.len = 0
+            # self.len = 0
 
         def record(self, res: tuple[speedspider.SpeedTestResult,webpanel.WebPanelState]):
             res_speed,res_device = res
-            if self.len > 8:
-                self.table.delete(self.table.get_children()[0])
-            else:
-                self.len += 1
+            # if self.len > 8:
+            #     self.table.delete(self.table.get_children()[0])
+            # else:
+            #     self.len += 1
             self.table.insert("", tk.END,
                             values=(res_speed.lag, res_speed.jit, res_speed.dl, res_speed.ul))
 
 
     def start_button_clicked():
-        nonlocal obj, url_listbox, delta_custom, save_log, tree, headless, record_device, device_ip, not_stdout
+        nonlocal obj, not_stdout
         if obj is not None:
+            not_stdout.write("Already running! Flushing\n")
+            obj.flush()
             return
+        nonlocal url_listbox, delta_custom, save_log, tree, headless, record_device, device_ip
         delta = timedelta(minutes=float(delta_custom.get()), microseconds=1)
         obj = speed_recorder.Main(
             url_listbox.get(0, tk.END),
@@ -78,10 +81,13 @@ def main(root):
 
 
     def stop_button_clicked():
-        nonlocal obj
+        nonlocal obj, not_stdout
         if obj is not None:
+            not_stdout.write("Stopping\n")
             obj.stop()
             obj = None
+        else:
+            not_stdout.write("Not running!\n")
 
 
     def copy_selected_to_clipboard():

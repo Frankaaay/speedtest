@@ -22,10 +22,10 @@ class DouyinLive(Live):
             # 直播是否结束
             try:
                 end_text = self.driver.find_element(
-                    By.XPATH, '//*[@id="pip-anchor"]/div/pace-island[1]/div/span').text()
+                    By.XPATH, '//*[@data-anchor-id="living-basic-player"]/div/div/pace-island[1]/div/span').text
                 if end_text == '直播已结束':
-                    self.find_available()
                     self.res = (LiveState.End, None)
+                    self.find_available()
             except SEexceptions.NoSuchElementException:
                 pass
 
