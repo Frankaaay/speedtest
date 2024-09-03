@@ -60,9 +60,12 @@ def main(root):
 
 
     def start_button_clicked():
-        nonlocal obj, url_listbox, delta_custom, save_log, tree, headless, record_device, device_ip, not_stdout
+        nonlocal obj, not_stdout
         if obj is not None:
+            not_stdout.write("Already running! Flushing\n")
+            obj.flush()
             return
+        nonlocal url_listbox, delta_custom, save_log, tree, headless, record_device, device_ip
         delta = timedelta(minutes=float(delta_custom.get()), microseconds=1)
         obj = speed_recorder.Main(
             url_listbox.get(0, tk.END),
@@ -78,10 +81,13 @@ def main(root):
 
 
     def stop_button_clicked():
-        nonlocal obj
+        nonlocal obj, not_stdout
         if obj is not None:
+            not_stdout.write("Stopping\n")
             obj.stop()
             obj = None
+        else:
+            not_stdout.write("Not running!\n")
 
 
     def copy_selected_to_clipboard():

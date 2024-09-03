@@ -65,11 +65,11 @@ def main(root):
 
     def start_button_clicked():
         # 处理开始按钮点击事件
-        nonlocal obj
+        nonlocal obj, not_stdout
         if obj is not None:
+            not_stdout.write("Already running! Flushing\n")
             obj.flush()
             return
-        nonlocal not_stdout
         nonlocal record_device, device_ip, live_option, browser_option, room_id
         utils.browser_name = browser_option.get()
 
@@ -85,11 +85,13 @@ def main(root):
 
     def stop_button_clicked():
         # 处理停止按钮点击事件
-        nonlocal obj
+        nonlocal obj, not_stdout
         if obj is not None:
-            print("Stopping")
+            not_stdout.write("Stopping\n")
             obj.stop()
             obj = None
+        else:
+            not_stdout.write("Not running!\n")
 
 
     # 开始和停止按钮
