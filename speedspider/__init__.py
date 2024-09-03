@@ -24,7 +24,7 @@ class SpeedTestResult:
 
 URLS = [
     "http://wsus.sjtu.edu.cn/speedtest/",
-    "http://speed.neu.edu.cn/",
+    # "http://speed.neu.edu.cn/", fuck stupid web always get 502
     "http://test.ustc.edu.cn/",
     "http://test.nju.edu.cn/",
     "http://speed.nuaa.edu.cn/",

@@ -32,7 +32,7 @@ class BiliLive(Live):
             # 直播是否断开
             try:
                 self.driver.find_element(
-                    By.XPATH, '//@[id="live-player"]/video')
+                    By.XPATH, '//*[@id="live-player"]/video')
             except SEexceptions.NoSuchElementException:
                 raise "找不到视频元素"
 

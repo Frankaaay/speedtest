@@ -66,7 +66,6 @@ class Live(Producer):
         return False
 
     def stop(self):
-        print("Live is stopping...")
         self.res = (LiveState.End, "stopped")
         super().stop()
         self.driver.quit()
