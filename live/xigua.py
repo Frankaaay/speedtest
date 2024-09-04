@@ -40,6 +40,7 @@ class Xigua(Live):
         return False
 
     def update(self):
+        super().update()
         if self.afk_check():
             return
 

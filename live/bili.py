@@ -16,6 +16,7 @@ class BiliLive(Live):
             By.XPATH, f'/html/body/div[1]/div/div[5]/div[3]/div/div[2]/div[1]/div[1]/a[{i}]').get_attribute('href'))
 
     def update(self):
+        super().update()
         if self.afk_check():
             return
 
@@ -30,11 +31,8 @@ class BiliLive(Live):
                 pass
 
             # 直播是否断开
-            try:
-                self.driver.find_element(
-                    By.XPATH, '//*[@id="live-player"]/video')
-            except SEexceptions.NoSuchElementException:
-                raise "找不到视频元素"
+            self.driver.find_element(
+                By.XPATH, '//*[@id="live-player"]/video')
 
             # 直播是否卡顿
             try:

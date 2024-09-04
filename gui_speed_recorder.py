@@ -171,7 +171,7 @@ def main(root: tk.Tk):
     stop_button.pack(side=tk.RIGHT)
     edit_frame.pack()
 
-    output_text = tk.Text(root, wrap="word", height=5, width=64)
+    output_text = tk.Text(root, wrap="word", height=5, width=100)
     output_text.pack()
 
     not_stdout = StdoutRedirector(output_text)

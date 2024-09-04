@@ -15,7 +15,7 @@ class PanelState:
         return ' '.join(f'{k}:{v}' for k,v in self.data.items())
     
     def get(self, name):
-        return self.data.get(name, INVALID_VALUE)
+        return str(self.data.get(name, INVALID_VALUE))
     
 
 class Panel(Producer):
@@ -28,11 +28,6 @@ class Panel(Producer):
     def update(self):
         super().update()
 
-    def set_band(self, band):
-        pass
-
-    def reboot(self):
-        pass
 
 class Console(Recorder):
     def __init__(self, file: TextIOWrapper):

@@ -15,6 +15,7 @@ class DouyinLive(Live):
         # Stupid path that is different in Edge and Firefox
 
     def update(self):
+        super().update()
         if self.afk_check():
             return
 

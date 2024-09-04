@@ -53,8 +53,6 @@ class Live(Producer):
 
     def update(self):
         super().update()
-        if self.afk_check():
-            return
 
     def afk_check(self) -> bool:
         if time() - self.afk_since > timedelta(minutes=20).total_seconds():
