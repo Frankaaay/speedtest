@@ -29,8 +29,12 @@ class Speed:
         self.data = data                             #all data
         self.display_start = 0
         self.display_range = len(self.data)
-        self.graph_speed = None 
-        self.graph_lag = None                      #the main graph
+
+        self.graph_upload = None 
+        self.graph_lag = None    
+        self.graph_download = None 
+        self.graph_jit = None    #the main graph
+
         self.raw_len = len(self.data)
 
         #stats contains mean, max, min, std
@@ -47,22 +51,25 @@ class Speed:
     #update everytimes the state changes 
 
     def update_graph(self):
-        self.graph_speed = go.Figure()
+        self.graph_upload = go.Figure()
         self.graph_lag = go.Figure()
+        self.graph_download = go.Figure()
+        self.graph_jit = go.Figure()
+
         data  = self.data[self.display_start:self.display_start+self.display_range]
 
         hovertext = [f"Band: {row['band']}<br>PCI: {row['pci']}" 
         for index, row in data.iterrows()]
 
         # Apply score function to each row
-        for _, row in data.iterrows():
-            calculated_score = score(row['download'], row['lag'])
-            self.score.append(calculated_score)
+        # for _, row in data.iterrows():
+        #     calculated_score = score(row['download'], row['lag'])
+        #     self.score.append(calculated_score)
 
         
 
         #drawing lines
-        self.graph_speed.add_trace(go.Scatter(
+        self.graph_upload.add_trace(go.Scatter(
             x=data['time'],
             y=data['upload'],
             mode='lines',
@@ -71,7 +78,7 @@ class Speed:
             hovertext = hovertext
         ))
 
-        self.graph_speed.add_trace(go.Scatter(
+        self.graph_download.add_trace(go.Scatter(
             x=data['time'],
             y=data['download'],
             mode='lines',
@@ -80,7 +87,7 @@ class Speed:
             hovertext = hovertext
         ))
 
-        self.graph_speed.add_trace(go.Scatter(
+        self.graph_download.add_trace(go.Scatter(
             x=data['time'],
             y=data['rsrp'],
             mode='lines',
@@ -89,7 +96,7 @@ class Speed:
             hovertext = hovertext
         ))
 
-        self.graph_speed.add_trace(go.Scatter(
+        self.graph_download.add_trace(go.Scatter(
             x=data['time'],
             y=data['sinr'],
             mode='lines',
@@ -106,7 +113,7 @@ class Speed:
             marker=dict(color='#22aaff'),
         ))
 
-        self.graph_lag.add_trace(go.Scatter(
+        self.graph_jit.add_trace(go.Scatter(
             x=data['time'],
             y=data['jit'],
             mode='lines',
@@ -121,7 +128,7 @@ class Speed:
         self.lag = summarize(data, "lag")
         self.jit = summarize(data, "jit")
 
-        return self.graph_speed, self.graph_lag
+        return self.graph_upload, self.graph_lag, self.graph_download, self.graph_jit
 
 
 
@@ -240,10 +247,14 @@ app.layout = html.Div([
     id = "upload"),
 
     html.H1(""),
+
     #speed graph
     html.H1(id = 'range-display'),
 
-    dcc.Graph(id = 'speed'),
+    # html.H1('Upload'),
+    dcc.Graph(id = 'upload'),
+    dcc.Graph(id = 'download'),
+    dcc.Graph(id = 'jit'),
     dcc.Graph(id = 'lag'),
 
 ], style={'textAlign': 'center', 'font-size': '10px', 'marginTop': '50px', 'marginBottom': '20px'})
@@ -252,8 +263,9 @@ app.layout = html.Div([
 
 @app.callback(
     Output('range-display', 'children'),
-    Output('speed', 'figure'),
-    Output('lag', 'figure'),
+    Output('upload', 'figure'),
+    Output('donload', 'figure'),
+    Output('jit', 'figure'),
     Output('upload', 'children'),
 
     Input('select-folder-button', 'n_clicks'),
