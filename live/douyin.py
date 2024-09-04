@@ -20,23 +20,41 @@ class DouyinLive(Live):
 
         try:
             # 直播是否结束
-            try:
-                end_text = self.driver.find_element(
-                    By.XPATH, '//*[@data-anchor-id="living-basic-player"]/div/div/pace-island[1]/div/span').text
-                if end_text == '直播已结束':
-                    self.res = (LiveState.End, None)
-                    self.find_available()
-            except SEexceptions.NoSuchElementException:
-                pass
+            player = self.driver.find_element(By.XPATH,"//div[(contains(@class,'basicPlayer'))]")
+            player_class = player.get_attribute("class")
 
-            # 直播是否卡顿
-            loading = self.driver.find_element(
-                By.CLASS_NAME, "xgplayer-loading")
-            if loading.is_displayed():
+            if 'xgplayer-nostart' in player_class:
+                self.res = (LiveState.End, None)
+                self.find_available()
+            elif 'xgplayer-is-error' in player_class:
+                self.res = (LiveState.Error, None)
+                self.find_available()
+            elif 'xgplayer-isloading' in player_class:
                 self.res = (LiveState.Stuck, None)
             else:
                 self.res = (LiveState.Normal, None)
+            
+            # try:
+            #     end_text = self.driver.find_element(
+            #         By.XPATH, '//*[@data-anchor-id="living-basic-player"]/div/div/pace-island[1]/div/span').text
+            #     if end_text == '直播已结束':
+            #         self.res = (LiveState.End, None)
+            #         self.find_available()
+            # except SEexceptions.NoSuchElementException:
+            #     pass
+
+            # # 直播是否卡顿
+            # loading = self.driver.find_element(
+            #     By.CLASS_NAME, "xgplayer-loading")
+            # if loading.is_displayed():
+            #     self.res = (LiveState.Stuck, None)
+            # else:
+            #     self.res = (LiveState.Normal, None)
 
         except SEexceptions.WebDriverException as e:
             self.res = (LiveState.Error, str(e))
+            self.find_available()
+
+        except Exception as e:
+            self.res = (LiveState.Error, "未知错误"+repr(e))
             self.find_available()

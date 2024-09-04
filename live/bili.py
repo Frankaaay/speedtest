@@ -43,6 +43,10 @@ class BiliLive(Live):
             except SEexceptions.NoSuchElementException:
                 self.res = (LiveState.Normal, None)
 
-        except Exception as e:
+        except SEexceptions.WebDriverException as e:
             self.res = (LiveState.Error, str(e))
+            self.find_available()
+        
+        except Exception as e:
+            self.res = (LiveState.Error, "未知错误"+repr(e))
             self.find_available()

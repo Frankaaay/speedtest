@@ -19,8 +19,11 @@ class StdoutRedirector:
     def close(self):
         pass
     
-def main(root):
-    # root.title("直播稳定性检测")
+def main(root: tk.Tk):
+    try:
+        root.title("直播稳定性检测")
+    except:
+        pass
 
     # 勾选项
     record_device = tk.BooleanVar(value=False)

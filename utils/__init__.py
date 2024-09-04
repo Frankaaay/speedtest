@@ -36,10 +36,10 @@ def web_driver(headless: bool = False):
     return _web_driver(browser_name, headless)
 
 
-def wait_full_second(delta=timedelta(seconds=1), now=datetime.now()):
+def wait_full_second(delta=1, now=time.time()):
     # Calculate the time until the next second
-    next_second = (now + delta).replace(microsecond=0)
-    time_to_wait = (next_second - now).total_seconds()
+    next_second = int(now + delta)
+    time_to_wait = (next_second - now)
     # Wait until the next second
     time.sleep(time_to_wait)
 
