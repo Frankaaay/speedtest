@@ -60,7 +60,7 @@ class Live(Producer):
             self.afk_since = time()
             self.res = (LiveState.End, "anti afk")
             return True
-        elif time() - self.afk_since < timedelta(seconds=5).total_seconds():
+        elif time() - self.afk_since < timedelta(seconds=15).total_seconds():
             self.res = (LiveState.Normal, "anti afk refreshing")
             return True
         return False
