@@ -67,7 +67,7 @@ def gen_live(platform: str, room_id: str | None = None,) -> Sequence:
             living = live.Xigua(room_id)
         else:
             living = live.BiliLive(room_id)
-
+        living.set_ttl(timedelta(minutes=1))
     else:
         living = Producer()
         living.set_default((live.LiveState.Normal,'OFF'))
@@ -76,9 +76,10 @@ def gen_live(platform: str, room_id: str | None = None,) -> Sequence:
 def gen_device(record_device: bool,device_ip: str) -> Sequence:
     if record_device:
         device = panel.Panel_FM(device_ip)
+        device.set_ttl(timedelta(minutes=1))
     else:
         device = Producer()
-        device.set_default(panel.PanelState())
+    device.set_default(panel.PanelState())
     return device
 
 class Console(Recorder):

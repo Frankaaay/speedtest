@@ -5,7 +5,7 @@ from selenium.common import exceptions as SEexceptions
 
 
 class DouyinLive(Live):
-    def __init__(self, room_id=None, interval=timedelta(seconds=0.1)):
+    def __init__(self, room_id=None, interval=timedelta(seconds=8)):
         super().__init__('https://live.douyin.com/', room_id, interval)
 
     def find_available(self):

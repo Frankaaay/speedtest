@@ -21,6 +21,19 @@ class BiliLive(Live):
             return
 
         try:
+
+            try:
+                self.driver.implicitly_wait(8)
+                self.driver.find_element(
+                    By.XPATH, '//*[@id="live-player"]/video')
+            except SEexceptions.WebDriverException as e:
+                self.res = (LiveState.End, "这似乎不是一个直播间")
+                self.find_available()
+            finally:
+                self.driver.implicitly_wait(self.interval)
+
+                
+            
             # 直播是否结束
             try:
                 self.driver.find_element(
@@ -31,8 +44,6 @@ class BiliLive(Live):
                 pass
 
             # 直播是否断开
-            self.driver.find_element(
-                By.XPATH, '//*[@id="live-player"]/video')
 
             # 直播是否卡顿
             try:
@@ -45,6 +56,6 @@ class BiliLive(Live):
             self.res = (LiveState.Error, str(e))
             self.find_available()
         
-        except Exception as e:
-            self.res = (LiveState.Error, "未知错误"+repr(e))
+        except:
+            self.res = (LiveState.Error, "未知错误")
             self.find_available()

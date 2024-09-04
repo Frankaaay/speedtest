@@ -3,6 +3,9 @@ from common import *
 INVALID_VALUE = '-'
 
 class PanelState:
+    '''
+    本质上就是字典
+    '''
     def __init__(self, data: dict={}):
         self.data = data
 

@@ -8,6 +8,11 @@ import re
 
 
 class LiveState:
+    '''
+    注意在一些情况下End的等级可能高于Error，
+    Error表示可能恢复的错误，
+    而End表示不可恢复的错误。
+    '''
     Normal = 0,
     Stuck = 1,
     End = 2,
@@ -19,9 +24,9 @@ class Live(Producer):
         super().__init__()
         self.base_url = base_url
         self.driver = utils.web_driver()
-        self.res: tuple[LiveState, str | None] = (
-            LiveState.Error, "initializing")
+        self.res: tuple[LiveState, str | None] = (LiveState.Error, "initializing")
         self.interval = interval.total_seconds()
+        self.room_id = room_id
         if room_id is None:
             self.find_available()
         else:
@@ -29,12 +34,35 @@ class Live(Producer):
 
         self.afk_since = time()
         self.set_default((LiveState.Error, "Not update for too long"))
-        self.set_ttl(timedelta(minutes=1))
+
+        self.error_this_room_since_afk = 0
 
     def find_available(self, get_url: Callable[[webdriver.Edge], str]):
         print('finding available...')
         self.driver.switch_to.window(self.driver.window_handles[0])
-        self.driver.implicitly_wait(5)
+
+        room_id = re.findall(self.base_url + r'(\d+)', self.driver.current_url)
+        if len(room_id) > 0:
+            room_id = room_id[0]
+            if room_id != self.room_id:
+                print(f'检测到更换直播间 {room_id}')
+                self.error_this_room_since_afk = 0
+                self.goto_room(room_id)
+                return
+
+        if self.room_id is not None and\
+            self.error_this_room_since_afk < 3 and\
+            self.get()[0] != LiveState.End:
+
+            print(f'继续使用之前的直播间 {self.room_id}')
+            self.error_this_room_since_afk += 1
+            self.goto_room(self.room_id)
+            return
+        
+        print('寻找新的直播间')
+        self.error_this_room_since_afk = 0
+
+        self.driver.implicitly_wait(8)
         self.driver.get(self.base_url)
         url: str = get_url(self.driver)
         room_id = re.findall(self.base_url + r'(\d+)', url)[0]
@@ -43,6 +71,7 @@ class Live(Producer):
 
     def goto_room(self, room_id: str):
         print("goto room", room_id)
+        self.room_id = room_id
         self.afk_since = time()
         self.driver.get(self.base_url + room_id)
 
@@ -58,9 +87,9 @@ class Live(Producer):
         if time() - self.afk_since > timedelta(minutes=20).total_seconds():
             self.refresh()  # refresh page to prevent afk
             self.afk_since = time()
-            self.res = (LiveState.End, "anti afk")
+            self.res = (LiveState.Normal, "anti afk")
             return True
-        elif time() - self.afk_since < timedelta(seconds=15).total_seconds():
+        elif time() - self.afk_since < timedelta(seconds=10).total_seconds():
             self.res = (LiveState.Normal, "anti afk refreshing")
             return True
         return False
