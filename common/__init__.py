@@ -5,9 +5,11 @@ from datetime import datetime, timedelta
 from utils import wait_full_second
 import sys
 
+DEVICE_INFOS = ['rsrp','sinr','band','pci']
+
 class StupidClassExistOnlyForDebug:
     _StupidClass_name = ""
-    _StupidClass_debug = True
+    _StupidClass_debug = False
 
     def __get_caller(self):
         frame = sys._getframe(1)
@@ -65,16 +67,30 @@ class Producer(StupidClassExistOnlyForDebug):
         self.res = None
         self.recorders: list[Recorder] = []
         self.stopped = False
+        self.ttl = float('inf')
+        self.last_update = time()
+        self.default = None
+
+    def set_ttl(self, ttl: timedelta):
+        self.ttl = ttl.total_seconds()
+    
+    def set_default(self, default):
+        self.default = default
+        if self.res is None:
+            self.res = default
 
     def update(self):
-        pass
+        self.last_update = time()
 
     def get(self):
-        return self.res
+        if self.last_update + self.ttl < time():
+            return self.default
+        else:
+            return self.res
 
     def consume(self):
         x = self.get()
-        self.res = None
+        self.res = self.default
         return x
 
     def add_recorder(self, recorder: Recorder):
@@ -102,6 +118,7 @@ class AutoFlush(Producer):
         self.obj = obj
         self.interval = interval
         self.last_flush = time()
+        self.res = obj.get()
 
     def update(self):
         super().update()
@@ -137,6 +154,7 @@ class Sequence(Thread, Producer, StupidClassExistOnlyForDebug):
         self.last_run = time()-self.interval.total_seconds()
 
     def update(self):
+        super().update()
         self.res = self.obj.get()
 
     def run(self):
@@ -163,6 +181,25 @@ class Sequence(Thread, Producer, StupidClassExistOnlyForDebug):
         self.obj.flush()
 
 class SequenceFullSecond(Sequence):
-    def update(self):
-        wait_full_second(self.interval)
-        self.res = self.obj.get()
+    def run(self):
+        try:
+            while not self.stopped:
+                now = time()
+                if now >= self.last_run + self.interval.total_seconds():
+                    pass
+                elif now+1 >= self.last_run + self.interval.total_seconds():
+                    wait_full_second(now=now)
+                else:
+                    sleep(max(0, self.last_run + self.interval.total_seconds() - now))
+                    continue
+                self.last_run = time()
+                self.obj.update()
+                self.update()
+                self.obj.record()
+                # sleep(max(0, self.interval.total_seconds() - (now - now)))
+        except KeyboardInterrupt:
+            pass
+        finally:
+            self.stop()
+            self.obj.stop()
+

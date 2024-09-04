@@ -28,6 +28,8 @@ class Live(Producer):
             self.goto_room(room_id)
 
         self.afk_since = time()
+        self.set_default((LiveState.Error, "Not update for too long"))
+        self.set_ttl(timedelta(minutes=1))
 
     def find_available(self, get_url: Callable[[webdriver.Edge], str]):
         print('finding available...')

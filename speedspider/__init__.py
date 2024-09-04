@@ -4,6 +4,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.common import exceptions as SEexceptions
 import random
+import threading
 
 
 class SpeedTestResult:
@@ -61,7 +62,7 @@ class SpeedTester(Producer):
         except Exception as e:
             lag = jit = dl = ul = str(e)
         finally:
-            driver.quit()
+            threading.Thread(target=driver.quit).start()
 
         try:
             self.res = SpeedTestResult(float(lag), float(jit), float(dl), float(ul))
