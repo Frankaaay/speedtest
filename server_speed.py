@@ -128,7 +128,7 @@ class Speed:
         self.lag = summarize(data, "lag")
         self.jit = summarize(data, "jit")
 
-        return self.graph_upload, self.graph_lag, self.graph_download, self.graph_jit
+        return self.graph_download, self.graph_upload, self.graph_lag, self.graph_jit
 
 
 
@@ -208,28 +208,28 @@ app.layout = html.Div([
         ),
         html.Tbody([
             html.Tr([
-                html.Td("平均值"),
+                html.Td("平均值(ms)"),
                 html.Td(speed.upload[0]),
                 html.Td(speed.download[0]),
                 html.Td(speed.jit[0]),
                 html.Td(speed.lag[0])
             ]),
             html.Tr([
-                html.Td("最大值"),
+                html.Td("最大值(ms)"),
                 html.Td(speed.upload[1]),
                 html.Td(speed.download[1]),
                 html.Td(speed.jit[1]),
                 html.Td(speed.lag[1])
             ]),
             html.Tr([
-                html.Td("最小值"),
+                html.Td("最小值(ms)"),
                 html.Td(speed.upload[2]),
                 html.Td(speed.download[2]),
                 html.Td(speed.jit[2]),
                 html.Td(speed.lag[2])
             ]),
             html.Tr([
-                html.Td("平均差"),
+                html.Td("平均差(ms)"),
                 html.Td(speed.upload[3]),
                 html.Td(speed.download[3]),
                 html.Td(speed.jit[3]),
@@ -244,18 +244,21 @@ app.layout = html.Div([
         'margin': '0 auto',
         'fontSize': '20px',
     },
-    id = "upload"),
+    id = "stats"),
 
     html.H1(""),
 
     #speed graph
     html.H1(id = 'range-display'),
 
-    # html.H1('Upload'),
-    dcc.Graph(id = 'upload'),
+    html.H3("Download", style = {'fontSize': '20px'}),
     dcc.Graph(id = 'download'),
-    dcc.Graph(id = 'jit'),
+    html.H3("Upload", style = {'fontSize': '20px'}),
+    dcc.Graph(id = 'upload'),
+    html.H3("Lag", style = {'fontSize': '20px'}),
     dcc.Graph(id = 'lag'),
+    html.H3("Jit", style = {'fontSize': '20px'}),
+    dcc.Graph(id = 'jit'),
 
 ], style={'textAlign': 'center', 'font-size': '10px', 'marginTop': '50px', 'marginBottom': '20px'})
 
@@ -263,10 +266,11 @@ app.layout = html.Div([
 
 @app.callback(
     Output('range-display', 'children'),
+    Output('download', 'figure'),
     Output('upload', 'figure'),
-    Output('donload', 'figure'),
+    Output('lag', 'figure'),
     Output('jit', 'figure'),
-    Output('upload', 'children'),
+    Output('stats', 'children'),
 
     Input('select-folder-button', 'n_clicks'),
     Input('range-raw', 'value'), 
@@ -310,28 +314,28 @@ def update_range(n_clicks, range_raw, start_raw, selected_folder):
     ]
     table_body = [html.Tbody([
             html.Tr([
-                html.Td("平均值"),
+                html.Td("平均值(ms)"),
                 html.Td(speed.upload[0]),
                 html.Td(speed.download[0]),
                 html.Td(speed.jit[0]),
                 html.Td(speed.lag[0])
             ]),
             html.Tr([
-                html.Td("最大值"),
+                html.Td("最大值(ms)"),
                 html.Td(speed.upload[1]),
                 html.Td(speed.download[1]),
                 html.Td(speed.jit[1]),
                 html.Td(speed.lag[1])
             ]),
             html.Tr([
-                html.Td("最小值"),
+                html.Td("最小值(ms)"),
                 html.Td(speed.upload[2]),
                 html.Td(speed.download[2]),
                 html.Td(speed.jit[2]),
                 html.Td(speed.lag[2])
             ]),
             html.Tr([
-                html.Td("平均差"),
+                html.Td("平均差(ms)"),
                 html.Td(speed.upload[3]),
                 html.Td(speed.download[3]),
                 html.Td(speed.jit[3]),
@@ -341,8 +345,10 @@ def update_range(n_clicks, range_raw, start_raw, selected_folder):
     ]
 
     return (f"显示范围: {start_time} - {end_time}", 
-            speed.graph_speed,
+            speed.graph_download,
+            speed.graph_upload,
             speed.graph_lag,
+            speed.graph_jit,
             table_header + table_body
             )
 
@@ -351,5 +357,5 @@ def update_range(n_clicks, range_raw, start_raw, selected_folder):
 def open_browser():
     webbrowser.open_new("http://127.0.0.1:250/")
 
-def main():
-    app.run_server(debug = False, port = 250)
+# def main():
+app.run_server(debug = False, port = 250)
