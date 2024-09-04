@@ -202,12 +202,6 @@ app = Dash(__name__, title = "ping数据整理")
 
 
 
-
-
-
-
-
-
 # Layout of the app
 app.layout = html.Div([
     dcc.Dropdown(
@@ -248,28 +242,67 @@ app.layout = html.Div([
         ], style={'width': '30%', 'display': 'inline-block'}),
     ]),
     
+
     html.H1(id='range-display'),
+
+    # html.H1("ping线点图"),
+    html.H1("ping图", style= {'fontSize': '20px'}),
     dcc.Graph(id='pings'),
+
 
     html.Div([
         html.H1("192断网次数高延迟", id="192c", style={'marginBottom': '20px'}),  
-        html.H1(
-            '192统计数据',
-            id="stats192",
-            style={'whiteSpace': 'pre-line'}
-        ),
     ], style={'width': '50%', 'display': 'inline-block'}),
+
+
     html.Div([
         html.H1("www断网次数高延迟", id="wwwc", style={'marginBottom': '20px'}),  
-        html.H1(
-            'www统计数据',
-            id="statswww",
-            style={'whiteSpace': 'pre-line'}  
-        ),
     ], style={'width': '50%', 'display': 'inline-block'}),
     html.Hr(),
 
+    html.Table([
+        html.Thead([
+            html.Tr([
+                html.Th(""),
+                html.Th("网关"),
+                html.Th("外网")
+            ])
+        ]),
+        html.Tbody([
+            html.Tr([
+                html.Td("平均值(ms)"),
+                html.Td(data_ping.stats192[0]),
+                html.Td(data_ping.statswww[0])
+            ]),
+            html.Tr([
+                html.Td("最大值(ms)"),
+                html.Td(data_ping.stats192[1]),
+                html.Td(data_ping.statswww[1])
+            ]),
+            html.Tr([
+                html.Td("最小值(ms)"),
+                html.Td(data_ping.stats192[2]),
+                html.Td(data_ping.statswww[2])
+            ]),
+            html.Tr([
+                html.Td("平均差(ms)"),
+                html.Td(data_ping.stats192[3]),
+                html.Td(data_ping.statswww[3])
+            ])
+        ])
+    ],style = {
+        'width': '50%',
+        'border': '1px solid black',
+        'borderCollapse': 'collapse',
+        'textAlign': 'center',
+        'fontSize': '20px',
+        'marginTop': '40px',
+        'margin' : '0 auto'
+    },
+    id = "table"),
+
     html.Div([
+        html.H4("放大ping图", style= {'fontSize': '20px'}),
         dcc.Graph(id='range_graph'),  # Placeholder for your graph
     ], style={'width': '50%', 'display': 'inline-block', 'vertical-align': 'top'}),
 
@@ -282,6 +315,7 @@ app.layout = html.Div([
             data=data_stuck.data.to_dict('records'),
             columns=[{"name": i, "id": i} for i in data_stuck.data.columns],
             # filter_action='native',
+            
         ),
     ], style={'width': '50%', 'display': 'inline-block', 'vertical-align': 'top'})
 ], style={'textAlign': 'center', 'font-size': '10px', 'marginTop': '50px', 'marginBottom': '20px'})
@@ -306,15 +340,18 @@ def select_folder(n_clicks, selected_folder):
         data_ping.construct_data()
     return 0, 0.2
 
+
+
+
 # Callback to update the output based on the selected datetime
 @app.callback(
     Output('range-display', 'children'),
     Output('pings', 'figure'),
     Output('stuck-table', 'data'),
     Output("192c", "children"),
-    Output("stats192", "children"),
     Output("wwwc", "children"),
-    Output("statswww", "children"),
+    Output('table', 'children'),
+
     Input('range-raw', 'value'), 
     Input('start-from-raw', 'value'),
     prevent_initial_call=True,
@@ -343,27 +380,55 @@ def update_range(range_raw, start_raw):
     end_time_obj = datetime.datetime.strptime(end_time, "%m-%d %H:%M:%S")
     total_minutes = (end_time_obj - start_time_obj).total_seconds()/60
     per_minute = lambda n : round( n / total_minutes,2)
+
+    head = [
+        html.Thead([
+            html.Tr([
+                html.Th(""),
+                html.Th("网关"),
+                html.Th("外网")
+                ])
+            ]   
+        )
+    ]
+    body = [
+        html.Tbody([
+            html.Tr([
+                html.Td("平均值(ms)"),
+                html.Td(data_ping.stats192[0]),
+                html.Td(data_ping.statswww[0])
+            ]),
+            html.Tr([
+                html.Td("最大值(ms)"),
+                html.Td(data_ping.stats192[1]),
+                html.Td(data_ping.statswww[1])
+            ]),
+            html.Tr([
+                html.Td("最小值(ms)"),
+                html.Td(data_ping.stats192[2]),
+                html.Td(data_ping.statswww[2])
+            ]),
+            html.Tr([
+                html.Td("平均差(ms)"),
+                html.Td(data_ping.stats192[3]),
+                html.Td(data_ping.statswww[3])
+            ])
+        ])
+    ]
+
     return (f"显示范围: {start_time} - {end_time}", 
             
             data_ping.graph_ping, stuck.to_dict('records'),
 
-            "192 "\
-            f"断连{per_minute(data_ping.inf192_cnt)}次/分钟 "\
+            "到网关(192)"\
+            f"断连{per_minute(data_ping.inf192_cnt)}次/分钟,      "
             f"高延迟{per_minute(data_ping.lag192_cnt)}次/分钟 ",
-
-            f"平均值: {data_ping.stats192[0]} "\
-            f"最大值: {data_ping.stats192[1]} "\
-            f"最小值: {data_ping.stats192[2]} "\
-            f"平均差: {data_ping.stats192[3]} ",
             
-            "www "\
-            f"断连{per_minute(data_ping.infwww_cnt)}次/分钟 "\
-            f"高延迟{per_minute(data_ping.lagwww_cnt)}次/分钟 ",
+             f"到外网(www)\n"
+            f"断连 {per_minute(data_ping.infwww_cnt)} 次/分钟,    "
+            f"高延迟 {per_minute(data_ping.lagwww_cnt)} 次/分钟",
 
-            f"平均值: {data_ping.statswww[0]} "\
-            f"最大值: {data_ping.statswww[1]} "\
-            f"最小值: {data_ping.statswww[2]} "\
-            f"平均差: {data_ping.statswww[3]} ",
+            head + body
             )
 
 
