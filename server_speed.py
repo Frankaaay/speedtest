@@ -341,8 +341,10 @@ def update_range(n_clicks, range_raw, start_raw, selected_folder):
     ]
 
     return (f"显示范围: {start_time} - {end_time}", 
-            speed.graph_speed,
+            speed.upload,
             speed.graph_lag,
+            speed.graph_jit,
+            speed.graph_jit,
             table_header + table_body
             )
 
