@@ -71,7 +71,7 @@ class Speed:
 
             d : pd.DataFrame = data[self.display_start:self.display_start+self.display_range]
 
-            hovertext = [f"Band: {row['band']}<br>Time: {row['time']}<br>PCI: {row['pci']}" 
+            hovertext = [f"Band: {row['band']}<br>Time: {row['tim   e']}<br>PCI: {row['pci']}" 
             for index, row in d.iterrows()]
 
             # Apply score function to each row
