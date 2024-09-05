@@ -3,6 +3,7 @@ import importlib
 import threading
 import server_speed
 import server_live
+import server_contest
 import tkinter.font as tkFont
 from PIL import Image, ImageTk
 # from ttkbootstrap import Style
@@ -42,8 +43,8 @@ class MainApp:
         
         # Add buttons
         self.buttons = {
-            '直播稳定性': 'gui_stability_recorder',
-            '间隔测速': 'gui_speed_recorder',
+            '网络体验稳定性': 'gui_stability_recorder',
+            '网络速率稳定性': 'gui_speed_recorder',
        
         }
         button_font = tkFont.Font(family="Helvetica", size=15, weight="bold")
@@ -57,7 +58,7 @@ class MainApp:
 
         server_live_obj = Lazy(lambda :threading.Thread(target=server_live.main).start(),
                                lambda :threading.Thread(target=server_live.open_browser).start())
-        button3 = tk.Button(self.button_frame, text="直播数据整理", command = server_live_obj.run,
+        button3 = tk.Button(self.button_frame, text="ping数据整理", command = server_live_obj.run,
                             width=15, height=2, font = button_font)
         button3.pack(pady=15, fill=tk.X)
 
@@ -66,6 +67,12 @@ class MainApp:
         button4 = tk.Button(self.button_frame, text="测速数据整理", command=server_speed_obj.run, 
                             width=15, height=2, font = button_font)
         button4.pack(pady=15, fill=tk.X)
+
+        server_contest_obj = Lazy(lambda :threading.Thread(target=server_contest.main).start(),
+                                lambda :threading.Thread(target=server_contest.open_browser).start())
+        button5 = tk.Button(self.button_frame, text="ping数据对比", command=server_contest_obj.run, 
+                            width=15, height=2, font = button_font)
+        button5.pack(pady=15, fill=tk.X)
 
     def show_page(self, module_name):
         # Clear current content

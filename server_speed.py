@@ -35,7 +35,7 @@ class Speed:
     def __init__(self, files: list):
         self.data = []
         for i in range(0, len(files)):
-            self.data.append(pd.read_csv(f'{files[i]}/speed.csv'))        #all data
+            self.data.append(pd.read_csv(f'{files[i]}/speed.csv'))  #all data
         self.display_start = 0
         self.display_range = len(self.data)
 
@@ -71,7 +71,7 @@ class Speed:
 
             d : pd.DataFrame = data[self.display_start:self.display_start+self.display_range]
 
-            hovertext = [f"Band: {row['band']}<br>Time: {row['tim   e']}<br>PCI: {row['pci']}" 
+            hovertext = [f"Band: {row['band']}<br>Time: {row['time']}<br>PCI: {row['pci']}" 
             for index, row in d.iterrows()]
 
             # Apply score function to each row
@@ -161,9 +161,6 @@ class Speed:
             self.lags.append(summarize(d, "lag"))
 
             i += 1
-            # print(len(self.uploads))
-
-
 
 
 
@@ -359,28 +356,28 @@ def update_range(n_clicks, range_raw, start_raw, selected_folder):
                 )
             table_body = html.Tbody([
                     html.Tr([
-                        html.Td("Mean(ms)"),
+                        html.Td("Mean"),
                         html.Td(upload[0]),
                         html.Td(download[0]),
                         html.Td(jit[0]),
                         html.Td(lag[0])
                     ]),
                     html.Tr([
-                        html.Td("Max(ms)"),
+                        html.Td("Max"),
                         html.Td(upload[1]),
                         html.Td(download[1]),
                         html.Td(jit[1]),
                         html.Td(lag[1])
                     ]),
                     html.Tr([
-                        html.Td("Min(ms)"),
+                        html.Td("Min"),
                         html.Td(upload[2]),
                         html.Td(download[2]),
                         html.Td(jit[2]),
                         html.Td(lag[2])
                     ]),
                     html.Tr([
-                        html.Td("SDσ(ms)"),
+                        html.Td("SDσ"),
                         html.Td(upload[3]),
                         html.Td(download[3]),
                         html.Td(jit[3]),
@@ -421,5 +418,5 @@ def update_range(n_clicks, range_raw, start_raw, selected_folder):
 def open_browser():
     webbrowser.open_new("http://127.0.0.1:250/")
 
-# def main():
-app.run_server(debug = True, port = 250)
+def main():
+    app.run_server(debug = False, port = 250)
