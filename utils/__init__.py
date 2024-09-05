@@ -6,6 +6,7 @@ from datetime import datetime, timedelta
 from selenium import webdriver
 
 browser_name = 'Edge'
+SPEED_UP = True
 
 
 def _web_driver(browser_name, headless: bool = False):
@@ -13,18 +14,38 @@ def _web_driver(browser_name, headless: bool = False):
         options = webdriver.EdgeOptions()
         if headless:
             options.add_argument("--headless")
+        if SPEED_UP:
+            prefs = {
+                'profile.managed_default_content_settings.images': 2,
+                'profile.managed_default_content_settings.stylesheets':2,
+                'profile.managed_default_content_settings.popups':2,
+            }
+            options.add_experimental_option("prefs", prefs)
         options.add_argument("--log-level=3")
         return webdriver.Edge(options=options)
+    
     elif browser_name == "Chrome":
         options = webdriver.ChromeOptions()
         if headless:
             options.add_argument("--headless")
+        if SPEED_UP:
+            prefs = {
+                'profile.managed_default_content_settings.images': 2,
+                'profile.managed_default_content_settings.stylesheets':2,
+                'profile.managed_default_content_settings.popups':2,
+            }
+            options.add_experimental_option("prefs", prefs)
         options.add_argument("--log-level=3")
         return webdriver.Chrome(options=options)
+    
     elif browser_name == "Firefox":
         options = webdriver.FirefoxOptions()
         if headless:
             options.add_argument("--headless")
+        if SPEED_UP:
+            options.set_preference('permissions.default.stylesheet', 2)
+            options.set_preference('permissions.default.image', 2)
+            options.set_preference('dom.ipc.plugins.enabled.libflashplayer.so', 'false')
         options.log.level = 'fatal'
         return webdriver.Firefox(options=options)
 

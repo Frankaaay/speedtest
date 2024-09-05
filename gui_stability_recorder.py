@@ -108,7 +108,7 @@ def main(root: tk.Tk):
     button_frame.pack()
 
     # 创建一个滚动文本框
-    output_text = tk.Text(root, wrap="word", height=20, width=64)
+    output_text = tk.Text(root, wrap="word", height=20, width=100)
     output_text.pack()
 
     not_stdout = StdoutRedirector(output_text)

@@ -5,7 +5,7 @@ from selenium.common import exceptions as SEexceptions
 
 
 class Xigua(Live):
-    def __init__(self,  season_id=None, interval=timedelta(seconds=0.1)):
+    def __init__(self,  season_id=None, interval=timedelta(seconds=10)):
         if season_id is None:
             season_id = '6562025890606219790'
 
@@ -29,7 +29,7 @@ class Xigua(Live):
             self.goto_room(seasons_id)
 
     def afk_check(self) -> bool:
-        if time() - self.afk_since > timedelta(hours=5).total_seconds():
+        if time() - self.afk_since > timedelta(hours=1.5).total_seconds():
             self.refresh()  # refresh page to prevent afk
             self.afk_since = time()
             self.res = (LiveState.End, "anti afk")
@@ -40,6 +40,7 @@ class Xigua(Live):
         return False
 
     def update(self):
+        super().update()
         if self.afk_check():
             return
 

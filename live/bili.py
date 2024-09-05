@@ -16,10 +16,24 @@ class BiliLive(Live):
             By.XPATH, f'/html/body/div[1]/div/div[5]/div[3]/div/div[2]/div[1]/div[1]/a[{i}]').get_attribute('href'))
 
     def update(self):
+        super().update()
         if self.afk_check():
             return
 
         try:
+
+            try:
+                self.driver.implicitly_wait(8)
+                self.driver.find_element(
+                    By.XPATH, '//*[@id="live-player"]/video')
+            except SEexceptions.WebDriverException as e:
+                self.res = (LiveState.End, "这似乎不是一个直播间")
+                self.find_available()
+            finally:
+                self.driver.implicitly_wait(self.interval)
+
+                
+            
             # 直播是否结束
             try:
                 self.driver.find_element(
@@ -30,11 +44,6 @@ class BiliLive(Live):
                 pass
 
             # 直播是否断开
-            try:
-                self.driver.find_element(
-                    By.XPATH, '//*[@id="live-player"]/video')
-            except SEexceptions.NoSuchElementException:
-                raise "找不到视频元素"
 
             # 直播是否卡顿
             try:
@@ -47,6 +56,6 @@ class BiliLive(Live):
             self.res = (LiveState.Error, str(e))
             self.find_available()
         
-        except Exception as e:
-            self.res = (LiveState.Error, "未知错误"+repr(e))
+        except:
+            self.res = (LiveState.Error, "未知错误")
             self.find_available()

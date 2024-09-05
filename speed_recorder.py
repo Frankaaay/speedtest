@@ -39,9 +39,10 @@ class SpeedAndState(Producer):
 def gen_device(record_device: bool,device_ip: str) -> Sequence:
     if record_device:
         device = Panel_FM(device_ip)
+        device.set_ttl(timedelta(minutes=5))
     else:
         device = Producer()
-        device.res = PanelState()
+    device.set_default(PanelState())
     return device
 
 PATH = './log/speed'
