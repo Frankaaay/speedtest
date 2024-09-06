@@ -92,6 +92,10 @@ class MainApp:
                             width=15, height=1, font=button_font)
         button7.pack(pady=15, fill=tk.X)
 
+        button9 = tk.Button(self.button_frame, text="BandwidthMeter", command = band_pro, 
+                            width=15, height=1, font=button_font)
+        button9.pack(pady=15, fill=tk.X)
+
     def show_page(self, module_name):
         # Clear current content
         for widget in self.content_frame.winfo_children():
@@ -110,6 +114,9 @@ class MainApp:
         
         # Create a label to hold the image
         self.image_label = tk.Label(self.button_frame, image=self.image, bg='lightgrey')
+
+def band_pro():
+    os.system('start BandwidthMeterPro\BWMeterPro.exe"')
 
 def forget_networks():
     os.system('netsh wlan delete profile name=* i=*')
