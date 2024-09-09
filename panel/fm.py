@@ -7,65 +7,13 @@ class Panel_FM(Panel):
         super().__init__(device_ip, timeout)
 
     def update(self):
+        super().update()
         res = {}
         at = AT(self.ip, self.timeout)
 
-        x = at.sr1('AT*BANDIND?')
-        if x.startswith('*BANDIND: '):
-            x = x[len('*BANDIND: '):].split(',')
-            res['band'] = x[1].strip()
-        else:
-            print(f"Error: AT*BANDIND? => {x}")
-
-
-        # +CESQ: <rxlev>,<ber>,<rscp>,<ecno>,<rsrq>,<rsrp>,<sinr>
-        x = at.sr1('AT*CESQ')
-        if x.startswith('*CESQ: '):
-            x = x[len('*CESQ: '):].split(',')
-
-            rxlev = int(x[0])
-            if 0 <= rxlev <= 63:
-                res['rssi'] = rxlev - 110
-
-            ber = int(x[1])
-            if 0 <= ber <= 7:
-                res['ber'] = ber
-
-            rscp = int(x[2])
-            if 0 <= rscp <= 96:
-                res['rscp'] = rscp - 121
-
-            rsrq = int(x[4])
-            if 0 <= rsrq <= 34:
-                res['rsrq'] = rsrq * 0.5 - 20
-            
-            rsrp = int(x[5])
-            if 0 <= rsrp <= 97:
-                res['rsrp'] = rsrp - 141
-
-            sinr = int(x[6])
-            res['sinr'] = sinr
-
-        else:   
-            print(f"Error: AT*CESQ => {x}")
-
-        x = at.sr1('AT+RSRP?')
-        if x.startswith('+RSRP: '):
-            x = x[len('+RSRP: '):].split(',')
-            res['pci'] = x[0]
-            res['earfcn'] = x[1]
-            # res['rsrp'] = x[2]
-        else:
-            print(f"Error: AT+RSRP? => {x}")
-
-        # x = at.sr1('AT+RSRQ?')
-        # if x.startswith('+RSRQ: '):
-        #     x = x[len('+RSRQ: '):].split(',')
-        #     res['rsrq'] = x[2]
-        # else:
-        #     print(f"Error: AT+RSRQ? => {x}")
-        
-        super().update()
+        res = at.BANDIND()
+        res.update(at.CESQ())
+        res.update(at.RSRP())
         self.res = PanelState(res)
 
     def set_band(self, band:int|None = 0):
