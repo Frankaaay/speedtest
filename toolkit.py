@@ -42,7 +42,7 @@ class MainApp:
         self.sidebar.pack(side=tk.LEFT, fill=tk.Y)
 
         # Frame for the secondary sidebar (to show more buttons)
-        self.sub_sidebar = tk.Frame(self.root, bg='lightblue')
+        self.sub_sidebar = tk.Frame(self.root, bg='red')
         self.sub_sidebar.pack(side=tk.LEFT, fill=tk.Y)
         self.sub_sidebar_visible = True  # Track visibility
         self.current_category = None  # Track which category is selected
@@ -119,14 +119,14 @@ class MainApp:
             buttons = [("BandwidthMeter", band_pro)]
         elif category == "数据整理":
             buttons = [("ping数据整理", server_live_obj.run), 
-                       ("Feature Y", server_speed_obj.run), 
-                       ("Feature Z", server_contest_obj.run)]
+                       ("测速数据整理", server_speed_obj.run), 
+                       ("ping数据对比", server_contest_obj.run)]
 
         # Create and pack new buttons with bound functions
         for button_text, func in buttons:
             btn = tk.Button(self.sub_sidebar, text=button_text, width=15, height=2, 
                             command=lambda f=func: self.run_and_hide(f))  # Bind the function and hide submenu
-            btn.pack(pady=10, fill=tk.X)
+            btn.pack(pady=15, fill=tk.X)
 
     def run_and_hide(self, func):
         # Execute the specific function and hide the submenu
