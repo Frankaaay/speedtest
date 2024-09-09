@@ -10,6 +10,8 @@ import subprocess
 import sys
 import ctypes
 import gui_iperf3
+import gui_speed_recorder
+import gui_stability_recorder
 
 import os
 # from ttkbootstrap import Style
