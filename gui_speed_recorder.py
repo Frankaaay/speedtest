@@ -86,14 +86,14 @@ class SpeedUI:
         self.url_listbox.pack()
 
         # 输入框和按钮
-        edit_frame = ttk.Frame(self.root)
-        self.add_url = tk.Entry(edit_frame, width=38)
+        no_name_frame_2 = ttk.Frame(self.root)
+        self.add_url = tk.Entry(no_name_frame_2, width=38)
         self.add_url.pack(side=tk.LEFT)
-        add_button = tk.Button(edit_frame, text="添加", command=self.add_item)
+        add_button = tk.Button(no_name_frame_2, text="添加", command=self.add_item)
         add_button.pack(side=tk.LEFT)
-        delete_button = tk.Button(edit_frame, text="删除", command=self.delete_item)
+        delete_button = tk.Button(no_name_frame_2, text="删除", command=self.delete_item)
         delete_button.pack(side=tk.LEFT)
-        edit_frame.pack()
+        no_name_frame_2.pack()
 
         custom_frame = ttk.Frame(self.root)
         tk.Label(custom_frame, text="每隔").pack(side=tk.LEFT)
@@ -103,12 +103,16 @@ class SpeedUI:
         tk.Label(custom_frame, text="分钟").pack(side=tk.LEFT)
         custom_frame.pack()
 
-        edit_frame = ttk.Frame(self.root)
-        start_button = tk.Button(edit_frame, text="开始", command=self.start_button_clicked)
+        no_name_frame_3 = ttk.Frame(self.root)
+        start_button = tk.Button(no_name_frame_3, text="开始", command=self.start_button_clicked)
         start_button.pack(side=tk.LEFT)
-        stop_button = tk.Button(edit_frame, text="停止", command=self.stop_button_clicked)
-        stop_button.pack(side=tk.RIGHT)
-        edit_frame.pack()   
+        stop_button = tk.Button(no_name_frame_3, text="停止", command=self.stop_button_clicked)
+        stop_button.pack(side=tk.LEFT)
+        copy_button = tk.Button(no_name_frame_3, text="复制选中到剪贴板", command=self.copy_selected_to_clipboard)
+        copy_button.pack(side=tk.LEFT)
+        clear_button = tk.Button(no_name_frame_3, text="清空历史", command=self.clear_tree)
+        clear_button.pack(side=tk.LEFT)
+        no_name_frame_3.pack()   
 
         output_text = tk.Text(self.root, wrap="word", height=15)
         output_text.pack(expand=True, fill=tk.X)
@@ -120,9 +124,6 @@ class SpeedUI:
         for col in columns:
             self.tree.heading(col, text=col)
         self.tree.pack(expand=True, fill=tk.X)
-
-        copy_button = tk.Button(self.root, text="复制选中到剪贴板", command=self.copy_selected_to_clipboard)
-        copy_button.pack()
 
         self.obj:common.Sequence|None = None
     
@@ -153,6 +154,8 @@ class SpeedUI:
             self.not_stdout.write("Already running! Flushing\n")
             self.obj.flush()
             return
+        else:
+            self.not_stdout.write("Starting\n")
         
         delta = timedelta(minutes=float(self.delta_custom.get()), microseconds=1)
         self.obj = speed_recorder.Main(
@@ -198,6 +201,10 @@ class SpeedUI:
             root.update()  # 更新剪贴板内容
 
             print("选中的数据已复制到剪贴板")
+    
+    def clear_tree(self,):
+        for item in self.tree.get_children():
+            self.tree.delete(item)
 
 def main(root:tk.Tk):
     SpeedUI(root)
