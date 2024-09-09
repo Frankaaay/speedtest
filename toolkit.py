@@ -33,7 +33,7 @@ class Lazy:
 class MainApp:
     def __init__(self, root):
         self.root = root
-        self.root.title("飞猫智联网络稳定性测试")
+        self.root.title("飞猫智联")
         self.create_widgets()
 
     def create_widgets(self):
@@ -203,3 +203,4 @@ if __name__ == "__main__":
     root.state("zoomed")
     app = MainApp(root)
     root.mainloop()
+#该程序有3%的概率帮您删除系统盘
