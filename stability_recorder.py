@@ -113,7 +113,7 @@ class Main:
         living = gen_live(platform, room_id)
         if save_log:
             living.add_recorder(live.Reporter(
-                open(f"{PATH}/{now}#{folder_name}/stuck.csv", 'w', encoding='utf-8-sig'), threshold=1))
+                open(f"{PATH}/{now}#{folder_name}/stuck.csv", 'w', encoding='utf-8-sig'), interval=5, threshold=1))
         living.add_recorder(live.Console(stdout))
         living = AutoFlush(living, timedelta(minutes=5))
         living = Sequence(living, interval=timedelta(seconds=0.3))

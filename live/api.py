@@ -39,7 +39,15 @@ class Live(Producer):
 
     def find_available(self, get_url: Callable[[webdriver.Edge], str]):
         print('finding available...')
-        self.driver.switch_to.window(self.driver.window_handles[0])
+        try:
+            self.driver.switch_to.window(self.driver.window_handles[0])
+        except:
+            try:
+                self.driver.quit()
+            except:
+                pass
+            self.driver = utils.web_driver()
+            self.driver.get(self.base_url)
 
         room_id = re.findall(self.base_url + r'(\d+)', self.driver.current_url)
         if len(room_id) > 0:

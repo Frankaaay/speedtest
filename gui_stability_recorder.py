@@ -22,7 +22,7 @@ class StdoutRedirector:
 class LiveUI:
     def __init__(self, root: tk.Tk):
         try:
-            self.root.title("直播稳定性检测")
+            self.root.title("直播捏~")
         except:
             pass
         
@@ -94,8 +94,8 @@ class LiveUI:
         button_frame.pack()
 
         # 创建一个滚动文本框
-        output_text = tk.Text(self.root, wrap="word", height=20, width=100)
-        output_text.pack()
+        output_text = tk.Text(self.root, wrap="word", height=25, width=60)
+        output_text.pack(expand=True, fill=tk.X)
 
         self.not_stdout = StdoutRedirector(output_text)
         

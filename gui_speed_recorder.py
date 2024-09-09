@@ -44,7 +44,7 @@ class SpeedUI:
     def __init__(self, root: tk.Tk):
         self.root = root
         try:
-            root.title("直播稳定性检测")
+            root.title("测速捏~")
         except:
             pass
         
@@ -108,10 +108,10 @@ class SpeedUI:
         start_button.pack(side=tk.LEFT)
         stop_button = tk.Button(edit_frame, text="停止", command=self.stop_button_clicked)
         stop_button.pack(side=tk.RIGHT)
-        edit_frame.pack()
+        edit_frame.pack()   
 
-        output_text = tk.Text(self.root, wrap="word", height=5, width=100)
-        output_text.pack()
+        output_text = tk.Text(self.root, wrap="word", height=15)
+        output_text.pack(expand=True, fill=tk.X)
 
         self.not_stdout = StdoutRedirector(output_text)
 
@@ -133,7 +133,7 @@ class SpeedUI:
             self.url_listbox.insert(tk.END, item)
             self.add_url.delete(0, tk.END)
         else:
-            self.not_stdout.write("请输入要添加的网站！\n")
+            self.not_stdout.write("输入要添加的网站\n")
             pass
             # messagebox.showwarning("警告", "请输入要添加的项！")
 
@@ -143,7 +143,7 @@ class SpeedUI:
         if selected_index:
             self.url_listbox.delete(selected_index)
         else:
-            self.not_stdout.write("请输入要删除的网站！\n")
+            self.not_stdout.write("选择要删除的网站\n")
             pass
             # messagebox.showwarning("警告", "请选择要删除的项！")
 
