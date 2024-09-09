@@ -34,6 +34,9 @@ colors_sinr = ['##808b96','#154360', '#ffdfba', '#ffffba', '#baffc9', '#bae1ff',
 class Speed:
     def __init__(self, files: list):
         self.data = []
+        
+        self.files_name = files
+
         for i in range(0, len(files)):
             self.data.append(pd.read_csv(f'{files[i]}/speed.csv'))  #all data
         self.display_start = 0
@@ -385,7 +388,7 @@ def update_range(n_clicks, range_raw, start_raw, selected_folder):
                     ])
                 ])
             table_title = html.Caption(
-            f"Speed Data for Folder {i+1}",  # Customize the title as needed
+            f"{speed.files_name[i][12:]}",  # Customize the title as needed
             style={
                 'captionSide': 'top',  # 'top' or 'bottom'
                 'fontSize': '25px',
