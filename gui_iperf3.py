@@ -27,13 +27,9 @@ class Iperf3TestApp:
 
     def create_widgets(self):
         # IP address input
-        ttk.Label(self.root, text="IP Suffix 1:").grid(column=0, row=0, padx=10, pady=5)
+        ttk.Label(self.root, text="192.168.").grid(column=0, row=0, padx=10, pady=5)
         self.ip_suffix1_var = tk.StringVar(value=self.ip_suffix1)
         ttk.Entry(self.root, textvariable=self.ip_suffix1_var).grid(column=1, row=0, padx=10, pady=5)
-        
-        ttk.Label(self.root, text="IP Suffix 2:").grid(column=0, row=1, padx=10, pady=5)
-        self.ip_suffix2_var = tk.StringVar(value=self.ip_suffix2)
-        ttk.Entry(self.root, textvariable=self.ip_suffix2_var).grid(column=1, row=1, padx=10, pady=5)
 
         # Number of runs input
         ttk.Label(self.root, text="Number of Runs:").grid(column=0, row=2, padx=10, pady=5)
@@ -44,6 +40,9 @@ class Iperf3TestApp:
         ttk.Label(self.root, text="Duration (seconds):").grid(column=0, row=3, padx=10, pady=5)
         self.duration_var = tk.IntVar(value=self.duration)
         ttk.Entry(self.root, textvariable=self.duration_var).grid(column=1, row=3, padx=10, pady=5)
+
+        self.download = tk.BooleanVar(value=False)
+        tk.Checkbutton(self.root, text="Download", variable=self.download).grid(column=1, row=4, padx=10, pady=5)
 
         # Start and Stop buttons
         ttk.Button(self.root, text="Start", command=self.start_test).grid(column=0, row=5, padx=10, pady=10)
@@ -72,15 +71,26 @@ class Iperf3TestApp:
         for run_num in range(num_runs):
             if self.stop_event.is_set():
                 break
-            ip_address = f"{self.ip_base}{self.ip_suffix1_var.get()}.{self.ip_suffix2_var.get()}"
-            self.process = subprocess.Popen(
-                f'Iperf3 -c {ip_address} -t {duration} -P 12',  # Use the user-defined duration
-                shell=True,
-                cwd=self.working_directory,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                text=True
-            )
+            ip_address = f"{self.ip_base}{self.ip_suffix1_var.get()}"
+            
+            if self.download.get():
+                self.process = subprocess.Popen(
+                    f'Iperf3 -c {ip_address} -t {duration} -P 12 -R',  # Use the user-defined duration
+                    shell=True,
+                    cwd=self.working_directory,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                    text=True
+                )
+            else:
+                self.process = subprocess.Popen(
+                    f'Iperf3 -c {ip_address} -t {duration} -P 12',  # Use the user-defined duration
+                    shell=True,
+                    cwd=self.working_directory,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                    text=True
+                )          
             
             output_lines = []
             while True:
