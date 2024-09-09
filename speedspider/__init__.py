@@ -60,7 +60,8 @@ class SpeedTester(Producer):
         except SEexceptions.TimeoutException:
             lag = jit = dl = ul = "nan"
         except Exception as e:
-            lag = jit = dl = ul = str(e)
+            lag = repr(e)
+            jit = dl = ul = "nan"
         finally:
             threading.Thread(target=driver.quit).start()
 

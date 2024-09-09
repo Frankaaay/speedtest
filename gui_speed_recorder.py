@@ -108,10 +108,10 @@ class SpeedUI:
         start_button.pack(side=tk.LEFT)
         stop_button = tk.Button(edit_frame, text="停止", command=self.stop_button_clicked)
         stop_button.pack(side=tk.RIGHT)
-        edit_frame.pack()
+        edit_frame.pack()   
 
-        output_text = tk.Text(self.root, wrap="word", height=5, width=100)
-        output_text.pack()
+        output_text = tk.Text(self.root, wrap="word", height=10)
+        output_text.pack(expand=True, fill=tk.X)
 
         self.not_stdout = StdoutRedirector(output_text)
 
