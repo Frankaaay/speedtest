@@ -117,9 +117,8 @@ class Iperf3TestApp:
         self.output_text.insert(tk.END, text + "\n")  # Insert new text at the end
         self.output_text.config(state=tk.DISABLED)  # Make it read-only
 
-def main(root):
-    app = Iperf3TestApp(root)
-    root.mainloop()
+def main(root:tk.Tk):
+    Iperf3TestApp(root)
 
 if __name__ == "__main__":
     root = tk.Tk()

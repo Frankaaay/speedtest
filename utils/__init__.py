@@ -74,7 +74,8 @@ def which_is_device_ip():
     # 替换 .1
     ip_addresses = [re.sub(r'\.\d+$', '.1', ip) for ip in ip_addresses]
     if len(ip_addresses) > 0:
-        ip = min(ip_addresses)
+        ip = '.'.join(map(str,min(list(map(lambda ip:list(map(int,ip.split('.'))),ip_addresses)))))
+        print(ip_addresses, "->", ip)
         return ip
     else: 
         return 'Not Detected'
@@ -97,3 +98,13 @@ class ThreadWithReturn(threading.Thread):
     def join(self, timeout=None):
         super().join(timeout)
         return self._return
+
+def sanitize_filename(filename):
+    # 替换非法字符为下划线
+    sanitized = re.sub(r'[<>:"/\\|?*]', '_', filename)
+    # 去除前后空格
+    sanitized = sanitized.strip()
+    # 如果文件名为空，设置为默认值
+    if not sanitized:
+        sanitized = 'default_filename'
+    return sanitized
