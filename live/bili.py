@@ -27,7 +27,7 @@ class BiliLive(Live):
                 self.driver.find_element(
                     By.XPATH, '//*[@id="live-player"]/video')
             except SEexceptions.WebDriverException as e:
-                self.res = (LiveState.End, "这似乎不是一个直播间")
+                self.res = (LiveState.Error, "这似乎不是一个直播间")
                 self.find_available()
             finally:
                 self.driver.implicitly_wait(self.interval)

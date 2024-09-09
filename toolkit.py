@@ -121,7 +121,8 @@ def band_pro():
     os.system('start BandwidthMeterPro\BWMeterPro.exe"')
 
 def forget_networks():
-    os.system('netsh wlan delete profile name=* i=*')
+    os.system('netsh wlan delete profile name=FM* i=*')
+    os.system('netsh wlan delete profile name=ZTE* i=*')
     print("Holy shit! networks are removed successfully!")
 
 def is_admin():
