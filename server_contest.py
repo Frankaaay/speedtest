@@ -23,8 +23,11 @@ def summarize(df, column):
 
 #storing data for updating graphs
 class DataPing:
-    def __init__(self, files: list):
-        self.data = []    
+    def __init__(self, files: list[str]):
+        self.data = []  
+
+        self.files_name = files 
+
         for i in range(0, len(files)):
             self.data.append(pd.read_csv(f'{files[i]}/ping.csv'))  #all data          #all data
         self.display_start = 0
@@ -37,7 +40,7 @@ class DataPing:
 
 
     def gen_graph(self):
-        i = 1
+
         for data in self.data:
             d : pd.DataFrame = data[self.display_start:self.display_start+self.display_range]
 
@@ -45,7 +48,6 @@ class DataPing:
             self.stats192.append(summarize(d, "ping_192"))
             self.statswww.append(summarize(d, "ping_www"))
 
-            i += 1
 
 
 
@@ -270,7 +272,8 @@ def update_range(n_clicks, range_raw, start_raw, selected_folder):
                     ])
                 ])
             table_title = html.Caption(
-            f"Speed Data for Folder {i+1}",  # Customize the title as needed
+           f"{data_ping.files_name[i][11:]}",  # Customize the title as needed
+
             style={
                 'captionSide': 'top',  # 'top' or 'bottom'
                 'fontSize': '25px',
@@ -309,3 +312,5 @@ def open_browser():
 def main():
     app.run_server(debug = False, port = 520)
 
+if __name__ == "__main__":
+    main()

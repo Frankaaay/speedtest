@@ -33,13 +33,19 @@ class Lazy:
 class MainApp:
     def __init__(self, root):
         self.root = root
-        self.root.title("飞猫智联网络稳定性测试")
+        self.root.title("飞猫智联")
         self.create_widgets()
 
     def create_widgets(self):
         # Frame for buttons with increased width
-        self.button_frame = tk.Frame(self.root, width=900, bg='dodgerblue')  # Adjust width as needed
-        self.button_frame.pack(side=tk.LEFT, fill=tk.Y)
+        self.sidebar = tk.Frame(self.root, width=900, bg='dodgerblue')  # Adjust width as needed
+        self.sidebar.pack(side=tk.LEFT, fill=tk.Y)
+
+        # Frame for the secondary sidebar (to show more buttons)
+        self.sub_sidebar = tk.Frame(self.root, bg='red')
+        self.sub_sidebar.pack(side=tk.LEFT, fill=tk.Y)
+        self.sub_sidebar_visible = True  # Track visibility
+        self.current_category = None  # Track which category is selected
 
         # Load and display image
         self.load_image()
@@ -58,45 +64,79 @@ class MainApp:
         button_font = tkFont.Font(family="Helvetica", size=15, weight="bold")
 
         for text, module_name in self.buttons.items():
-            button = tk.Button(self.button_frame, text=text, command=lambda m=module_name: self.show_page(m),
+            button = tk.Button(self.sidebar, text=text, command=lambda m=module_name: self.show_page(m),
                                width=15, height=1, font = button_font)
             
             button.pack(pady=15, fill=tk.X)  # `fill=tk.X` ensures buttons stretch across the width
-        
-
-        server_live_obj = Lazy(lambda :threading.Thread(target=server_live.main).start(),
-                               lambda :threading.Thread(target=server_live.open_browser).start())
-        button3 = tk.Button(self.button_frame, text="ping数据整理", command = server_live_obj.run,
-                            width=15, height=1, font = button_font)
-        button3.pack(pady=15, fill=tk.X)
-
-        server_speed_obj = Lazy(lambda :threading.Thread(target=server_speed.main).start(),
-                                lambda :threading.Thread(target=server_speed.open_browser).start())
-        button4 = tk.Button(self.button_frame, text="测速数据整理", command=server_speed_obj.run, 
-                            width=15, height=1, font = button_font)
-        button4.pack(pady=15, fill=tk.X)
-
-        server_contest_obj = Lazy(lambda :threading.Thread(target=server_contest.main).start(),
-                                lambda :threading.Thread(target=server_contest.open_browser).start())
-        button5 = tk.Button(self.button_frame, text="ping数据对比", command=server_contest_obj.run, 
-                            width=15, height=1, font = button_font)
-        button5.pack(pady=15, fill=tk.X)
-
-        button8 = tk.Button(self.button_frame, text="一键忘记", command = forget_networks, 
-                            width=15, height=1, font=button_font)
-        button8.pack(pady=15, fill=tk.X)
-
-        button6 = tk.Button(self.button_frame, text="禁用以太网", command = disable_ethernet, 
-                            width=15, height=1, font=button_font)
-        button6.pack(pady=15, fill=tk.X)
-
-        button7 = tk.Button(self.button_frame, text="启用以太网", command = enable_ethernet, 
-                            width=15, height=1, font=button_font)
+    
+        button7 = tk.Button(self.sidebar, text="数据整理", command=lambda c="数据整理": self.toggle_category(c),
+                               width=15, height=2, font=button_font)
         button7.pack(pady=15, fill=tk.X)
 
-        button9 = tk.Button(self.button_frame, text="BandwidthMeter", command = band_pro, 
-                            width=15, height=1, font=button_font)
-        button9.pack(pady=15, fill=tk.X)
+
+        button7 = tk.Button(self.sidebar, text="网络工具", command=lambda c="网络工具": self.toggle_category(c),
+                               width=15, height=2, font=button_font)
+        button7.pack(pady=15, fill=tk.X)
+
+        button7 = tk.Button(self.sidebar, text="辅助工具", command=lambda c="辅助工具": self.toggle_category(c),
+                               width=15, height=2, font=button_font)
+        button7.pack(pady=15, fill=tk.X)
+
+    def toggle_category(self, category):
+        # If the same category is clicked, toggle visibility
+        if self.sub_sidebar_visible and self.current_category == category:
+            self.hide_submenu()
+        else:
+            self.show_category(category)
+
+
+    def show_category(self, category):
+        self.current_category = category  # Set the current category
+        server_live_obj = Lazy(lambda :threading.Thread(target=server_live.main).start(),
+                               lambda :threading.Thread(target=server_live.open_browser).start())
+        
+        server_speed_obj = Lazy(lambda :threading.Thread(target=server_speed.main).start(),
+                                lambda :threading.Thread(target=server_speed.open_browser).start())
+        
+        server_contest_obj = Lazy(lambda :threading.Thread(target=server_contest.main).start(),
+                                lambda :threading.Thread(target=server_contest.open_browser).start())
+
+        # Repack the sub_sidebar if it was hidden
+        if not self.sub_sidebar_visible:
+            self.sub_sidebar.pack(side=tk.LEFT, fill=tk.Y)
+            self.sub_sidebar_visible = True
+
+        # Clear the sub-sidebar content before showing new buttons
+        for widget in self.sub_sidebar.winfo_children():
+            widget.destroy()
+
+        # Add buttons with unique functions to the sub-sidebar based on the selected category
+        if category == "网络工具":
+            buttons = [("一键遗忘", forget_networks), 
+                       ("启用以太网", enable_ethernet), 
+                       ("禁用以太网", disable_ethernet)]
+        elif category == "辅助工具":
+            buttons = [("BandwidthMeter", band_pro)]
+        elif category == "数据整理":
+            buttons = [("ping数据整理", server_live_obj.run), 
+                       ("测速数据整理", server_speed_obj.run), 
+                       ("ping数据对比", server_contest_obj.run)]
+
+        # Create and pack new buttons with bound functions
+        for button_text, func in buttons:
+            btn = tk.Button(self.sub_sidebar, text=button_text, width=15, height=2, 
+                            command=lambda f=func: self.run_and_hide(f))  # Bind the function and hide submenu
+            btn.pack(pady=15, fill=tk.X)
+
+    def run_and_hide(self, func):
+        # Execute the specific function and hide the submenu
+        func()
+        self.hide_submenu()
+
+    def hide_submenu(self):
+        # Hide the sub_sidebar by forgetting it and toggle visibility flag
+        self.sub_sidebar.pack_forget()
+        self.sub_sidebar_visible = False
 
     def show_page(self, module_name):
         # Clear current content
@@ -115,7 +155,7 @@ class MainApp:
         self.image = ImageTk.PhotoImage(image)
         
         # Create a label to hold the image
-        self.image_label = tk.Label(self.button_frame, image=self.image, bg='lightgrey')
+        self.image_label = tk.Label(self.sidebar, image=self.image, bg='lightgrey')
 
 def band_pro():
     os.system(r'start BandwidthMeterPro\BWMeterPro.exe"')
@@ -163,3 +203,4 @@ if __name__ == "__main__":
     root.state("zoomed")
     app = MainApp(root)
     root.mainloop()
+#该程序有3%的概率帮您删除系统盘
