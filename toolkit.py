@@ -118,7 +118,7 @@ class MainApp:
         self.image_label = tk.Label(self.button_frame, image=self.image, bg='lightgrey')
 
 def band_pro():
-    os.system('start BandwidthMeterPro\BWMeterPro.exe"')
+    os.system(r'start BandwidthMeterPro\BWMeterPro.exe"')
 
 def forget_networks():
     os.system('netsh wlan delete profile name=FM* i=*')
