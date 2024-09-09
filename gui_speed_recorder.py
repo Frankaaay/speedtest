@@ -176,6 +176,7 @@ class SpeedUI:
     def stop_button_clicked(self,):
         if self.obj is not None:
             self.not_stdout.write("Stopping\n")
+            self.obj.flush()
             self.obj.stop()
             self.obj = None
         else:
