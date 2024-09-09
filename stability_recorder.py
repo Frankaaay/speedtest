@@ -4,7 +4,7 @@ import stable
 import live
 import sys
 import os
-import re
+import utils
 
 
 class PingAndState(Producer):
@@ -89,9 +89,20 @@ class Console(Recorder):
 
 
 class Main:
-    def __init__(self, record_device: bool, device_ip: str, platform: str, room_id: str | None = None, ips: dict = dict(), stdout=sys.stdout):
+    def __init__(self, 
+                 record_device: bool, 
+                 device_ip: str, 
+                 save_log: bool, 
+                 platform: str, 
+                 room_id: str | None = None, 
+                 ips: dict = dict(), #{'ping_192':'192.168.0.1'}
+                 stdout=sys.stdout,
+                 folder_name: str = "",
+                 ):
+        folder_name = utils.sanitize_filename(folder_name)
         now = datetime.now().strftime("%Y-%m-%d_%H-%M")
-        os.makedirs(f"{PATH}/{now}/", exist_ok=True)
+        if save_log:
+            os.makedirs(f"{PATH}/{now}#{folder_name}/", exist_ok=True)
         
         device = gen_device(record_device,device_ip)
         device.add_recorder(panel.Console(stdout))
@@ -100,8 +111,9 @@ class Main:
         device.start()
 
         living = gen_live(platform, room_id)
-        living.add_recorder(live.Reporter(
-            open(f"{PATH}/{now}/stuck.csv", 'w', encoding='utf-8-sig'), threshold=1))
+        if save_log:
+            living.add_recorder(live.Reporter(
+                open(f"{PATH}/{now}#{folder_name}/stuck.csv", 'w', encoding='utf-8-sig'), threshold=1))
         living.add_recorder(live.Console(stdout))
         living = AutoFlush(living, timedelta(minutes=5))
         living = Sequence(living, interval=timedelta(seconds=0.3))
@@ -110,8 +122,9 @@ class Main:
 
         ping_device = PingAndState(stable.Pings(list(ips.values())), device)
         ping_device = AutoFlush(ping_device, timedelta(minutes=5))
-        ping_device.add_recorder(
-            Reporter(open(f"{PATH}/{now}/ping.csv", 'w', encoding='utf-8-sig'), ips))
+        if save_log:
+            ping_device.add_recorder(
+                Reporter(open(f"{PATH}/{now}#{folder_name}/ping.csv", 'w', encoding='utf-8-sig'), ips))
         ping_device.add_recorder(stable.Console(stdout, ips))
 
         ping_device = SequenceFullSecond(ping_device, interval=timedelta(seconds=1))

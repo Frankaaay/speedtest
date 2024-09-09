@@ -30,16 +30,28 @@ class LiveUI:
         self.create_widgets()
 
     def create_widgets(self):
-    
-        # 勾选项
-        self.record_device = tk.BooleanVar(value=False)
-        tk.Checkbutton(self.root, text="记录设备状态", variable=self.record_device).pack()
+        no_name_frame_1 = ttk.Frame(self.root)
 
-        # 输入框
-        tk.Label(self.root, text="设备IP地址").pack()
-        self.device_ip = tk.Entry(self.root)
+        no_name_frame_1_1 = ttk.Frame(no_name_frame_1)
+        self.record_device = tk.BooleanVar(value=False)
+        tk.Checkbutton(no_name_frame_1_1, text="记录设备状态", variable=self.record_device).pack()
+        tk.Label(no_name_frame_1_1, text="设备IP地址").pack()
+        self.device_ip = tk.Entry(no_name_frame_1_1)
         self.device_ip.insert(0, utils.which_is_device_ip())
         self.device_ip.pack()
+        no_name_frame_1_1.pack(side=tk.LEFT)
+
+        no_name_frame_1_2 = ttk.Frame(no_name_frame_1)
+        self.save_log = tk.BooleanVar(value=True)
+        tk.Checkbutton(no_name_frame_1_2, text="保存结果到文件", variable=self.save_log).pack()
+        tk.Label(no_name_frame_1_2, text="保存至：时间戳+[...]").pack()
+        self.folder_name_addon = tk.Entry(no_name_frame_1_2)
+        self.folder_name_addon.insert(0, 'FM电信')
+        self.folder_name_addon.pack()
+        no_name_frame_1_2.pack(side=tk.RIGHT)
+
+        no_name_frame_1.pack()
+    
 
         # 单选列表
         options = ["B站", "抖音", "西瓜", "OFF"]
@@ -102,11 +114,13 @@ class LiveUI:
 
         self.obj = stability_recorder.Main(self.record_device.get(),
                                     self.device_ip.get(),
+                                    self.save_log.get(),
                                     self.live_option.get(),
                                     self.room_id.get(),
                                     {'ping_www': 'www.baidu.com',
                                     'ping_192': self.device_ip.get()},
-                                    stdout=self.not_stdout,
+                                    self.not_stdout,
+                                    self.folder_name_addon.get()
                                     )
 
 

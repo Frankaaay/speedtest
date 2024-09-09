@@ -2,6 +2,7 @@ import sys
 from common import *
 from speedspider import SpeedTester, SpeedTestResult
 from panel import PanelState, Panel_FM
+import utils
 
 
 class Reporter(Recorder):
@@ -46,18 +47,25 @@ def gen_device(record_device: bool,device_ip: str) -> Sequence:
     return device
 
 PATH = './log/speed'
-def Main(urls, record_device: bool, device_ip: str, save_log: bool, headless: bool, stdout) -> SpeedTester:
+def Main(urls: list[str], 
+         record_device: bool, 
+         device_ip: str, 
+         save_log: bool, 
+         headless: bool, 
+         stdout=sys.stdout,
+         folder_name: str = "",
+         ) -> SpeedTester:
+        folder_name = utils.sanitize_filename(folder_name)
         device = gen_device(record_device,device_ip)
         speed = SpeedTester(headless,timedelta(minutes=2), urls)
         now = datetime.now().strftime("%Y-%m-%d_%H-%M")
         
         obj = SpeedAndState(speed, device)
         obj.add_recorder(Console(stdout))
-
         if save_log:
             import os
-            os.makedirs(f"{PATH}/{now}/", exist_ok=True)
+            os.makedirs(f"{PATH}/{now}#{folder_name}/", exist_ok=True)
             obj.add_recorder(
-                Reporter(open(f"{PATH}/{now}/speed.csv", 'w', encoding='utf-8-sig')))
+                Reporter(open(f"{PATH}/{now}#{folder_name}/speed.csv", 'w', encoding='utf-8-sig')))
         return obj
 
