@@ -156,14 +156,19 @@ class SpeedUI:
             return
         else:
             self.not_stdout.write("Starting\n")
-        
-        delta = timedelta(minutes=float(self.delta_custom.get()), microseconds=1)
+        try:
+            interval = float(self.delta_custom.get())
+        except:
+            interval = 0
+
+        delta = timedelta(minutes=max(0,interval), microseconds=1)
         self.obj = speed_recorder.Main(
             self.url_listbox.get(0, tk.END),
             self.record_device.get(), self.device_ip.get(),
             self.save_log.get(), self.headless.get(),
             self.not_stdout,
-            self.folder_name_addon.get()
+            self.folder_name_addon.get(),
+            faster_version = interval < 0,
             )
         
 

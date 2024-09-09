@@ -1,6 +1,7 @@
 import sys
 from common import *
-from speedspider import SpeedTester, SpeedTestResult
+import utils
+from speedspider import SpeedTester, SpeedTestResult, SpeedTester0Interval
 from panel import PanelState, Panel_FM
 import utils
 
@@ -54,10 +55,14 @@ def Main(urls: list[str],
          headless: bool, 
          stdout=sys.stdout,
          folder_name: str = "",
+         faster_version: bool = False
          ) -> SpeedTester:
         folder_name = utils.sanitize_filename(folder_name)
         device = gen_device(record_device,device_ip)
-        speed = SpeedTester(headless,timedelta(minutes=2), urls)
+        if faster_version:
+            speed = SpeedTester0Interval(headless,timedelta(minutes=2), urls)
+        else:
+            speed = SpeedTester(headless,timedelta(minutes=2), urls)
         now = datetime.now().strftime("%Y-%m-%d_%H-%M")
         
         obj = SpeedAndState(speed, device)
@@ -69,3 +74,10 @@ def Main(urls: list[str],
                 Reporter(open(f"{PATH}/{now}#{folder_name}/speed.csv", 'w', encoding='utf-8-sig')))
         return obj
 
+
+if __name__ == '__main__':
+    utils.browser_name = 'Firefox'
+    obj = SpeedTester0Interval(headless=False)
+    while True:
+        obj.update()
+        print(obj.get())

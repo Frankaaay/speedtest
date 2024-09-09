@@ -31,6 +31,36 @@ URLS = [
     "http://speed.nuaa.edu.cn/",
 ]
 
+def speed_test(headless, timeout, url):
+    driver = web_driver(headless)
+    driver.implicitly_wait(5)
+    driver.get(url)
+    startStopBtn = driver.find_element(By.ID, "startStopBtn")
+    if startStopBtn.get_attribute("class") == "":
+        startStopBtn.click()
+    try:
+        WebDriverWait(driver, timeout).until(
+            lambda driver: int(driver.execute_script("return s.getState()")) == 4)
+        lag = driver.find_element(By.ID, "pingText").text
+        jit = driver.find_element(By.ID, "jitText").text
+        dl = driver.find_element(By.ID, "dlText").text
+        ul = driver.find_element(By.ID, "ulText").text
+    except SEexceptions.NoSuchElementException:
+        lag = jit = dl = ul = "nan"
+    except SEexceptions.TimeoutException:
+        lag = jit = dl = ul = "nan"
+    except Exception as e:
+        lag = repr(e)
+        jit = dl = ul = "nan"
+    finally:
+        threading.Thread(target=driver.quit).start()
+
+    try:
+        res = SpeedTestResult(float(lag), float(jit), float(dl), float(ul))
+    except ValueError:
+        res = SpeedTestResult(lag, jit, dl, ul)
+    finally:
+        return res
 
 class SpeedTester(Producer):
     def __init__(self, headless=True, timeout=timedelta(minutes=2), urls=URLS):
@@ -38,17 +68,30 @@ class SpeedTester(Producer):
         self.headless = headless
         self.timeout = timeout.total_seconds()
         self.urls = urls
+        self.afap = False
 
     def update(self):
         super().update()
+        url = random.choice(self.urls)
         driver = web_driver(self.headless)
         driver.implicitly_wait(5)
-        url = random.choice(self.urls)
         driver.get(url)
         startStopBtn = driver.find_element(By.ID, "startStopBtn")
         if startStopBtn.get_attribute("class") == "":
             startStopBtn.click()
         try:
+            sleep(2)
+
+            def afap(driver):
+                try:
+                    return int(driver.execute_script("return s.getState()")) == 4 or\
+                           float(driver.find_element(By.ID, "ulText").text) > 0
+                except ValueError: 
+                    return False
+                
+            WebDriverWait(driver, self.timeout).until(afap)
+            self.afap = True
+            print("afap is set!!!")
             WebDriverWait(driver, self.timeout).until(
                 lambda driver: int(driver.execute_script("return s.getState()")) == 4)
             lag = driver.find_element(By.ID, "pingText").text
@@ -66,8 +109,44 @@ class SpeedTester(Producer):
             threading.Thread(target=driver.quit).start()
 
         try:
+            lag = float(lag)
+            jit = float(jit)
+            dl = float(dl)
+            ul = float(ul)
+            if lag == 0 and jit == 0 and dl == 0 and ul == 0:
+                lag = jit = dl = ul = float("nan")
             self.res = SpeedTestResult(float(lag), float(jit), float(dl), float(ul))
         except ValueError:
             self.res = SpeedTestResult(lag, jit, dl, ul)
-            
+        self.afap = False
+    
+class SpeedTester0Interval(Producer):
+    '''
+    在第一个测速'上传'开始后开始第二个测速
+    '''
+    def __init__(self, headless=True, timeout=timedelta(minutes=2), urls=URLS):
+        super().__init__()
+        self.headless = headless
+        self.timeout = timeout.total_seconds()
+        self.urls = urls
+        self.jobs = []
+        self.obj1 = SpeedTester(headless, timeout, urls)
+        self.obj2 = SpeedTester(headless, timeout, urls)
+        self.handle = threading.Thread(target=self.obj1.update)
+        self.handle.start()
+
+    def update(self):
+
+        while not self.obj1.afap:
+            sleep(0.1)
+        h = threading.Thread(target=self.obj2.update)
+        h.start()
+
+        self.handle.join()
+        self.res = self.obj1.get()
+
+        self.handle = h
+        tmp = self.obj1
+        self.obj1 = self.obj2
+        self.obj2 = tmp
 
