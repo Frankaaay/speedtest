@@ -5,6 +5,11 @@ import threading
 
 class Iperf3TestApp:
     def __init__(self, root):
+        try:
+            root.title("Iperf Test App")
+        except:
+            pass
+
         self.root = root
 
         # Initialize variables

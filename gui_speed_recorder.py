@@ -120,8 +120,10 @@ def main(root: tk.Tk):
 
             print("选中的数据已复制到剪贴板")
 
-
-    # root.title("定时测速")
+    try:
+        root.title("定时测速")
+    except:
+        pass
 
     record_device = tk.BooleanVar(value=False)
     tk.Checkbutton(root, text="记录设备状态", variable=record_device).pack()
