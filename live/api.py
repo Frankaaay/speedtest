@@ -51,8 +51,8 @@ class Live(Producer):
                 return
 
         if self.room_id is not None and\
-            self.error_this_room_since_afk < 3 and\
-            self.get()[0] != LiveState.End:
+        self.error_this_room_since_afk < 3 and\
+        self.get()[0] != LiveState.End:
 
             print(f'继续使用之前的直播间 {self.room_id}')
             self.error_this_room_since_afk += 1
