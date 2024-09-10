@@ -4,10 +4,12 @@ import re
 import time
 from datetime import datetime, timedelta
 from selenium import webdriver
+from selenium.webdriver.common.proxy import Proxy
 
 browser_name = 'Edge'
+proxy_enable = False
+proxy_addr = '127.0.0.1:6210'
 SPEED_UP = True
-
 
 def _web_driver(browser_name, headless: bool = False):
     if browser_name == "Edge":
@@ -21,6 +23,8 @@ def _web_driver(browser_name, headless: bool = False):
                 'profile.managed_default_content_settings.popups':2,
             }
             options.add_experimental_option("prefs", prefs)
+        if proxy_enable:
+            options.add_argument(f'--proxy-server={proxy_addr}')
         options.add_argument("--log-level=3")
         return webdriver.Edge(options=options)
     
@@ -35,6 +39,8 @@ def _web_driver(browser_name, headless: bool = False):
                 'profile.managed_default_content_settings.popups':2,
             }
             options.add_experimental_option("prefs", prefs)
+        if proxy_enable:
+            options.add_argument(f'--proxy-server={proxy_addr}')
         options.add_argument("--log-level=3")
         return webdriver.Chrome(options=options)
     
@@ -47,6 +53,10 @@ def _web_driver(browser_name, headless: bool = False):
             options.set_preference('permissions.default.image', 2)
             options.set_preference('dom.ipc.plugins.enabled.libflashplayer.so', 'false')
         options.log.level = 'fatal'
+        if proxy_enable:
+            options.set_preference('network.proxy.type', 1)
+            options.set_preference('network.proxy.http', proxy_addr.split(':')[0])
+            options.set_preference('network.proxy.http_port', int(proxy_addr.split(':')[1]))
         return webdriver.Firefox(options=options)
 
     else:
