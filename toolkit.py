@@ -58,7 +58,7 @@ class MainApp:
 
         for text, module_name in self.buttons.items():
             button = tk.Button(self.sidebar, text=text, command=lambda m=module_name: self.check_and_show_page(m),
-                               width=15, height=1, font=button_font)
+                               width=15, height=2, font=button_font)
             button.pack(pady=15, fill=tk.X)
 
         button7 = tk.Button(self.sidebar, text="数据整理", command=lambda c="数据整理": self.toggle_category(c),
@@ -165,10 +165,15 @@ def enable_ethernet():
     subprocess.run(['powershell', '-Command', command], shell=True)
 
 
+def stop_exe():
+    os.system("taskkill /f /im toolkit.exe")
+
+
 if __name__ == "__main__":
     root = tk.Tk()
     root.state("zoomed")
     app = MainApp(root)
     root.mainloop()
+    root.protocol("WM_DELETE_WINDOW", stop_exe)
 
 #3%的概率删除系统盘

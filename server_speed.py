@@ -423,3 +423,6 @@ def open_browser():
 
 def main():
     app.run_server(debug = False, port = 250)
+
+if __name__ == "__main__":
+    main()
