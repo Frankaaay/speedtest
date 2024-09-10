@@ -3,18 +3,27 @@ from .api import *
 from .at import AT
 
 class Panel_FM(Panel):
-    def __init__(self, device_ip, timeout=timedelta(seconds=30)):
+    def __init__(self, device_ip, timeout=timedelta(seconds=10)):
         super().__init__(device_ip, timeout)
 
     def update(self):
-        super().update()
         res = {}
         at = AT(self.ip, self.timeout)
-
+        try:
+            ok = at.sr1("AT")
+            if ok != "OK":
+                print(f"AT not working!!! {ok}")
+                self.res = PanelState({})
+        except Exception as e:
+            print("AT not working!!!")
+            print(e)
+            return
+        
         res = at.BANDIND()
         res.update(at.CESQ())
         res.update(at.RSRP())
         self.res = PanelState(res)
+        super().update()
 
     def set_band(self, band:int|None = 0):
         raise NotImplementedError()

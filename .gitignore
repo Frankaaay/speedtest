@@ -3,6 +3,7 @@ log/
 reports/
 *_rs
 # *.csv
+*.toml
 build/
 dist/
 *.spec
