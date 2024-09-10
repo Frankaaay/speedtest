@@ -58,19 +58,19 @@ class MainApp:
 
         for text, module_name in self.buttons.items():
             button = tk.Button(self.sidebar, text=text, command=lambda m=module_name: self.check_and_show_page(m),
-                               width=15, height=2, font=button_font)
+                               width=15, height=1, font=button_font)
             button.pack(pady=15, fill=tk.X)
 
         button7 = tk.Button(self.sidebar, text="数据整理", command=lambda c="数据整理": self.toggle_category(c),
-                            width=15, height=2, font=button_font)
+                            width=15, height=1, font=button_font)
         button7.pack(pady=15, fill=tk.X)
 
         button7 = tk.Button(self.sidebar, text="网络工具", command=lambda c="网络工具": self.toggle_category(c),
-                            width=15, height=2, font=button_font)
+                            width=15, height=1, font=button_font)
         button7.pack(pady=15, fill=tk.X)
 
         button7 = tk.Button(self.sidebar, text="辅助工具", command=lambda c="辅助工具": self.toggle_category(c),
-                            width=15, height=2, font=button_font)
+                            width=15, height=1, font=button_font)
         button7.pack(pady=15, fill=tk.X)
 
     def toggle_category(self, category):
