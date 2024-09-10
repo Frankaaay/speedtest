@@ -50,7 +50,6 @@ class Console(Recorder):
         self.target_name = list(targets.keys())
         self.target_name.sort()
 
-    def record(self, data: dict[str, float]):
-        time, pings, state = data
+    def record(self, pings: dict[str, float]):
         self.file.write(
             f"Ping: {','.join([str(pings[self.targets[t]])+'ms' for t in self.target_name])}\n")
