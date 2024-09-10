@@ -170,3 +170,5 @@ if __name__ == "__main__":
     root.state("zoomed")
     app = MainApp(root)
     root.mainloop()
+
+#3%的概率删除系统盘
