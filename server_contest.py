@@ -2,9 +2,7 @@ import pandas as pd
 from dash import Dash, dcc, html, Input, Output, State, ALL
 import math
 import numpy as np
-import plotly.graph_objs as go
 import datetime
-import bisect
 import os
 import webbrowser
 

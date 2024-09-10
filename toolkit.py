@@ -8,8 +8,6 @@ import server_contest
 import tkinter.font as tkFont
 from PIL import Image, ImageTk
 import subprocess
-import sys
-import ctypes
 import gui_iperf3
 import gui_speed_recorder
 import gui_stability_recorder
@@ -82,7 +80,15 @@ class MainApp:
             self.show_category(category)
 
     def show_category(self, category):
-        self.current_category = category
+        self.current_category = category  # Set the current category
+        server_live_obj = Lazy(lambda :threading.Thread(target=server_live.main).start(),
+                               lambda :threading.Thread(target=server_live.open_browser).start())
+        
+        server_speed_obj = Lazy(lambda :threading.Thread(target=server_speed.main).start(),
+                                lambda :threading.Thread(target=server_speed.open_browser).start())
+        
+        server_contest_obj = Lazy(lambda :threading.Thread(target=server_contest.main).start(),
+                                lambda :threading.Thread(target=server_contest.open_browser).start())
 
         # Repack the sub_sidebar if it was hidden
         if not self.sub_sidebar_visible:
@@ -99,9 +105,9 @@ class MainApp:
         elif category == "辅助工具":
             buttons = [("BandwidthMeter", band_pro)]
         elif category == "数据整理":
-            buttons = [("ping数据整理", server_live.main),
-                       ("测速数据整理", server_speed.main),
-                       ("ping数据对比", server_contest.main)]
+            buttons = [("ping数据整理", server_live_obj.run),
+                       ("测速数据整理", server_speed_obj.run),
+                       ("ping数据对比", server_contest_obj.run)]
 
         for button_text, func in buttons:
             btn = tk.Button(self.sub_sidebar, text=button_text, width=15, height=2,
@@ -117,6 +123,9 @@ class MainApp:
     def show_page(self, module_name):
         for widget in self.content_frame.winfo_children():
             widget.destroy()
+
+        # if module_name == "graph":
+        #     module.main()
 
         module = importlib.import_module(module_name)
         self.current_module = module  # Track the currently running module
@@ -161,3 +170,5 @@ if __name__ == "__main__":
     root.state("zoomed")
     app = MainApp(root)
     root.mainloop()
+
+#3%的概率删除系统盘
