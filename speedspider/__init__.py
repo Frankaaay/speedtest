@@ -32,7 +32,7 @@ URLS = [
 ]
 
 def speed_test(headless, timeout, url):
-    driver = web_driver(headless)
+    driver = web_driver(headless=headless)
     driver.implicitly_wait(5)
     driver.get(url)
     startStopBtn = driver.find_element(By.ID, "startStopBtn")
@@ -73,7 +73,7 @@ class SpeedTester(Producer):
     def update(self):
         super().update()
         url = random.choice(self.urls)
-        driver = web_driver(self.headless)
+        driver = web_driver(headless=self.headless)
         driver.implicitly_wait(5)
         driver.get(url)
         startStopBtn = driver.find_element(By.ID, "startStopBtn")
