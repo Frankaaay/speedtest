@@ -23,7 +23,7 @@ class Live(Producer):
     def __init__(self, base_url, room_id=None, interval=timedelta(seconds=0.1)):
         super().__init__()
         self.base_url = base_url
-        self.driver = utils.web_driver()
+        self.driver = utils.web_driver(proxy_enable=True)
         self.res: tuple[LiveState, str | None] = (LiveState.Error, "initializing")
         self.interval = interval.total_seconds()
         self.room_id = room_id

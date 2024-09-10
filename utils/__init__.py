@@ -7,11 +7,10 @@ from selenium import webdriver
 from selenium.webdriver.common.proxy import Proxy
 
 browser_name = 'Edge'
-proxy_enable = False
-proxy_addr = '127.0.0.1:6210'
+proxy_socket = '127.0.0.1:6210'
 SPEED_UP = True
 
-def _web_driver(browser_name, headless: bool = False):
+def web_driver(browser_name=browser_name, headless: bool = False, proxy_enable=False):
     if browser_name == "Edge":
         options = webdriver.EdgeOptions()
         if headless:
@@ -24,7 +23,7 @@ def _web_driver(browser_name, headless: bool = False):
             }
             options.add_experimental_option("prefs", prefs)
         if proxy_enable:
-            options.add_argument(f'--proxy-server={proxy_addr}')
+            options.add_argument(f'--proxy-server={proxy_socket}')
         options.add_argument("--log-level=3")
         return webdriver.Edge(options=options)
     
@@ -40,7 +39,7 @@ def _web_driver(browser_name, headless: bool = False):
             }
             options.add_experimental_option("prefs", prefs)
         if proxy_enable:
-            options.add_argument(f'--proxy-server={proxy_addr}')
+            options.add_argument(f'--proxy-server={proxy_socket}')
         options.add_argument("--log-level=3")
         return webdriver.Chrome(options=options)
     
@@ -55,16 +54,16 @@ def _web_driver(browser_name, headless: bool = False):
         options.log.level = 'fatal'
         if proxy_enable:
             options.set_preference('network.proxy.type', 1)
-            options.set_preference('network.proxy.http', proxy_addr.split(':')[0])
-            options.set_preference('network.proxy.http_port', int(proxy_addr.split(':')[1]))
+            options.set_preference('network.proxy.http', proxy_socket.split(':')[0])
+            options.set_preference('network.proxy.http_port', int(proxy_socket.split(':')[1]))
         return webdriver.Firefox(options=options)
 
     else:
         raise ValueError(f"{browser_name} is not supported")
 
 
-def web_driver(headless: bool = False):
-    return _web_driver(browser_name, headless)
+# def web_driver(headless: bool = False, proxy_enable: bool = False):
+#     return _web_driver(browser_name, headless, proxy_enable)
 
 
 def wait_full_second(delta=1, now=time.time()):
@@ -89,6 +88,21 @@ def which_is_device_ip():
         return ip
     else: 
         return 'Not Detected'
+    
+def which_is_my_ip():
+    hostname = socket.gethostname()
+    ip_addresses = socket.getaddrinfo(hostname, None)
+    ip_addresses = [ip[4][0] for ip in ip_addresses]
+    ip_addresses = [ip for ip in ip_addresses if ip.startswith(
+        '192.') and not ip.endswith('.1')]
+    # 替换 .1
+    # ip_addresses = [re.sub(r'\.\d+$', '.1', ip) for ip in ip_addresses]
+    if len(ip_addresses) > 0:
+        ip = '.'.join(map(str,min(list(map(lambda ip:list(map(int,ip.split('.'))),ip_addresses)))))
+        print(ip_addresses, "->", ip)
+        return ip
+    else: 
+        return '0.0.0.0'
 
 
 class ThreadWithReturn(threading.Thread):
