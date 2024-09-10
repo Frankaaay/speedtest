@@ -76,10 +76,10 @@ class SpeedTester(Producer):
         driver = web_driver(headless=self.headless,proxy_enable=False)
         driver.implicitly_wait(5)
         driver.get(url)
-        startStopBtn = driver.find_element(By.ID, "startStopBtn")
-        if startStopBtn.get_attribute("class") == "":
-            startStopBtn.click()
         try:
+            startStopBtn = driver.find_element(By.ID, "startStopBtn")
+            if startStopBtn.get_attribute("class") == "":
+                startStopBtn.click()
             sleep(2)
 
             def afap(driver):

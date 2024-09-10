@@ -13,3 +13,4 @@ Scripts/
 etc/
 Include/
 share/
+pyvenv*
