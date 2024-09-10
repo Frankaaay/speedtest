@@ -87,9 +87,9 @@ def gen_live(platform: str, room_id: str | None = None,) -> Sequence:
         living.set_default((live.LiveState.Normal,'OFF'))
     return living
 
-def gen_device(record_device: bool,device_ip: str) -> Sequence:
+def gen_device(record_device: bool,device_ip: str, stdout) -> Sequence:
     if record_device:
-        device = panel.Panel_FM(device_ip)
+        device = panel.Panel_FM(device_ip, logger=stdout)
         device.set_ttl(timedelta(minutes=1))
     else:
         device = Producer()
@@ -118,7 +118,7 @@ class Main:
         if save_log:
             os.makedirs(f"{PATH}/{now}#{folder_name}/", exist_ok=True)
         
-        device = gen_device(record_device,device_ip)
+        device = gen_device(record_device, device_ip, stdout)
         device.add_recorder(panel.Console(stdout))
         # device = AutoFlush(device, timedelta(minutes=5))
         device = SequenceFullSecond(device, timedelta(seconds=1))

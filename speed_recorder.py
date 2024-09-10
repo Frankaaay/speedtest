@@ -23,6 +23,7 @@ class Reporter(Recorder):
 class Console(Recorder):
     def record(self, res: tuple[SpeedTestResult,PanelState]):
         speed_res, device_res = res
+        self.file.write(datetime.now().strftime("%H:%M:%S")+'\n')
         self.file.write(f"{speed_res}\n")
         self.file.write(f"{device_res}\n")
 
@@ -38,9 +39,9 @@ class SpeedAndState(Producer):
         self.speed.update()
         self.res: tuple[None, None] = (self.speed.get(), self.device.get())
 
-def gen_device(record_device: bool,device_ip: str) -> Sequence:
+def gen_device(record_device: bool,device_ip: str, stdout) -> Sequence:
     if record_device:
-        device = Panel_FM(device_ip)
+        device = Panel_FM(device_ip,logger=stdout)
         device.set_ttl(timedelta(minutes=3))
     else:
         device = Producer()
@@ -60,9 +61,9 @@ def Main(urls: list[str],
         
         folder_name = utils.sanitize_filename(folder_name)
 
-        device = gen_device(record_device,device_ip)
+        device = gen_device(record_device, device_ip, stdout)
         if faster_version:
-            speed = SpeedTester0Interval(headless,timedelta(minutes=1), urls)
+            speed = SpeedTester0Interval(headless, timedelta(minutes=1), urls)
         else:
             speed = SpeedTester(headless,timedelta(minutes=1), urls)
         now = datetime.now().strftime("%Y-%m-%d_%H-%M")

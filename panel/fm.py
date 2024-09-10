@@ -3,8 +3,9 @@ from .api import *
 from .at import AT
 
 class Panel_FM(Panel):
-    def __init__(self, device_ip, timeout=timedelta(seconds=10)):
+    def __init__(self, device_ip, timeout=timedelta(seconds=10), logger=sys.stderr):
         super().__init__(device_ip, timeout)
+        self.logger = logger
 
     def update(self):
         res = {}
@@ -12,11 +13,10 @@ class Panel_FM(Panel):
         try:
             ok = at.sr1("AT")
             if ok != "OK":
-                print(f"AT not working!!! {ok}")
+                self.logger.write(f"AT not working!! {ok}\n")
                 self.res = PanelState({})
         except Exception as e:
-            print("AT not working!!!")
-            print(e)
+            self.logger.write(f"AT not working!!\n{e}")
             return
         
         res = at.BANDIND()
