@@ -7,6 +7,8 @@ import utils
 import panel
 import speed_recorder
 
+IS_RUNNING: bool = False
+
 class StdoutRedirector:
     def __init__(self, text_widget):
         self.text_widget = text_widget
@@ -68,7 +70,7 @@ class SpeedUI:
         no_name_frame_1_1.pack(side=tk.LEFT)
 
         no_name_frame_1_2 = ttk.Frame(no_name_frame_1)
-        self.save_log = tk.BooleanVar(value=False)
+        self.save_log = tk.BooleanVar(value=True)
         tk.Checkbutton(no_name_frame_1_2, text="保存结果到文件", variable=self.save_log).pack()
         tk.Label(no_name_frame_1_2, text="保存至：时间戳+[...]").pack()
         self.folder_name_addon = tk.Entry(no_name_frame_1_2)
@@ -176,6 +178,8 @@ class SpeedUI:
         self.obj = common.AutoFlush(self.obj, timedelta(minutes=20))
         self.obj = common.Sequence(self.obj, delta)
         self.obj.start()
+        global IS_RUNNING
+        IS_RUNNING = True
 
 
     def stop_button_clicked(self,):
@@ -184,6 +188,8 @@ class SpeedUI:
             self.obj.flush()
             self.obj.stop()
             self.obj = None
+            global IS_RUNNING
+            IS_RUNNING = False
         else:
             self.not_stdout.write("Not running!\n")
 
@@ -211,6 +217,7 @@ class SpeedUI:
     def clear_tree(self,):
         for item in self.tree.get_children():
             self.tree.delete(item)
+
 
 def main(root:tk.Tk):
     SpeedUI(root)

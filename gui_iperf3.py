@@ -3,6 +3,8 @@ from tkinter import ttk
 import subprocess
 import threading
 
+IS_RUNNING : bool = False
+
 class Iperf3TestApp:
     def __init__(self, root):
         try:
@@ -58,12 +60,16 @@ class Iperf3TestApp:
         self.stop_event.clear()
         self.test_thread = threading.Thread(target=self.run_iperf_tests, daemon=True)
         self.test_thread.start()
+        global IS_RUNNING
+        IS_RUNNING = True
 
     def stop_test(self):
         self.stop_event.set()
         if self.process:
             self.process.terminate()
             self.process = None
+        global IS_RUNNING
+        IS_RUNNING = False
 
     def run_iperf_tests(self):
         num_runs = self.num_runs_var.get()
