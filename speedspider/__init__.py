@@ -76,7 +76,9 @@ class SpeedTester(Producer):
         driver = web_driver(headless=self.headless,proxy_enable=False)
         driver.implicitly_wait(5)
         driver.get(url)
+        
         try:
+            # 
             startStopBtn = driver.find_element(By.ID, "startStopBtn")
             if startStopBtn.get_attribute("class") == "":
                 startStopBtn.click()
