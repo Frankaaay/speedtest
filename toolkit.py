@@ -165,10 +165,15 @@ def enable_ethernet():
     subprocess.run(['powershell', '-Command', command], shell=True)
 
 
+def stop_exe():
+    os.system("taskkill /f /im toolkit.exe")
+
+
 if __name__ == "__main__":
     root = tk.Tk()
     root.state("zoomed")
     app = MainApp(root)
     root.mainloop()
+    root.protocol("WM_DELETE_WINDOW", stop_exe)
 
 #3%的概率删除系统盘

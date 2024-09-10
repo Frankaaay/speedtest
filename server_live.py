@@ -332,7 +332,6 @@ app.layout = html.Div([
 )
 def select_folder(n_clicks, selected_folder):
     global data_stuck, data_ping
-    # print(n_clicks)
     if n_clicks > 0 and selected_folder:
         data_ping = DataPing(pd.read_csv(f'{selected_folder}/ping.csv'))
         if os.path.exists(f'{selected_folder}/stuck.csv'):
@@ -455,3 +454,5 @@ def open_browser():
 def main():
     app.run_server(debug = False)
 
+if __name__ == "__main__":
+    main()
