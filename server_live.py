@@ -185,7 +185,7 @@ def get_folders(path):
 
 
 
-path = "./log/live"
+path = r"./log/live"
 empty_ping = {
     'time': [0],
     'ping_www': [0],
@@ -193,7 +193,7 @@ empty_ping = {
     'rsrp': [0],
     'sinr': [0],
     'band': [0],
-    'pci' : [0]
+    'pci' : [0],
     }
 data_ping = DataPing(pd.DataFrame(empty_ping))
 data_stuck = DataStuck(pd.DataFrame({'start': [], 'end': [], 'duration': []}))

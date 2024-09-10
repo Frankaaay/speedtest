@@ -3,6 +3,8 @@ from tkinter import ttk
 import utils
 import stability_recorder
 
+IS_RUNNING: bool = False
+
 class StdoutRedirector:
     def __init__(self, text_widget):
         self.text_widget = text_widget
@@ -100,8 +102,6 @@ class LiveUI:
         self.not_stdout = StdoutRedirector(output_text)
         
         # 重定向 stdout 和 stderr
-        # sys.stdout = StdoutRedirector(output_text)
-        # sys.stderr = StdoutRedirector(output_text)
 
 
     def start_button_clicked(self,):
@@ -110,6 +110,8 @@ class LiveUI:
             self.not_stdout.write("Already running! Flushing\n")
             self.obj.flush()
             return
+        global IS_RUNNING
+        IS_RUNNING = True
         utils.browser_name = self.browser_option.get()
 
         self.obj = stability_recorder.Main(self.record_device.get(),
@@ -130,11 +132,14 @@ class LiveUI:
             self.not_stdout.write("Stopping\n")
             self.obj.stop()
             self.obj = None
+            global IS_RUNNING
+            IS_RUNNING = False
         else:
             self.not_stdout.write("Not running!\n")
 
+
 def main(root:tk.Tk):
-    LiveUI(root)
+    retu1=LiveUI(root)
 
 if __name__ == "__main__":
     root = tk.Tk()
