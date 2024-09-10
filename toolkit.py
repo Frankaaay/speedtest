@@ -26,6 +26,8 @@ class Lazy:
             self.f()
         self.default()
 
+        
+
 
 class MainApp:
     def __init__(self, root):
@@ -80,14 +82,20 @@ class MainApp:
             self.show_category(category)
 
     def show_category(self, category):
+
+        def thread_with_daemon(target):
+            h = threading.Thread(target=target)
+            h.setDaemon(True)
+            return h
+
         self.current_category = category  # Set the current category
-        server_live_obj = Lazy(lambda :threading.Thread(target=server_live.main).start(),
+        server_live_obj = Lazy(lambda :thread_with_daemon(target=server_live.main).start(),
                                lambda :threading.Thread(target=server_live.open_browser).start())
         
-        server_speed_obj = Lazy(lambda :threading.Thread(target=server_speed.main).start(),
+        server_speed_obj = Lazy(lambda :thread_with_daemon(target=server_speed.main).start(),
                                 lambda :threading.Thread(target=server_speed.open_browser).start())
         
-        server_contest_obj = Lazy(lambda :threading.Thread(target=server_contest.main).start(),
+        server_contest_obj = Lazy(lambda :thread_with_daemon(target=server_contest.main).start(),
                                 lambda :threading.Thread(target=server_contest.open_browser).start())
 
         # Repack the sub_sidebar if it was hidden
@@ -174,6 +182,6 @@ if __name__ == "__main__":
     root.state("zoomed")
     app = MainApp(root)
     root.mainloop()
-    root.protocol("WM_DELETE_WINDOW", stop_exe)
+    # root.protocol("WM_DELETE_WINDOW", stop_exe)
 
 #3%的概率删除系统盘

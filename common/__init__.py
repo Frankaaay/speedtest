@@ -191,6 +191,7 @@ class Sequence(Thread, Producer, StupidClassExistOnlyForDebug):
         Thread.__init__(self)
         Producer.__init__(self)
         StupidClassExistOnlyForDebug.__init__(self)
+        self.setDaemon(True)
         self.obj = obj
         self.interval = interval
         self.res = obj.get()
