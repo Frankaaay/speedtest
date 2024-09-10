@@ -7,7 +7,7 @@ from selenium import webdriver
 from selenium.webdriver.common.proxy import Proxy
 
 browser_name = 'Edge'
-proxy_enable = True
+proxy_enable = False
 proxy_addr = '127.0.0.1:6210'
 SPEED_UP = True
 
