@@ -1,10 +1,4 @@
-pandas
-dash
-numpy
-plotly
-bisect
-selenium
-requests
-lxml
-ping3
-random
+dash==2.16.0
+numpy==1.26.4
+pandas==2.2.2
+ping3==4.0.8
