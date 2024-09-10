@@ -41,7 +41,7 @@ class SpeedAndState(Producer):
 def gen_device(record_device: bool,device_ip: str) -> Sequence:
     if record_device:
         device = Panel_FM(device_ip)
-        device.set_ttl(timedelta(minutes=5))
+        device.set_ttl(timedelta(minutes=3))
     else:
         device = Producer()
     device.set_default(PanelState())
@@ -57,12 +57,14 @@ def Main(urls: list[str],
          folder_name: str = "",
          faster_version: bool = False
          ) -> SpeedTester:
+        
         folder_name = utils.sanitize_filename(folder_name)
+
         device = gen_device(record_device,device_ip)
         if faster_version:
-            speed = SpeedTester0Interval(headless,timedelta(minutes=2), urls)
+            speed = SpeedTester0Interval(headless,timedelta(minutes=1), urls)
         else:
-            speed = SpeedTester(headless,timedelta(minutes=2), urls)
+            speed = SpeedTester(headless,timedelta(minutes=1), urls)
         now = datetime.now().strftime("%Y-%m-%d_%H-%M")
         
         obj = SpeedAndState(speed, device)

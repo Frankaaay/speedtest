@@ -9,6 +9,7 @@ LOOK_UP_PORT = 7878
 def set_config(proxy_socket, device_ip):
     cfg = {
         'tui': True ,
+        'ipv6_first': False,
         'lookup' : f"127.0.0.1:{LOOK_UP_PORT}",
         'timeout' :{
             'connect' : 5000,
@@ -31,6 +32,7 @@ def get_sciatic():
         stream.connect(('127.0.0.1', LOOK_UP_PORT))
     except:
         print("无法连接到multi3！！！")
+        start_proxy()
         return None
     stream.send(b'0')
     res = stream.recv(128).decode('utf-8')

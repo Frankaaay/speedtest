@@ -63,7 +63,7 @@ def speed_test(headless, timeout, url):
         return res
 
 class SpeedTester(Producer):
-    def __init__(self, headless=True, timeout=timedelta(minutes=2), urls=URLS):
+    def __init__(self, headless=True, timeout=timedelta(minutes=1), urls=URLS):
         super().__init__()
         self.headless = headless
         self.timeout = timeout.total_seconds()
@@ -139,6 +139,7 @@ class SpeedTester0Interval(Producer):
 
         while not self.obj1.afap:
             sleep(0.1)
+        sleep(2)
         h = threading.Thread(target=self.obj2.update)
         h.start()
 
