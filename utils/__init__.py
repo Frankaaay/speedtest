@@ -10,7 +10,8 @@ browser_name = 'Edge'
 proxy_socket = '127.0.0.1:6210'
 SPEED_UP = True
 
-def web_driver(browser_name=browser_name, headless: bool = False, proxy_enable=False):
+def web_driver(browser_name=browser_name, headless: bool = False, proxy_enable = False):
+    print(f"Creating {browser_name=}, {headless=}, {proxy_enable=}")
     if browser_name == "Edge":
         options = webdriver.EdgeOptions()
         if headless:

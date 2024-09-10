@@ -73,7 +73,7 @@ class SpeedTester(Producer):
     def update(self):
         super().update()
         url = random.choice(self.urls)
-        driver = web_driver(headless=self.headless)
+        driver = web_driver(headless=self.headless,proxy_enable=False)
         driver.implicitly_wait(5)
         driver.get(url)
         startStopBtn = driver.find_element(By.ID, "startStopBtn")
