@@ -45,7 +45,6 @@ class SpeedTester(Producer):
         driver = web_driver(headless=self.headless,proxy_enable=False)
         driver.implicitly_wait(5)
         driver.get(url)
-        
         try:
             # 
             startStopBtn = driver.find_element(By.ID, "startStopBtn")
@@ -69,10 +68,13 @@ class SpeedTester(Producer):
             jit = driver.find_element(By.ID, "jitText").text
             dl = driver.find_element(By.ID, "dlText").text
             ul = driver.find_element(By.ID, "ulText").text
-        except SEexceptions.NoSuchElementException:
-            lag = jit = dl = ul = "nan"
+        except SEexceptions.NoSuchElementException as e:
+            lag = repr(e)
+            jit = dl = ul = "nan"
+            print(e)
         except SEexceptions.TimeoutException:
-            lag = jit = dl = ul = "nan"
+            lag = 'SpeedTest Timeout'
+            jit = dl = ul = "nan"
         except Exception as e:
             lag = repr(e)
             jit = dl = ul = "nan"
@@ -84,8 +86,6 @@ class SpeedTester(Producer):
             jit = float(jit)
             dl = float(dl)
             ul = float(ul)
-            if lag == 0 and jit == 0 and dl == 0 and ul == 0:
-                lag = jit = dl = ul = float("nan")
             self.res = SpeedTestResult(float(lag), float(jit), float(dl), float(ul))
         except ValueError:
             self.res = SpeedTestResult(lag, jit, dl, ul)

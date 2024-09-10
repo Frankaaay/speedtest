@@ -4,7 +4,6 @@ import re
 import time
 from datetime import datetime, timedelta
 from selenium import webdriver
-from selenium.webdriver.common.proxy import Proxy
 
 browser_name = 'Edge'
 proxy_socket = '127.0.0.1:6210'

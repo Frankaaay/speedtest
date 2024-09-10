@@ -14,7 +14,7 @@ def set_config(proxy_socket, device_ip):
         'timeout' :{
             'connect' : 5000,
             'retry' :10000,
-            'io' : 15000
+            'io' :  180000
         },
         'routing' : [
             {
@@ -31,7 +31,7 @@ def get_sciatic():
     try:
         stream.connect(('127.0.0.1', LOOK_UP_PORT))
     except:
-        print("无法连接到multi3！！！")
+        print("无法连接到multi3!!")
         start_proxy()
         return None
     stream.send(b'0')
