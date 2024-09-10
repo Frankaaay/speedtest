@@ -62,8 +62,8 @@ class ProxySpeed(Producer):
         res = get_sciatic()
 
         rate = {
-            'ul' : round((res['ul'] - self.previous['ul']) / (time() - self.previous_time) / 8 / 1024,2),
-            'dl' : round((res['dl'] - self.previous['dl']) / (time() - self.previous_time) / 8 / 1024,2),
+            'ul' : round((res['ul'] - self.previous['ul']) / (time() - self.previous_time) / 1024,2),
+            'dl' : round((res['dl'] - self.previous['dl']) / (time() - self.previous_time) / 1024,2),
         }
 
         self.previous_time = time()
