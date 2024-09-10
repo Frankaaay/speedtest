@@ -31,37 +31,6 @@ URLS = [
     "http://speed.nuaa.edu.cn/",
 ]
 
-def speed_test(headless, timeout, url):
-    driver = web_driver(headless=headless)
-    driver.implicitly_wait(5)
-    driver.get(url)
-    startStopBtn = driver.find_element(By.ID, "startStopBtn")
-    if startStopBtn.get_attribute("class") == "":
-        startStopBtn.click()
-    try:
-        WebDriverWait(driver, timeout).until(
-            lambda driver: int(driver.execute_script("return s.getState()")) == 4)
-        lag = driver.find_element(By.ID, "pingText").text
-        jit = driver.find_element(By.ID, "jitText").text
-        dl = driver.find_element(By.ID, "dlText").text
-        ul = driver.find_element(By.ID, "ulText").text
-    except SEexceptions.NoSuchElementException:
-        lag = jit = dl = ul = "nan"
-    except SEexceptions.TimeoutException:
-        lag = jit = dl = ul = "nan"
-    except Exception as e:
-        lag = repr(e)
-        jit = dl = ul = "nan"
-    finally:
-        threading.Thread(target=driver.quit).start()
-
-    try:
-        res = SpeedTestResult(float(lag), float(jit), float(dl), float(ul))
-    except ValueError:
-        res = SpeedTestResult(lag, jit, dl, ul)
-    finally:
-        return res
-
 class SpeedTester(Producer):
     def __init__(self, headless=True, timeout=timedelta(minutes=1), urls=URLS):
         super().__init__()
@@ -76,10 +45,12 @@ class SpeedTester(Producer):
         driver = web_driver(headless=self.headless,proxy_enable=False)
         driver.implicitly_wait(5)
         driver.get(url)
-        startStopBtn = driver.find_element(By.ID, "startStopBtn")
-        if startStopBtn.get_attribute("class") == "":
-            startStopBtn.click()
+        
         try:
+            # 
+            startStopBtn = driver.find_element(By.ID, "startStopBtn")
+            if startStopBtn.get_attribute("class") == "":
+                startStopBtn.click()
             sleep(2)
 
             def afap(driver):

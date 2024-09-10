@@ -8,3 +8,9 @@ build/
 dist/
 *.spec
 /whereami/*
+Lib/
+Scripts/
+etc/
+Include/
+share/
+pyvenv*
