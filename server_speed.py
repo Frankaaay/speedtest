@@ -110,7 +110,7 @@ class Speed:
                 x=d.index,
                 y=d['upload'],
                 mode='lines',
-                name=f'Upload{i}',
+                name=f'Upload {self.files_name[i - 1][12:]}',
                 marker=dict(color=color),
                 hovertext = hovertext
             ))
@@ -119,7 +119,7 @@ class Speed:
                 x=d.index,
                 y=d['download'],
                 mode='lines',
-                name=f'Download{i}',
+                name=f'Download {self.files_name[i - 1][12:]}',
                 marker=dict(color=color),
                 hovertext = hovertext
             ))
@@ -128,7 +128,7 @@ class Speed:
                 x=d.index,
                 y=d['rsrp'],
                 mode='lines',
-                name=f'rsrp{i}',
+                name=f'rsrp {self.files_name[i - 1][12:]}',
                 marker=dict(color=color_rsrp),
                 hovertext = hovertext
             ))
@@ -137,7 +137,7 @@ class Speed:
                 x=d.index,
                 y=d['sinr'],
                 mode='lines',
-                name=f'sinr{i}',
+                name=f'sinr {self.files_name[i - 1][12:]}',
                 marker=dict(color=color_sinr),
                 hovertext = hovertext
             ))
@@ -146,7 +146,7 @@ class Speed:
                 x=d.index,
                 y=d['lag'],
                 mode='lines',
-                name=f'Lag{i}',
+                name=f'Lag {self.files_name[i - 1][12:]}',
                 marker=dict(color=color),
             ))
 
@@ -154,7 +154,7 @@ class Speed:
                 x=d.index,
                 y=d['jit'],
                 mode='lines',
-                name=f'Jit{i}',
+                name=f'Jit {self.files_name[i - 1][12:]}',
                 marker=dict(color=color),
             ))  
             self.uploads.append(summarize(d, "upload"))
