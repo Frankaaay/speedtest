@@ -32,6 +32,7 @@ class Live(Producer):
         else:
             self.goto_room(room_id)
 
+        self.stuck_since = None
         self.afk_since = time()
         self.set_default((LiveState.Error, "Not update for too long"))
 
@@ -90,8 +91,17 @@ class Live(Producer):
 
     def update(self):
         super().update()
+        if self.res[0] != LiveState.Normal and self.stuck_since is None:
+            self.stuck_since = time()
+
 
     def afk_check(self) -> bool:
+        if self.stuck_since is not None and time() - self.stuck_since > 120:
+            self.refresh()  # refresh page to prevent afk
+            self.afk_since = time()
+            self.stuck_since = None
+            self.res = (LiveState.Error, "stuck for too long")
+            return True
         if time() - self.afk_since > timedelta(minutes=20).total_seconds():
             self.refresh()  # refresh page to prevent afk
             self.afk_since = time()

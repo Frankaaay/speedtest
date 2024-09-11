@@ -5,8 +5,8 @@ from datetime import datetime, timedelta
 from utils import wait_full_second
 import sys
 
-DEVICE_INFOS = ['rsrq','rsrp','sinr','band','pci','ber','up','down']
-DEVICE_INFOS_UNIT = ['dB','dBm','dB','','','','KB/S',"KB/S"]
+DEVICE_INFOS = ['rsrq','rsrp','sinr','band','pci','ber',]
+DEVICE_INFOS_UNIT = ['dB','dBm','dB','','','',]
 
 class StupidClassExistOnlyForDebug:
     '''

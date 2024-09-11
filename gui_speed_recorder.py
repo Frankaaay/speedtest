@@ -220,7 +220,7 @@ class SpeedUI:
 
 
 def main(root:tk.Tk):
-    SpeedUI(root)
+    return SpeedUI(root)
 
 if __name__ == "__main__":
     root = tk.Tk()

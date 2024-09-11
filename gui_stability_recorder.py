@@ -139,7 +139,7 @@ class LiveUI:
 
 
 def main(root:tk.Tk):
-    retu1=LiveUI(root)
+    return LiveUI(root)
 
 if __name__ == "__main__":
     root = tk.Tk()
