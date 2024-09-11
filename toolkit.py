@@ -54,7 +54,7 @@ class MainApp:
         self.buttons = {
             '网络体验稳定性': 'gui_stability_recorder',
             '网络速率稳定性': 'gui_speed_recorder',
-            'iperf3': 'gui_iperf3'
+            
         }
         button_font = tkFont.Font(family="Comic Sans MS", size=15, weight="bold")
 
@@ -63,9 +63,15 @@ class MainApp:
                                width=15, height=1, font=button_font,bg="#3389ff", fg="white")
             button.pack(pady=15, fill=tk.X)
 
-        button7 = tk.Button(self.sidebar, text="数据整理", command=lambda c="数据整理": self.toggle_category(c),
+        button7 = tk.Button(self.sidebar, text="数据统计", command=lambda c="数据统计": self.toggle_category(c),
                             width=15, height=1, font=button_font, bg="#3389ff", fg="white")
         button7.pack(pady=15, fill=tk.X)
+
+        module_name = 'gui_iperf3'
+        text = 'iperf3'
+        button1 = tk.Button(self.sidebar, text=text, command=lambda m=module_name: self.check_and_show_page(m),
+                               width=15, height=1, font=button_font,bg="#3389ff", fg="white")
+        button1.pack(pady=15, fill=tk.X)
 
         button7 = tk.Button(self.sidebar, text="网络工具", command=lambda c="网络工具": self.toggle_category(c),
                             width=15, height=1, font=button_font, bg="#3389ff", fg="white")
@@ -112,10 +118,10 @@ class MainApp:
                        ("禁用以太网", disable_ethernet)]
         elif category == "辅助工具":
             buttons = [("BandwidthMeter", band_pro)]
-        elif category == "数据整理":
-            buttons = [("ping数据整理", server_live_obj.run),
-                       ("测速数据整理", server_speed_obj.run),
-                       ("ping数据对比", server_contest_obj.run)]
+        elif category == "数据统计":
+            buttons = [("直播数据统计", server_live_obj.run),
+                       ("测速数据统计", server_speed_obj.run),
+                       ("多设备直播数据对比", server_contest_obj.run)]
 
         for button_text, func in buttons:
             btn = tk.Button(self.sub_sidebar, text=button_text, width=15, height=2,
@@ -151,7 +157,7 @@ class MainApp:
         image = Image.open("flymodem.png")
         image = image.resize((100, 100), Image.LANCZOS)
         self.image = ImageTk.PhotoImage(image)
-        self.image_label = tk.Label(self.sidebar, image=self.image, bg='lightgrey')
+        self.image_label = tk.Label(self.sidebar, image=self.image, bg='white')
 
 
 def band_pro():
@@ -179,9 +185,11 @@ def stop_exe():
 
 if __name__ == "__main__":
     root = tk.Tk()
+    root.iconbitmap("flymodem.ico")
     root.state("zoomed")
     app = MainApp(root)
     root.mainloop()
-    # root.protocol("WM_DELETE_WINDOW", stop_exe)
+    
+
 
 #3%的概率删除系统盘

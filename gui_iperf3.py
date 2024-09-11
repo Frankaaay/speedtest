@@ -18,7 +18,7 @@ class Iperf3TestApp:
         self.ip_base = "192.168."
         self.ip_suffix1 = ""
         self.ip_suffix2 = ""
-        self.working_directory = r"D:\fly\iperf-3.1.3-win64"  # Default directory
+        self.working_directory = r"iperf3"  # Default directory
         self.num_runs = 5  # Default number of runs
         self.duration = 30  # Default duration in seconds
         self.process = None

@@ -207,7 +207,7 @@ class DataPing:
 
         self.graph_ping.update_layout(
             title={
-                'text': 'Ping',  # Set the title text
+                'text': 'Ping(ms)',  # Set the title text
                 'font': {
                     'size': 24,  # Set the font size
                     'family': 'Arial, sans-serif',  # Set the font family
@@ -222,7 +222,7 @@ class DataPing:
         )
         self.download.update_layout(
             title={
-                'text': 'Download',  # Set the title text
+                'text': 'Download(Mb/s)',  # Set the title text
                 'font': {
                     'size': 24,  # Set the font size
                     'family': 'Arial, sans-serif',  # Set the font family
@@ -238,7 +238,7 @@ class DataPing:
 
         self.upload.update_layout(
             title={
-                'text': 'Upload',  # Set the title text
+                'text': 'Upload(Mb/s)',  # Set the title text
                 'font': {
                     'size': 24,  # Set the font size
                     'family': 'Arial, sans-serif',  # Set the font family
@@ -604,7 +604,7 @@ def open_browser():
     webbrowser.open_new("http://127.0.0.1:8050/")
 
 def main():
-    app.run_server(debug = True)
+    app.run_server(debug = False)
 
 if __name__ == "__main__":
     main()
