@@ -52,7 +52,7 @@ class LiveUI:
         tk.Checkbutton(no_name_frame_1_2, text="保存结果到文件", variable=self.save_log).pack()
         tk.Label(no_name_frame_1_2, text="保存至：时间戳+[...]").pack()
         self.folder_name_addon = tk.Entry(no_name_frame_1_2)
-        self.folder_name_addon.insert(0, 'FM电信')
+        self.folder_name_addon.insert(0, '为你的设备命名')
         self.folder_name_addon.pack()
         no_name_frame_1_2.pack(side=tk.RIGHT)
 
