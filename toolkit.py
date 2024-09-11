@@ -54,7 +54,7 @@ class MainApp:
         self.buttons = {
             '网络体验稳定性': 'gui_stability_recorder',
             '网络速率稳定性': 'gui_speed_recorder',
-            
+
         }
         button_font = tkFont.Font(family="Comic Sans MS", size=15, weight="bold")
 
@@ -63,7 +63,7 @@ class MainApp:
                                width=15, height=1, font=button_font,bg="#3389ff", fg="white")
             button.pack(pady=15, fill=tk.X)
 
-        button7 = tk.Button(self.sidebar, text="数据统计", command=lambda c="数据统计": self.toggle_category(c),
+        button7 = tk.Button(self.sidebar, text="体验&网速数据统计", command=lambda c="体验&网速数据统计": self.toggle_category(c),
                             width=15, height=1, font=button_font, bg="#3389ff", fg="white")
         button7.pack(pady=15, fill=tk.X)
 
@@ -118,7 +118,7 @@ class MainApp:
                        ("禁用以太网", disable_ethernet)]
         elif category == "辅助工具":
             buttons = [("BandwidthMeter", band_pro)]
-        elif category == "数据统计":
+        elif category == "体验&网速数据统计":
             buttons = [("直播数据统计", server_live_obj.run),
                        ("测速数据统计", server_speed_obj.run),
                        ("多设备直播数据对比", server_contest_obj.run)]
