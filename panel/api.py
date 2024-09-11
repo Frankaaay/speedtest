@@ -37,5 +37,5 @@ class Console(Recorder):
         super().__init__(file)
 
     def record(self, res: PanelState):
-        self.file.write(str(res)+'\n')
+        self.file.write("[设备]"+str(res)+'\n')
         

@@ -10,7 +10,7 @@ proxy_socket = '127.0.0.1:6210'
 SPEED_UP = True
 
 def web_driver(browser_name=browser_name, headless: bool = False, proxy_enable = False):
-    print(f"Creating {browser_name=}, {headless=}, {proxy_enable=}")
+    print(f"[浏览器] Creating {browser_name=}, {headless=}, {proxy_enable=}")
     if browser_name == "Edge":
         options = webdriver.EdgeOptions()
         if headless:
@@ -84,7 +84,7 @@ def which_is_device_ip():
     ip_addresses = [re.sub(r'\.\d+$', '.1', ip) for ip in ip_addresses]
     if len(ip_addresses) > 0:
         ip = '.'.join(map(str,min(list(map(lambda ip:list(map(int,ip.split('.'))),ip_addresses)))))
-        print(ip_addresses, "->", ip)
+        print("[IP]", ip_addresses, "->", ip)
         return ip
     else: 
         return 'Not Detected'
@@ -93,13 +93,12 @@ def which_is_my_ip():
     hostname = socket.gethostname()
     ip_addresses = socket.getaddrinfo(hostname, None)
     ip_addresses = [ip[4][0] for ip in ip_addresses]
-    ip_addresses = [ip for ip in ip_addresses if ip.startswith(
-        '192.') and not ip.endswith('.1')]
+    ip_addresses = [ip for ip in ip_addresses if ip.startswith('192.') and not ip.endswith('.1')]
     # 替换 .1
     # ip_addresses = [re.sub(r'\.\d+$', '.1', ip) for ip in ip_addresses]
     if len(ip_addresses) > 0:
         ip = '.'.join(map(str,min(list(map(lambda ip:list(map(int,ip.split('.'))),ip_addresses)))))
-        print(ip_addresses, "->", ip)
+        print("[IP]", ip_addresses, "->", ip)
         return ip
     else: 
         return '0.0.0.0'
@@ -130,5 +129,5 @@ def sanitize_filename(filename):
     sanitized = sanitized.strip()
     # 如果文件名为空，设置为默认值
     if not sanitized:
-        sanitized = 'default_filename'
+        sanitized = ''
     return sanitized

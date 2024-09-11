@@ -31,7 +31,7 @@ def get_sciatic():
     try:
         stream.connect(('127.0.0.1', LOOK_UP_PORT))
     except:
-        print("无法连接到multi3!!")
+        print("[代理]无法连接到multi3!!")
         start_proxy()
         return None
     stream.send(b'0')
@@ -41,9 +41,11 @@ def get_sciatic():
 
 
 def start_proxy():
+    print("[代理]启动!multi3!")
     os.system("start multi3.exe")
 
 def stop_proxy():
+    print("[代理]停止!multi3!")
     os.system("taskkill /f /im multi3.exe")
 
 def is_running():

@@ -10,13 +10,16 @@ class Panel_FM(Panel):
     def update(self):
         res = {}
         at = AT(self.ip, self.timeout)
+        if at.error:
+            self.logger.write(f"[设备]连不到！\n")
+            return
         try:
             ok = at.sr1("AT")
             if ok != "OK":
-                self.logger.write(f"AT not working!! {ok}\n")
+                self.logger.write(f"[设备]AT寄了! {ok}\n")
                 self.res = PanelState({})
         except Exception as e:
-            self.logger.write(f"AT not working!!\n{e}")
+            self.logger.write(f"[设备]寄了! \n{e}")
             return
         
         res = at.BANDIND()

@@ -23,9 +23,9 @@ class Reporter(Recorder):
 class Console(Recorder):
     def record(self, res: tuple[SpeedTestResult,PanelState]):
         speed_res, device_res = res
-        self.file.write(datetime.now().strftime("%H:%M:%S")+'\n')
-        self.file.write(f"{speed_res}\n")
-        self.file.write(f"{device_res}\n")
+        self.file.write("[时间]"+datetime.now().strftime("%H:%M:%S")+'\n')
+        self.file.write(f"[网速]{speed_res}\n")
+        self.file.write(f"[设备]{device_res}\n")
 
 class SpeedAndState(Producer):
     def __init__(self, speed: SpeedTester, device: Panel_FM):

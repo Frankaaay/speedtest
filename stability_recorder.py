@@ -63,7 +63,7 @@ class ConsolePingAndState(stable.Console):
     def record(self, data: tuple[datetime, dict[str, float], panel.PanelState, dict[str, float]]):
         time, pings, state,net_speed = data
         super().record(pings)
-        self.file.write(f"网速：上：{net_speed['ul']}KB/S 下{net_speed['dl']}KB/S\n")
+        self.file.write(f"[网速]上：{net_speed['ul']}KB/S 下{net_speed['dl']}KB/S\n")
 
 
 PATH = './log/live'
@@ -95,12 +95,6 @@ def gen_device(record_device: bool,device_ip: str, stdout) -> Sequence:
         device = Producer()
     device.set_default(panel.PanelState())
     return device
-
-class Console(Recorder):
-    def record(self, data: tuple[datetime, dict[str, float], panel.PanelState]):
-        time, pings, state = data
-        time_str = time.strftime('%m-%d %H:%M:%S')
-
 
 class Main:
     def __init__(self, 

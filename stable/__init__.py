@@ -11,10 +11,11 @@ def ping(target, timeout=timedelta(seconds=0.75)):
         if delay > timeout.total_seconds()*1000:
             delay = float('inf')
         return delay
-    except ping3.errors.PingError:
+    except ping3.errors.PingError as e:
+        print(f"[ping] PingError {e}")
         return float('inf')
     except Exception as e:
-        print(e)
+        print(f"[ping] Error {e}")
         return float('inf')
 
 
@@ -52,4 +53,4 @@ class Console(Recorder):
 
     def record(self, pings: dict[str, float]):
         self.file.write(
-            f"Ping: {','.join([str(pings[self.targets[t]])+'ms' for t in self.target_name])}\n")
+            f"[Ping]{','.join([str(pings[self.targets[t]])+'ms' for t in self.target_name])}\n")

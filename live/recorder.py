@@ -14,15 +14,15 @@ class Console(Recorder):
         time_str = strftime("%H:%M:%S")
 
         if state == LiveState.Normal:
-            self.file.write(f"{time_str} 正常    {msg}\n")
+            self.file.write(f"[直播]正常  {time_str} {msg}\n")
         elif state == LiveState.Stuck:
-            self.file.write(f"{time_str} 直播卡顿 {msg}\n")
+            self.file.write(f"[直播]卡顿! {time_str} {msg}\n")
         elif state == LiveState.End:
-            self.file.write(f"{time_str} 直播结束 {msg}\n")
+            self.file.write(f"[直播]结束! {time_str} {msg}\n")
         elif state == LiveState.Error:
-            self.file.write(f"{time_str} 直播错误 {msg}\n")
+            self.file.write(f"[直播]错误! {time_str} {msg}\n")
         else:
-            self.file.write(f"{time_str} 未知的状态 {msg}\n")
+            self.file.write(f"[直播]未知!!{time_str} {msg}\n")
 
         self.file.flush()
 
