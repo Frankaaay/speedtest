@@ -20,7 +20,7 @@ class SpeedTestResult:
         self.ul = ul
 
     def __repr__(self) -> str:
-        return f"lag:{self.lag} jit:{self.jit} dl:{self.dl} ul:{self.ul}"
+        return f"lag:{self.lag} jit:{self.jit} ⇩:{self.dl} ⇧:{self.ul}"
 
 
 URLS = [

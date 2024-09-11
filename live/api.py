@@ -17,6 +17,7 @@ class LiveState:
     Stuck = 1,
     End = 2,
     Error = 3,
+    Afk = 4,
 
 
 class Live(Producer):
@@ -92,8 +93,10 @@ class Live(Producer):
 
     def update(self):
         super().update()
-        if self.res[0] != LiveState.Normal and self.stuck_since is None:
+        if self.res[0] == LiveState.Stuck and self.stuck_since is None:
             self.stuck_since = time()
+        elif self.res[0] == LiveState.Normal or self.res[0] == LiveState.Afk:
+            self.stuck_since = None
 
 
     def afk_check(self) -> bool:
@@ -107,11 +110,11 @@ class Live(Producer):
         if time() - self.afk_since > timedelta(minutes=20).total_seconds():
             self.refresh()  # refresh page to prevent afk
             self.afk_since = time()
-            self.res = (LiveState.Normal, "anti afk")
+            self.res = (LiveState.Afk, "anti afk")
             print("[直播]防止挂机检测，刷新页面")
             return True
         elif time() - self.afk_since < timedelta(seconds=10).total_seconds():
-            self.res = (LiveState.Normal, "anti afk refreshing")
+            self.res = (LiveState.Afk, "anti afk refreshing")
             return True
         return False
 

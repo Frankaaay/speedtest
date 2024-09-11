@@ -15,6 +15,8 @@ class Console(Recorder):
 
         if state == LiveState.Normal:
             self.file.write(f"[直播]正常  {time_str} {msg}\n")
+        elif state == LiveState.Afk:
+            self.file.write(f"[直播]AFK! {time_str} {msg}\n")
         elif state == LiveState.Stuck:
             self.file.write(f"[直播]卡顿! {time_str} {msg}\n")
         elif state == LiveState.End:
@@ -41,7 +43,7 @@ class Logger(Recorder):
         now = time()
         time_str = strftime("%H:%M:%S")
 
-        if state == LiveState.Normal and self.start is not None:
+        if state == LiveState.Normal or state == LiveState.Afk and self.start is not None:
             self.file.write(
                 f"{self.count},{time_str},结束,{now-self.start:.3f}\n")
             self.start = None
@@ -79,7 +81,7 @@ class MergeResult:
         if msg is None:
             msg = ""
 
-        if state == LiveState.Normal:
+        if state == LiveState.Normal or state == LiveState.Afk:
             if self.last_end is None:
                 self.last_end = now
 

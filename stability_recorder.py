@@ -9,23 +9,28 @@ import multi3
 
 
 class PingAndState(Producer):
-    def __init__(self, ping: stable.Pings, device: panel.Panel | None, net_speed: multi3.ProxySpeed):
+    def __init__(self, ping: stable.Pings, device: panel.Panel | None, net_speed: multi3.ProxySpeed, live:live.Live):
         super().__init__()
         self.ping = ping
         self.device = device
         self.net_speed = net_speed
+        self.live = live
+        self.res:tuple[datetime, dict[str, float], panel.PanelState, multi3.ProxyResult]
+        self.res = ['time', 'ping', 'device', multi3.ProxyResult(0.03,3)]
 
     def update(self):
         super().update()
         now = datetime.now()
         self.ping.update()
         self.net_speed.update()
-        if self.device is not None:
-            self.device.update()
-            self.res = (now, self.ping.get(), self.device.get(), self.net_speed.get())
+        res = [now, self.ping.get(),self.device.get(),'speed']
+        
+        if self.live.get()[0] == live.LiveState.Afk:
+            res[3] = self.res[3]
         else:
-            empty = panel.PanelState()
-            self.res = (now, self.ping.get(), empty, self.net_speed.get())
+            res[3] = self.net_speed.get()
+        
+        self.res = tuple(res)
 
     def stop(self):
         super().stop()
@@ -68,7 +73,7 @@ class ConsolePingAndState(stable.Console):
 
 PATH = './log/live'
 
-def gen_live(platform: str, room_id: str | None = None,) -> Sequence:
+def gen_live(platform: str, room_id: str | None = None,) -> live.Live:
     if len(room_id) == 0:
         room_id = None
 
@@ -126,11 +131,11 @@ class Main:
                 open(f"{PATH}/{now}#{folder_name}/stuck.csv", 'w', encoding='utf-8-sig'), interval=5, threshold=1))
         living.add_recorder(live.Console(stdout))
         living = AutoFlush(living, timedelta(minutes=5))
-        living = Sequence(living, interval=timedelta(seconds=0.3))
+        living = Sequence(living, interval=timedelta(seconds=0.33))
         living.start()
 
 
-        ping_device = PingAndState(stable.Pings(list(ips.values())), device, network_speed)
+        ping_device = PingAndState(stable.Pings(list(ips.values())), device, network_speed, living)
         ping_device = AutoFlush(ping_device, timedelta(minutes=5))
         if save_log:
             ping_device.add_recorder(
