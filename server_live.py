@@ -27,8 +27,11 @@ class DataPing:
         self.data = data                             #all data
         self.display_start = 0
         self.display_range = len(self.data)
-        self.graph_ping = None                       #the main graph
-        self.graph_ping_detail = None                      #the detail graph
+        self.graph_ping = None              #the main graph
+
+        self.upload = None
+        self.download = None
+
         self.raw_len = len(self.data)
 
         self.infwww_cnt = 0     # how many times www disconnection
@@ -81,7 +84,10 @@ class DataPing:
     # 1 is the main graph, 2 is the sub graph
 
     def gen_graph(self, s = "", e = ""):
-        graph =  go.Figure()
+        self.graph_ping = go.Figure()              #the main graph
+
+        self.upload = go.Figure()   
+        self.download = go.Figure()   
 
         if not s:
             start_time = self.data['time'][self.display_start]
@@ -112,49 +118,145 @@ class DataPing:
         self.lagwww_cnt = bisect.bisect_right(self.lag_indices_www, end_time) - bisect.bisect_right(self.lag_indices_www, start_time)
         self.lag192_cnt = bisect.bisect_right(self.lag_indices_192, end_time) - bisect.bisect_right(self.lag_indices_192, start_time)
         
-        hovertext = [f"Band: {row['band']}<br>SINR: {row['sinr']}<br>RSRP: {row['rsrp']}" 
+        hovertext = [f"Band: {row['band']}<br>ber: {row['ber']}<br>PCI: {row['pci']}" 
         for index, row in data.iterrows()]
 
         #drawing lines
-        graph.add_trace(go.Scatter(
+        self.graph_ping.add_trace(go.Scatter(
             x=data['time'],
             y=data['ping_www'],
             mode='lines',
             name='ping_www',
-            marker=dict(color='#22aaff'),
+            marker=dict(color = '#F20C0C'),
             hovertext = hovertext,
         ))
-        graph.add_trace(go.Scatter(
+        self.graph_ping.add_trace(go.Scatter(
             x=data['time'],
             y=data['ping_192'],
             mode='lines',
             name='ping_192',
-            marker=dict(color='#8888ff'),
+            marker=dict(color = '#F2960C'),
+            hovertext = hovertext
+        ))
+
+        self.graph_ping.add_trace(go.Scatter(
+            x=data['time'],
+            y=data['sinr'],
+            mode='lines',
+            name='sinr',
+            marker=dict(color = '#FF00FF'),
+            hovertext = hovertext
+        ))
+
+
+        self.graph_ping.add_trace(go.Scatter(
+            x=data['time'],
+            y=data['rsrq'],
+            mode='lines',
+            name='rsrq',
+            marker=dict(color = '#3AF20C'),
+            hovertext = hovertext
+        ))
+
+
+        self.graph_ping.add_trace(go.Scatter(
+            x=data['time'],
+            y=data['rsrp'],
+            mode='lines',
+            name='rsrp',
+            marker=dict(color = '#0C68F2'),
+            hovertext = hovertext
+        ))
+
+        self.upload.add_trace(go.Scatter(
+            x=data['time'],
+            y=data['up'],
+            mode='lines',
+            name='upload',
+            marker=dict(color = '#FF00FF'),
+            hovertext = hovertext
+        ))
+
+
+        self.download.add_trace(go.Scatter(
+            x=data['time'],
+            y=data['down'],
+            mode='lines',
+            name='download',
+            marker=dict(color = '#0C68F2'),
             hovertext = hovertext
         ))
 
         #drawing disconnection dots
-        graph.add_trace(go.Scatter(
+        self.graph_ping.add_trace(go.Scatter(
             x=inf_indices_www,
             y=inf_values_www,
             mode='markers',
-            marker=dict(color='#ff0000', size=5),
-            name='www网络不可达'
+            marker=dict(color = '#0CF2F2', size = 5),
+            name='www_不可达'
         ))
 
-        graph.add_trace(go.Scatter(
+        self.graph_ping.add_trace(go.Scatter(
             x=inf_indices_192,
             y=inf_values_192,
             mode='markers',
-            marker=dict(color='#5aff54', size=5),
-            name='192网络不可达'
+            marker=dict(color = '#3A0CF2', size = 5),
+            name='192_不可达'
         ))
+
+
+        self.graph_ping.update_layout(
+            title={
+                'text': 'Ping',  # Set the title text
+                'font': {
+                    'size': 24,  # Set the font size
+                    'family': 'Arial, sans-serif',  # Set the font family
+                    'color': 'RebeccaPurple'  # Set the font color
+                },
+                'x': 0.5,  # Set the x position (0 = left, 1 = right, 0.5 = center)
+                'xanchor': 'center',  # Anchor the title to the center
+                'y': 0.95,  # Set the y position (0 = bottom, 1 = top)
+                'yanchor': 'top'  # Anchor the title to the top
+            },
+            height=600
+        )
+        self.download.update_layout(
+            title={
+                'text': 'Download',  # Set the title text
+                'font': {
+                    'size': 24,  # Set the font size
+                    'family': 'Arial, sans-serif',  # Set the font family
+                    'color': 'RebeccaPurple'  # Set the font color
+                },
+                'x': 0.5,  # Set the x position (0 = left, 1 = right, 0.5 = center)
+                'xanchor': 'center',  # Anchor the title to the center
+                'y': 0.95,  # Set the y position (0 = bottom, 1 = top)
+                'yanchor': 'top'  # Anchor the title to the top
+            },
+            height=600
+        )
+
+        self.upload.update_layout(
+            title={
+                'text': 'Upload',  # Set the title text
+                'font': {
+                    'size': 24,  # Set the font size
+                    'family': 'Arial, sans-serif',  # Set the font family
+                    'color': 'RebeccaPurple'  # Set the font color
+                },
+                'x': 0.5,  # Set the x position (0 = left, 1 = right, 0.5 = center)
+                'xanchor': 'center',  # Anchor the title to the center
+                'y': 0.95,  # Set the y position (0 = bottom, 1 = top)
+                'yanchor': 'top'  # Anchor the title to the top
+            },
+            height=600
+        )
+
 
         #stats
         self.stats192 = summarize(data, "ping_192")
         self.statswww = summarize(data, "ping_www")
 
-        return graph
         
 
 
@@ -178,8 +280,6 @@ def get_folders(path):
         folders = [f for f in os.listdir(path) if os.path.isdir(os.path.join(path, f))]
         return [{'label': folder, 'value': os.path.join(path, folder)} for folder in folders]
     return []
-
-
 
 
 
@@ -245,9 +345,11 @@ app.layout = html.Div([
 
     html.H1(id='range-display'),
 
-    # html.H1("ping线点图"),
-    html.H1("ping图", style= {'fontSize': '20px'}),
     dcc.Graph(id='pings'),
+    dcc.Graph(id='ups'),
+    dcc.Graph(id='downs'),
+
+    dcc.Store(id='visibility-store', data={'ping_www': True, 'ping_192': True, 'www_network_unreachable': True, 'network_192_unreachable': True}),
 
 
     html.Div([
@@ -341,11 +443,12 @@ def select_folder(n_clicks, selected_folder):
 
 
 
-
 # Callback to update the output based on the selected datetime
 @app.callback(
     Output('range-display', 'children'),
     Output('pings', 'figure'),
+    Output('ups', 'figure'),
+    Output('downs', 'figure'),
     Output('stuck-table', 'data'),
     Output("192c", "children"),
     Output("wwwc", "children"),
@@ -353,10 +456,13 @@ def select_folder(n_clicks, selected_folder):
 
     Input('range-raw', 'value'), 
     Input('start-from-raw', 'value'),
+
+    State('visibility-store', 'data'),
+
     prevent_initial_call=True,
 )
 #getting the new range for updating the graph(two bars), positional arguments, same order with call back
-def update_range(range_raw, start_raw):
+def update_range(range_raw, start_raw, visibility_data):
     global data_stuck, data_ping
 
     if range_raw is not None:
@@ -369,12 +475,34 @@ def update_range(range_raw, start_raw):
         data_ping.display_start = math.ceil(start_raw * (data_ping.raw_len - data_ping.display_range))
 
     #parameter: mode(which graph)
-    data_ping.graph_ping = data_ping.gen_graph()
+    data_ping.gen_graph()
+
+    for trace in data_ping.graph_ping['data']:
+        if trace['name'] == 'ping_www':
+            trace['visible'] = visibility_data.get('ping_www', True)
+        elif trace['name'] == 'ping_192':
+            trace['visible'] = visibility_data.get('ping_192', True)
+        elif trace['name'] == 'www_不可达':
+            trace['visible'] = visibility_data.get('www_不可达', True)
+        elif trace['name'] == '192_不可达':
+            trace['visible'] = visibility_data.get('192_不可达', True)
+        elif trace['name'] == 'upload':
+            trace['visible'] = visibility_data.get('upload', True)
+        elif trace['name'] == 'download':
+            trace['visible'] = visibility_data.get('download', True)
+        elif trace['name'] == 'sinr':
+            trace['visible'] = visibility_data.get('sinr', True)
+        elif trace['name'] == 'rsrp':
+            trace['visible'] = visibility_data.get('rsrp', True)
+        elif trace['name'] == 'rsrq':
+            trace['visible'] = visibility_data.get('rsrq', True)
+        
+
     start_time = data_ping.data['time'][data_ping.display_start]
     end_time = data_ping.data['time'][data_ping.display_start+data_ping.display_range - 1]
 
     stuck = data_stuck.get_range(start_time,end_time)
-    # print(start_time,end_time)
+
     start_time_obj = datetime.datetime.strptime(start_time, "%m-%d %H:%M:%S")
     end_time_obj = datetime.datetime.strptime(end_time, "%m-%d %H:%M:%S")
     total_minutes = (end_time_obj - start_time_obj).total_seconds()/60
@@ -417,7 +545,7 @@ def update_range(range_raw, start_raw):
 
     return (f"显示范围: {start_time} - {end_time}", 
             
-            data_ping.graph_ping, stuck.to_dict('records'),
+            data_ping.graph_ping, data_ping.upload, data_ping.download, stuck.to_dict('records'),
 
             "到网关(192)"\
             f"断连{per_minute(data_ping.inf192_cnt)}次/分钟,      "
@@ -429,6 +557,30 @@ def update_range(range_raw, start_raw):
 
             head + body
             )
+
+@app.callback(
+    Output('visibility-store', 'data'),
+    Input('pings', 'restyleData'),
+    State('pings', 'figure'),  # Get the figure object to access trace names
+    State('visibility-store', 'data'),
+    prevent_initial_call=True
+)
+def update_visibility(restyleData, figure, visibility_data):
+    if restyleData:
+        # Loop through the trace indices (second item in restyleData)
+        for trace in restyleData[1]:
+            # Get the trace name from the figure using the trace index
+            trace_name = figure['data'][trace].get('name', f'Trace {trace}')
+            
+            # Since restyleData[0]['visible'] applies to all traces in restyleData[1],
+            # we use the first (and only) visibility value
+            visibility = restyleData[0]['visible'][0]
+            
+            # Update the visibility data using the trace name
+            visibility_data[trace_name] = visibility
+
+    return visibility_data
+
 
 
 #second graph's callback
@@ -443,8 +595,8 @@ def update_subgraph(active_cell, table):
     if active_cell is not None and active_cell['row'] < len(table):
         s = table[active_cell['row']]['start']
         e = table[active_cell['row']]['end']
-    data_ping.graph_ping_detail = data_ping.gen_graph(s, e)
-    return data_ping.graph_ping_detail
+    data_ping.gen_graph(s, e)
+    return data_ping.graph_ping
 
 
 # Function to open the browser automatically
@@ -452,7 +604,7 @@ def open_browser():
     webbrowser.open_new("http://127.0.0.1:8050/")
 
 def main():
-    app.run_server(debug = False)
+    app.run_server(debug = True)
 
 if __name__ == "__main__":
     main()

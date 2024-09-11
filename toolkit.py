@@ -32,12 +32,12 @@ class Lazy:
 class MainApp:
     def __init__(self, root):
         self.root = root
-        self.root.title("飞猫智联")
+        self.root.title("飞猫品控集成测试平台")
         self.current_module = None  # Track the current module
         self.create_widgets()
 
     def create_widgets(self):
-        self.sidebar = tk.Frame(self.root, width=900, bg='dodgerblue')
+        self.sidebar = tk.Frame(self.root, width=900, bg='white')
         self.sidebar.pack(side=tk.LEFT, fill=tk.Y)
 
         self.sub_sidebar = tk.Frame(self.root, bg='lightyellow')
@@ -56,23 +56,23 @@ class MainApp:
             '网络速率稳定性': 'gui_speed_recorder',
             'iperf3': 'gui_iperf3'
         }
-        button_font = tkFont.Font(family="Helvetica", size=15, weight="bold")
+        button_font = tkFont.Font(family="Comic Sans MS", size=15, weight="bold")
 
         for text, module_name in self.buttons.items():
             button = tk.Button(self.sidebar, text=text, command=lambda m=module_name: self.check_and_show_page(m),
-                               width=15, height=1, font=button_font)
+                               width=15, height=1, font=button_font,bg="#3389ff", fg="white")
             button.pack(pady=15, fill=tk.X)
 
         button7 = tk.Button(self.sidebar, text="数据整理", command=lambda c="数据整理": self.toggle_category(c),
-                            width=15, height=1, font=button_font)
+                            width=15, height=1, font=button_font, bg="#3389ff", fg="white")
         button7.pack(pady=15, fill=tk.X)
 
         button7 = tk.Button(self.sidebar, text="网络工具", command=lambda c="网络工具": self.toggle_category(c),
-                            width=15, height=1, font=button_font)
+                            width=15, height=1, font=button_font, bg="#3389ff", fg="white")
         button7.pack(pady=15, fill=tk.X)
 
         button7 = tk.Button(self.sidebar, text="辅助工具", command=lambda c="辅助工具": self.toggle_category(c),
-                            width=15, height=1, font=button_font)
+                            width=15, height=1, font=button_font, bg="#3389ff", fg="white")
         button7.pack(pady=15, fill=tk.X)
 
     def toggle_category(self, category):
