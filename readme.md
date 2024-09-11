@@ -8,7 +8,7 @@
 ## 打包
 
 ```sh
-pyinstaller ./toolkit.spec
+pyinstaller ./toolkit.py  -i ./flymodem.ico -y
 ```
 
 在 `dist/toolkit` 文件夹中找到生成的可执行文件。
