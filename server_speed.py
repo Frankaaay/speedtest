@@ -7,8 +7,13 @@ import os
 import webbrowser
 
 def summarize(df, column):
+    # Convert the column to numeric, forcing errors to NaN
+    df[column] = pd.to_numeric(df[column], errors='coerce')
+
+    # Replace inf values with NaN
     df[column] = df[column].replace([np.inf, -np.inf], np.nan)
 
+    # Calculate statistics
     mean = df[column].mean()
     max = df[column].max()
     low = df[column].min()
@@ -24,7 +29,7 @@ def score(download, lag):
     return 0
 
 # Define a list of colors to be used for different traces
-colors = ['#22aaff', '#ff9900', '#00cc44', '#ff0066', '#6600ff', '#ffcc00', '#00ffcc', '#ff33cc']
+colors = ['#22aaff', '#ff9900', '#ff0066', '#6600ff', '#ffcc00', '#00ffcc', '#ff33cc']
 colors_rsrp = ['#2e4053','#ffe119', '#3cb44b',  '#4363d8', '#f58231', '#911eb4', '#42d4f4', '#f032e6']
 colors_sinr = ['##808b96','#154360', '#ffdfba', '#ffffba', '#baffc9', '#bae1ff',  '#ffb7ff', '#ffd9e6']
 
@@ -71,10 +76,15 @@ class Speed:
         i = 1
 
         for data in self.data:
-
             d : pd.DataFrame = data[self.display_start:self.display_start+self.display_range]
 
-            hovertext = [f"Band: {row['band']}<br>Time: {row['time']}<br>PCI: {row['pci']}" 
+            self.uploads.append(summarize(d, "upload"))
+            self.downloads.append(summarize(d, "download"))
+
+            self.jits.append(summarize(d, "jit"))
+            self.lags.append(summarize(d, "lag"))
+
+            hovertext = [f"Time: {row['time']}<br>Band: {row['band']}<br>PCI: {row['pci']}<br>rsrq: {row['rsrq']}db<br>ber: {row['ber']}" 
             for index, row in d.iterrows()]
 
             # Apply score function to each row
@@ -84,16 +94,20 @@ class Speed:
 
             
             self.graph_download.update_layout(
-                title_text = "Download"
+                title_text = "Download(Mb/s)",
+                title_x=0.5  # Center the title (0 = left, 1 = right, 0.5 = center)
             )
             self.graph_upload.update_layout(
-                title_text = "Upload"
+                title_text = "Upload(Mb/s)",
+                title_x=0.5  # Center the title (0 = left, 1 = right, 0.5 = center)
             )
             self.graph_lag.update_layout(
-                title_text = "Lag"
+                title_text = "Lag(ms)",
+                title_x=0.5  # Center the title (0 = left, 1 = right, 0.5 = center)
             )
             self.graph_jit.update_layout(
-                title_text = "Jit"
+                title_text = "Jit(ms)",
+                title_x=0.5  # Center the title (0 = left, 1 = right, 0.5 = center)
             )
 
             self.graph_download.update_yaxes(title_text = "Download speed")
@@ -148,6 +162,7 @@ class Speed:
                 mode='lines',
                 name=f'Lag {self.files_name[i - 1][12:]}',
                 marker=dict(color=color),
+                hovertext = hovertext
             ))
 
             self.graph_jit.add_trace(go.Scatter(
@@ -156,12 +171,9 @@ class Speed:
                 mode='lines',
                 name=f'Jit {self.files_name[i - 1][12:]}',
                 marker=dict(color=color),
+                hovertext = hovertext
             ))  
-            self.uploads.append(summarize(d, "upload"))
-            self.downloads.append(summarize(d, "download"))
-
-            self.jits.append(summarize(d, "jit"))
-            self.lags.append(summarize(d, "lag"))
+            
 
             i += 1
 
