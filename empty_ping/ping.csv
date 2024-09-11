@@ -1,2 +1,2 @@
-﻿time,ping_192,ping_www,rsrp,sinr,band,pci
-0, 0,0,0,0,0,0,
+﻿time,ping_192,ping_www,rsrq,rsrp,sinr,band,pci,ber,up,down
+0,0,0,0,0,0,0,0,0,0,0
