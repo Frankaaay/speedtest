@@ -48,22 +48,22 @@ class ReporterPingAndState(Recorder):
                         ','.join(DEVICE_INFOS)+','\
                         'up,down'+"\n")
 
-    def record(self, data: tuple[datetime, dict[str, float], panel.PanelState, dict[str, float]]):
+    def record(self, data: tuple[datetime, dict[str, float], panel.PanelState, multi3.ProxyResult]):
         time, pings, state,net_speed = data
         time_str = time.strftime('%m-%d %H:%M:%S')
         self.file.write(time_str+","+
             ','.join([str(pings[self.targets[t]]) for t in self.target_name])+","+
             ','.join(state.get(i) for i in DEVICE_INFOS)+','+
-            str(net_speed['ul'])+','+str(net_speed['dl'])+"\n")
+            str(net_speed.upload)+','+str(net_speed.download)+"\n")
 
 class ConsolePingAndState(stable.Console):
     def __init__(self, file: TextIOWrapper, targets: dict[str, str]):
         super().__init__(file,targets)
 
-    def record(self, data: tuple[datetime, dict[str, float], panel.PanelState, dict[str, float]]):
+    def record(self, data: tuple[datetime, dict[str, float], panel.PanelState, multi3.ProxyResult]):
         time, pings, state,net_speed = data
         super().record(pings)
-        self.file.write(f"[网速]上：{net_speed['ul']}KB/S 下{net_speed['dl']}KB/S\n")
+        self.file.write(f"[网速] ⇧{net_speed.upload}Mbps ⇩{net_speed.download}Mbps\n")
 
 
 PATH = './log/live'

@@ -8,39 +8,39 @@ import sys
 DEVICE_INFOS = ['rsrq','rsrp','sinr','band','pci','ber',]
 DEVICE_INFOS_UNIT = ['dB','dBm','dB','','','',]
 
-class StupidClassExistOnlyForDebug:
-    '''
-    请无视
-    '''
-    _StupidClass_name = ""
-    _StupidClass_debug = False
+# class StupidClassExistOnlyForDebug:
+#     '''
+#     请无视
+#     '''
+#     _StupidClass_name = ""
+#     _StupidClass_debug = False
 
-    def __get_caller(self):
-        frame = sys._getframe(1)
-        while frame.f_back and frame.f_back.f_code.co_name.startswith('__'):
-            frame = frame.f_back
-        return frame
+#     def __get_caller(self):
+#         frame = sys._getframe(1)
+#         while frame.f_back and frame.f_back.f_code.co_name.startswith('__'):
+#             frame = frame.f_back
+#         return frame
     
-    def __display_stack(self):
-        f = self.__get_caller()
-        print(f'    at "{f.f_code.co_filename}", line {f.f_lineno}, in {f.f_code.co_name}')
+#     def __display_stack(self):
+#         f = self.__get_caller()
+#         print(f'    at "{f.f_code.co_filename}", line {f.f_lineno}, in {f.f_code.co_name}')
 
-    def __init__(self) -> None:
-        if self._StupidClass_debug:
-            print(f"constructing {type(self).__name__} {self._StupidClass_name}")
-            self.__display_stack()
-            print()
+#     def __init__(self) -> None:
+#         if self._StupidClass_debug:
+#             print(f"constructing {type(self).__name__} {self._StupidClass_name}")
+#             self.__display_stack()
+#             print()
 
-    def __del__(self) -> None:
-        if self._StupidClass_debug:
-            print(f"destructing {type(self).__name__} {self._StupidClass_name}")
-            # self.__display_stack()
-            # print()
+#     def __del__(self) -> None:
+#         if self._StupidClass_debug:
+#             print(f"destructing {type(self).__name__} {self._StupidClass_name}")
+#             # self.__display_stack()
+#             # print()
 
-    def set_name(self, name: str=""):
-        self._StupidClass_name = str(name)
+#     def set_name(self, name: str=""):
+#         self._StupidClass_name = str(name)
 
-class Recorder(StupidClassExistOnlyForDebug):
+class Recorder():
     '''
     记录器，用于记录生产者产生的数据
     '''
@@ -68,7 +68,7 @@ class Recorder(StupidClassExistOnlyForDebug):
         self.close()
     
 
-class Producer(StupidClassExistOnlyForDebug):
+class Producer():
     '''
     生产者，用于产生数据
     '''
@@ -183,14 +183,13 @@ class AutoFlush(Producer):
         self.obj.record()
 
 
-class Sequence(Thread, Producer, StupidClassExistOnlyForDebug):
+class Sequence(Thread, Producer, ):
     '''
     序列，开启线程以一定间隔产生数据并记录
     '''
     def __init__(self, obj: Producer, interval: timedelta):
         Thread.__init__(self)
         Producer.__init__(self)
-        StupidClassExistOnlyForDebug.__init__(self)
         self.setDaemon(True)
         self.obj = obj
         self.interval = interval
