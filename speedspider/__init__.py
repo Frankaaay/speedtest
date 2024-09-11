@@ -61,7 +61,6 @@ class SpeedTester(Producer):
                 
             WebDriverWait(driver, self.timeout).until(afap)
             self.afap = True
-            print("afap is set!!!")
             WebDriverWait(driver, self.timeout).until(
                 lambda driver: int(driver.execute_script("return s.getState()")) == 4)
             lag = driver.find_element(By.ID, "pingText").text
@@ -70,16 +69,23 @@ class SpeedTester(Producer):
             ul = driver.find_element(By.ID, "ulText").text
         except SEexceptions.NoSuchElementException as e:
             lag = repr(e)
-            jit = dl = ul = "nan"
+            jit = url
+            dl = ul = "nan"
+            print('[测速]NoSuchElementException')
             print(e)
         except SEexceptions.TimeoutException:
             lag = 'SpeedTest Timeout'
-            jit = dl = ul = "nan"
+            jit = url
+            dl = ul = "nan"
+            print('[测速]TimeoutException')
         except Exception as e:
             lag = repr(e)
-            jit = dl = ul = "nan"
+            jit = url
+            dl = ul = "nan"
         finally:
+            self.afap = True
             threading.Thread(target=driver.quit).start()
+            sleep(0.3)
 
         try:
             lag = float(lag)
@@ -108,13 +114,18 @@ class SpeedTester0Interval(Producer):
 
     def update(self):
 
-        while not self.obj1.afap:
+        while self.handle.is_alive() and not self.obj1.afap:
             sleep(0.1)
-        sleep(2)
+        sleep(1.5)
+        print('[测速]光速开始第二个测速')
         h = threading.Thread(target=self.obj2.update)
         h.start()
 
-        self.handle.join()
+        try:
+            self.handle.join()
+        except:
+            print("[测速]handle not finish his job")
+            pass
         self.res = self.obj1.get()
 
         self.handle = h

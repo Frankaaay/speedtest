@@ -4,13 +4,13 @@ class AT:
     def __init__(self, device_ip, timeout:float):
         self.ip = device_ip
         self.timeout = timeout
-        self.s = socket(AF_INET, SOCK_STREAM)
-        self.s.settimeout(self.timeout)
         self.error = False
         try:
+            self.s = socket(AF_INET, SOCK_STREAM)
+            self.s.settimeout(self.timeout)
             self.s.connect((self.ip, 8090))
         except TimeoutError:
-            print("AT connect timeout!!")
+            print("[AT]连接超时")
             self.error = True
     
     def sr1(self, cmd:str):
@@ -22,7 +22,8 @@ class AT:
             # print(f"{cmd} -> {res}")
             return res
         except TimeoutError:
-            return "ERR: AT command {cmd} timed out"
+            print(f"[AT]{cmd}超时")
+            return f"ERR: AT command {cmd} timed out"
     
     def CESQ(self):
         # +CESQ: <rxlev>,<ber>,<rscp>,<ecno>,<rsrq>,<rsrp>,<sinr>
@@ -56,7 +57,7 @@ class AT:
 
         else:   
             res['CESQ'] = f"Error: AT*CESQ => {x}"
-            print(f"Error: AT*CESQ => {x}")
+            print(f"[AT]Error: AT*CESQ => {x}")
 
         return res
 
@@ -70,7 +71,7 @@ class AT:
             # res['rsrp'] = x[2]
         else:
             res['RSRP'] = f"Error: AT+RSRP? => {x}"
-            print(f"Error: AT+RSRP? => {x}")
+            print(f"[AT]Error: AT+RSRP? => {x}")
         
         return res
     
@@ -82,7 +83,7 @@ class AT:
             res['band'] = x[1].strip()
         else:
             res['BANDIND'] = f"Error: AT*BANDIND? => {x}"
-            print(f"Error: AT*BANDIND? => {x}")
+            print(f"[AT]Error: AT*BANDIND? => {x}")
 
         return res
             

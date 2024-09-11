@@ -31,7 +31,7 @@ def get_sciatic():
     try:
         stream.connect(('127.0.0.1', LOOK_UP_PORT))
     except:
-        print("无法连接到multi3!!")
+        print("[代理]无法连接到multi3!!")
         start_proxy()
         return None
     stream.send(b'0')
@@ -41,13 +41,28 @@ def get_sciatic():
 
 
 def start_proxy():
+    print("[代理]启动!multi3!")
     os.system("start multi3.exe")
 
 def stop_proxy():
+    print("[代理]停止!multi3!")
     os.system("taskkill /f /im multi3.exe")
 
 def is_running():
     return get_sciatic() is not None    
+
+
+class ProxyResult:
+    '''
+    单位: Mbps
+    单位: ms
+    '''
+    upload: float 
+    download: float
+
+    def __init__(self, upload, download):
+        self.upload = upload
+        self.download = download
 
 class ProxySpeed(Producer):
     def __init__(self, proxy_socket, device_ip):
@@ -58,18 +73,19 @@ class ProxySpeed(Producer):
         self.previous = {'ul':0,'dl':0}
 
     def update(self):
-        super().update()
         res = get_sciatic()
-
+        if res is None:
+            return
+        super().update()
         rate = {
-            'ul' : round((res['ul'] - self.previous['ul']) / (time() - self.previous_time) / 8 / 1024,2),
-            'dl' : round((res['dl'] - self.previous['dl']) / (time() - self.previous_time) / 8 / 1024,2),
+            'ul' : round((res['ul'] - self.previous['ul']) / (time() - self.previous_time) * 8 / 1024 / 1024,2),
+            'dl' : round((res['dl'] - self.previous['dl']) / (time() - self.previous_time) * 8 / 1024 / 1024,2),
         }
 
         self.previous_time = time()
         self.previous = res
 
-        self.res = rate
+        self.res = ProxyResult(rate['ul'], rate['dl'])
         # sleep(1)
     
     def stop(self):
