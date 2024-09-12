@@ -117,7 +117,9 @@ class MainApp:
                        ("启用以太网", enable_ethernet),
                        ("禁用以太网", disable_ethernet)]
         elif category == "辅助工具":
-            buttons = [("BandwidthMeter", band_pro)]
+            buttons = [("BandwidthMeter", band_pro),
+                       ("Ping包", ping_exe)
+                       ]
         elif category == "体验&网速数据统计":
             buttons = [("直播数据统计", server_live_obj.run),
                        ("测速数据统计", server_speed_obj.run),
@@ -162,6 +164,9 @@ class MainApp:
 
 def band_pro():
     os.system(r'start BandwidthMeterPro\BWMeterPro.exe"')
+
+def ping_exe():
+    os.system(r'start ping_exe.exe')
 
 
 def forget_networks():
