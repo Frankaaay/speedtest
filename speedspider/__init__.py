@@ -32,8 +32,9 @@ URLS = [
 ]
 
 class SpeedTester(Producer):
-    def __init__(self, headless=True, timeout=timedelta(minutes=1), urls=URLS):
+    def __init__(self, browser_name, headless=True, timeout=timedelta(minutes=1), urls=URLS):
         super().__init__()
+        self.browser_name = browser_name
         self.headless = headless
         self.timeout = timeout.total_seconds()
         self.urls = urls
@@ -42,7 +43,7 @@ class SpeedTester(Producer):
     def update(self):
         super().update()
         url = random.choice(self.urls)
-        driver = web_driver(headless=self.headless,proxy_enable=False)
+        driver = web_driver(browser_name=self.browser_name, headless=self.headless,proxy_enable=False)
         driver.implicitly_wait(5)
         driver.get(url)
         try:
@@ -101,14 +102,14 @@ class SpeedTester0Interval(Producer):
     '''
     在第一个测速'上传'开始后开始第二个测速
     '''
-    def __init__(self, headless=True, timeout=timedelta(minutes=2), urls=URLS):
+    def __init__(self,browser_name, headless=True, timeout=timedelta(minutes=2), urls=URLS):
         super().__init__()
         self.headless = headless
         self.timeout = timeout.total_seconds()
         self.urls = urls
         self.jobs = []
-        self.obj1 = SpeedTester(headless, timeout, urls)
-        self.obj2 = SpeedTester(headless, timeout, urls)
+        self.obj1 = SpeedTester(browser_name, headless, timeout, urls)
+        self.obj2 = SpeedTester(browser_name, headless, timeout, urls)
         self.handle = threading.Thread(target=self.obj1.update)
         self.handle.start()
 

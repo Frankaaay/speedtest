@@ -5,8 +5,8 @@ from selenium.common import exceptions as SEexceptions
 
 
 class DouyinLive(Live):
-    def __init__(self, room_id=None, interval=timedelta(seconds=8)):
-        super().__init__('https://live.douyin.com/', room_id, interval)
+    def __init__(self, browser_name, room_id=None, interval=timedelta(seconds=8)):
+        super().__init__(browser_name, 'https://live.douyin.com/', room_id, interval)
 
     def find_available(self):
         i = random.randint(2, 5)

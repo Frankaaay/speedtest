@@ -49,7 +49,8 @@ def gen_device(record_device: bool,device_ip: str, stdout) -> Sequence:
     return device
 
 PATH = './log/speed'
-def Main(urls: list[str], 
+def Main(browser_name: str,
+         urls: list[str], 
          record_device: bool, 
          device_ip: str, 
          save_log: bool, 
@@ -63,9 +64,9 @@ def Main(urls: list[str],
 
         device = gen_device(record_device, device_ip, stdout)
         if faster_version:
-            speed = SpeedTester0Interval(headless, timedelta(minutes=1), urls)
+            speed = SpeedTester0Interval(browser_name, headless, timedelta(minutes=1), urls)
         else:
-            speed = SpeedTester(headless,timedelta(minutes=1), urls)
+            speed = SpeedTester(browser_name,headless,timedelta(minutes=1), urls)
         now = datetime.now().strftime("%Y-%m-%d_%H-%M")
         
         obj = SpeedAndState(speed, device)

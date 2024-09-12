@@ -78,22 +78,22 @@ class ConsolePingAndState(stable.Console):
 
 PATH = './log/live'
 
-def gen_live(platform: str, room_id: str | None = None,) -> live.Live:
+def gen_live(browser_name:str, platform: str, room_id: str | None = None,) -> live.Live:
     if len(room_id) == 0:
         room_id = None
 
     if platform != 'OFF':
         if platform == 'B站':
-            living = live.BiliLive(room_id)
+            living = live.BiliLive(browser_name,room_id)
         elif platform == '抖音':
-            living = live.DouyinLive(room_id)
+            living = live.DouyinLive(browser_name,room_id)
         elif platform == '西瓜':
-            living = live.Xigua(room_id)
+            living = live.Xigua(browser_name,room_id)
         else:
-            living = live.BiliLive(room_id)
+            living = live.BiliLive(browser_name,room_id)
         living.set_ttl(timedelta(minutes=1))
     else:
-        living = live.EmptyLive()
+        living = live.EmptyLive(browser_name,)
     return living
 
 def gen_device(record_device: bool,device_ip: str, stdout) -> panel.Panel:
@@ -107,6 +107,7 @@ def gen_device(record_device: bool,device_ip: str, stdout) -> panel.Panel:
 
 class Main:
     def __init__(self, 
+                 browser_name: str,
                  record_device: bool, 
                  device_ip: str, 
                  save_log: bool, 
@@ -129,7 +130,7 @@ class Main:
 
     
         network_speed = multi3.ProxySpeed(utils.proxy_socket,utils.which_is_my_ip())
-        living = gen_live(platform, room_id)
+        living = gen_live(browser_name, platform, room_id)
         if save_log:
             living.add_recorder(live.Reporter(
                 open(f"{PATH}/{now}#{folder_name}/stuck.csv", 'w', encoding='utf-8-sig'), interval=5, threshold=1))

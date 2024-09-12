@@ -116,9 +116,10 @@ class LiveUI:
             return
         global IS_RUNNING
         IS_RUNNING = True
-        utils.browser_name = self.browser_option.get()
 
-        self.obj = stability_recorder.Main(self.record_device.get(),
+        self.obj = stability_recorder.Main(
+                                    self.browser_option.get(),
+                                    self.record_device.get(),
                                     self.device_ip.get(),
                                     self.save_log.get(),
                                     self.live_option.get(),
