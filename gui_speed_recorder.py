@@ -101,6 +101,17 @@ class SpeedUI:
         delete_button.pack(side=tk.LEFT)
         no_name_frame_2.pack()
 
+        # 单选列表
+        options = ["Edge", "Chrome", "Firefox"]
+        self.browser_option = tk.StringVar()
+        self.browser_option.set(options[0])
+        browser_frame = ttk.Frame(self.root)
+        for option in options:
+            radio_button = ttk.Radiobutton(
+                browser_frame, text=option, value=option, variable=self.browser_option)
+            radio_button.pack(side="left")
+        browser_frame.pack()
+
         custom_frame = ttk.Frame(self.root)
         tk.Label(custom_frame, text="每隔").pack(side=tk.LEFT)
         self.delta_custom = tk.Entry(custom_frame, width=3)
@@ -167,8 +178,11 @@ class SpeedUI:
         except:
             interval = 0
 
+        utils.Browser_name = self.browser_option.get()
+
         delta = timedelta(minutes=max(0,interval), microseconds=1)
         self.obj = speed_recorder.Main(
+            self.browser_option.get(),
             self.url_listbox.get(0, tk.END),
             self.record_device.get(), self.device_ip.get(),
             self.save_log.get(), self.headless.get(),

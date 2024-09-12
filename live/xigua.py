@@ -5,11 +5,11 @@ from selenium.common import exceptions as SEexceptions
 
 
 class Xigua(Live):
-    def __init__(self,  season_id=None, interval=timedelta(seconds=10)):
+    def __init__(self, browser_name, season_id=None, interval=timedelta(seconds=10)):
         if season_id is None:
             season_id = '6562025890606219790'
 
-        super().__init__('https://www.ixigua.com/', season_id, interval)
+        super().__init__(browser_name, 'https://www.ixigua.com/', season_id, interval)
 
     def find_available(self):
         print('finding available...')
