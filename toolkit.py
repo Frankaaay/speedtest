@@ -165,19 +165,22 @@ def band_pro():
 
 
 def forget_networks():
-    os.system('netsh wlan delete profile name=FM* i=*')
-    os.system('netsh wlan delete profile name=ZTE* i=*')
+    os.system('netsh wlan delete profile name=* i=*')
 
 
 def disable_ethernet():
     command = 'Get-NetAdapter | Where-Object { $_.Name -like "Ethernet *" } | Disable-NetAdapter -Confirm:$false'
-    subprocess.run(['powershell', '-Command', command], shell=True)
+    subprocess.run(['powershell', '-Command', command])
+    command = 'Get-NetAdapter | Where-Object { $_.Name -like "以太网 *" } | Disable-NetAdapter -Confirm:$false'
+    subprocess.run(['powershell', '-Command', command])
+
 
 
 def enable_ethernet():
     command = 'Get-NetAdapter | Where-Object { $_.Name -like "Ethernet *" } | Enable-NetAdapter -Confirm:$false'
-    subprocess.run(['powershell', '-Command', command], shell=True)
-
+    subprocess.run(['powershell', '-Command', command])
+    command = 'Get-NetAdapter | Where-Object { $_.Name -like "以太网 *" } | Enable-NetAdapter -Confirm:$false'
+    subprocess.run(['powershell', '-Command', command])
 
 def stop_exe():
     os.system("taskkill /f /im toolkit.exe")
