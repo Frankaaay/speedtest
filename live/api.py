@@ -62,7 +62,7 @@ class Live(Producer):
                 return
 
         if self.room_id is not None and\
-        self.error_this_room_since_afk < 3 and\
+        self.error_this_room_since_afk <= 1 and\
         self.get()[0] != LiveState.End:
 
             print(f'[直播]继续使用之前的直播间 {self.room_id}')
@@ -107,13 +107,13 @@ class Live(Producer):
             self.res = (LiveState.Error, "stuck for too long")
             print("[直播]卡顿时间过长，刷新页面")
             return True
-        if time() - self.afk_since > timedelta(minutes=20).total_seconds():
+        if time() - self.afk_since > timedelta(minutes=15).total_seconds():
             self.refresh()  # refresh page to prevent afk
             self.afk_since = time()
             self.res = (LiveState.Afk, "anti afk")
             print("[直播]防止挂机检测，刷新页面")
             return True
-        elif time() - self.afk_since < timedelta(seconds=10).total_seconds():
+        elif time() - self.afk_since < timedelta(seconds=8).total_seconds():
             self.res = (LiveState.Afk, "anti afk refreshing")
             return True
         return False

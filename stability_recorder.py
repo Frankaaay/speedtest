@@ -24,7 +24,12 @@ class PingAndState(Producer):
         self.ping.update()
         self.net_speed.update()
         res = [now, self.ping.get(),self.device.get(),'speed']
-        
+
+        if self.net_speed.low_speed_since is not None and\
+        self.net_speed.low_speed_since < (now - timedelta(minutes=2)).timestamp():
+            print('[直播]长时间速度低，刷新直播')
+            self.live.find_available()
+
         if self.live.get()[0] == live.LiveState.Afk:
             res[3] = self.res[3]
         else:
@@ -92,7 +97,7 @@ def gen_live(platform: str, room_id: str | None = None,) -> live.Live:
         living.set_default((live.LiveState.Normal,'OFF'))
     return living
 
-def gen_device(record_device: bool,device_ip: str, stdout) -> Sequence:
+def gen_device(record_device: bool,device_ip: str, stdout) -> panel.Panel:
     if record_device:
         device = panel.Panel_FM(device_ip, logger=stdout)
         device.set_ttl(timedelta(minutes=1))
@@ -120,8 +125,8 @@ class Main:
         device = gen_device(record_device, device_ip, stdout)
         device.add_recorder(panel.Console(stdout))
         # device = AutoFlush(device, timedelta(minutes=5))
-        device = SequenceFullSecond(device, timedelta(seconds=1))
-        device.start()
+        device_seq = SequenceFullSecond(device, timedelta(seconds=1))
+        device_seq.start()
 
     
         network_speed = multi3.ProxySpeed(utils.proxy_socket,utils.which_is_my_ip())
@@ -130,9 +135,9 @@ class Main:
             living.add_recorder(live.Reporter(
                 open(f"{PATH}/{now}#{folder_name}/stuck.csv", 'w', encoding='utf-8-sig'), interval=5, threshold=1))
         living.add_recorder(live.Console(stdout))
-        living = AutoFlush(living, timedelta(minutes=5))
-        living = Sequence(living, interval=timedelta(seconds=0.33))
-        living.start()
+        living_seq = AutoFlush(living, timedelta(minutes=5))
+        living_seq = Sequence(living_seq, interval=timedelta(seconds=0.33))
+        living_seq.start()
 
 
         ping_device = PingAndState(stable.Pings(list(ips.values())), device, network_speed, living)

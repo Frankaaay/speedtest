@@ -71,6 +71,7 @@ class ProxySpeed(Producer):
         start_proxy()
         self.previous_time = time() -  1
         self.previous = {'ul':0,'dl':0}
+        self.low_speed_since = None
 
     def update(self):
         res = get_sciatic()
@@ -78,9 +79,14 @@ class ProxySpeed(Producer):
             return
         super().update()
         rate = {
-            'ul' : round((res['ul'] - self.previous['ul']) / (time() - self.previous_time) * 8 / 1024 / 1024,2),
-            'dl' : round((res['dl'] - self.previous['dl']) / (time() - self.previous_time) * 8 / 1024 / 1024,2),
+            'ul' : round((res['ul'] - self.previous['ul']) / (time() - self.previous_time) * 8 / 1024 / 1024,3),
+            'dl' : round((res['dl'] - self.previous['dl']) / (time() - self.previous_time) * 8 / 1024 / 1024,3),
         }
+        if rate['ul'] + rate['dl'] < 0.2:
+            if self.low_speed_since is None:
+                self.low_speed_since = time()
+        else:
+            self.low_speed_since = None
 
         self.previous_time = time()
         self.previous = res
