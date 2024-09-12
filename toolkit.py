@@ -165,8 +165,7 @@ def band_pro():
 
 
 def forget_networks():
-    os.system('netsh wlan delete profile name=FM* i=*')
-    os.system('netsh wlan delete profile name=ZTE* i=*')
+    os.system('netsh wlan delete profile name=* i=*')
 
 
 def disable_ethernet():
