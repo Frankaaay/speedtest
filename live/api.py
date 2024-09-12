@@ -21,11 +21,12 @@ class LiveState:
 
 
 class Live(Producer):
-    def __init__(self, base_url, room_id=None, interval=timedelta(seconds=0.1)):
+    def __init__(self, base_url, room_id=None, interval=timedelta(seconds=0.1),disable_pic=True):
         print('[直播]启动！',base_url)
         super().__init__()
         self.base_url = base_url
-        self.driver = utils.web_driver(proxy_enable=True)
+        self.driver_disable_pic = disable_pic
+        self.driver = utils.web_driver(proxy_enable=True, disable_pic=disable_pic)
         self.res: tuple[LiveState, str | None] = (LiveState.Error, "initializing")
         self.interval = interval.total_seconds()
         self.room_id = room_id
@@ -49,7 +50,7 @@ class Live(Producer):
                 self.driver.quit()
             except:
                 pass
-            self.driver = utils.web_driver()
+            self.driver = utils.web_driver(proxy_enable=True, disable_pic=self.driver_disable_pic)
             self.driver.get(self.base_url)
 
         room_id = re.findall(self.base_url + r'(\d+)', self.driver.current_url)

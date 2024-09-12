@@ -7,15 +7,14 @@ from selenium import webdriver
 
 browser_name = 'Edge'
 proxy_socket = '127.0.0.1:6210'
-SPEED_UP = True
 
-def web_driver(browser_name=browser_name, headless: bool = False, proxy_enable = False):
-    print(f"[浏览器] Creating {browser_name=}, {headless=}, {proxy_enable=}")
+def web_driver(browser_name=browser_name, headless: bool = False, proxy_enable = False, disable_pic=False):
+    print(f"[浏览器] Creating {browser_name=}, {headless=}, {proxy_enable=}, {disable_pic=}")
     if browser_name == "Edge":
         options = webdriver.EdgeOptions()
         if headless:
             options.add_argument("--headless")
-        if SPEED_UP:
+        if disable_pic:
             prefs = {
                 'profile.managed_default_content_settings.images': 2,
                 'profile.managed_default_content_settings.stylesheets':2,
@@ -31,7 +30,7 @@ def web_driver(browser_name=browser_name, headless: bool = False, proxy_enable =
         options = webdriver.ChromeOptions()
         if headless:
             options.add_argument("--headless")
-        if SPEED_UP:
+        if disable_pic:
             prefs = {
                 'profile.managed_default_content_settings.images': 2,
                 'profile.managed_default_content_settings.stylesheets':2,
@@ -47,7 +46,7 @@ def web_driver(browser_name=browser_name, headless: bool = False, proxy_enable =
         options = webdriver.FirefoxOptions()
         if headless:
             options.add_argument("--headless")
-        if SPEED_UP:
+        if disable_pic:
             options.set_preference('permissions.default.stylesheet', 2)
             options.set_preference('permissions.default.image', 2)
             options.set_preference('dom.ipc.plugins.enabled.libflashplayer.so', 'false')

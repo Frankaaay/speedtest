@@ -26,9 +26,10 @@ class PingAndState(Producer):
         res = [now, self.ping.get(),self.device.get(),'speed']
 
         if self.net_speed.low_speed_since is not None and\
-        self.net_speed.low_speed_since < (now - timedelta(minutes=2)).timestamp():
+        self.net_speed.low_speed_since < (now - timedelta(seconds=5)).timestamp():
             print('[直播]长时间速度低，刷新直播')
             self.live.find_available()
+            self.net_speed.low_speed_since = None
 
         if self.live.get()[0] == live.LiveState.Afk:
             res[3] = self.res[3]
@@ -40,8 +41,7 @@ class PingAndState(Producer):
     def stop(self):
         super().stop()
         self.ping.stop()
-        if self.device is not None:
-            self.device.stop()
+        self.device.stop()
         self.net_speed.stop()
 
 
@@ -93,8 +93,7 @@ def gen_live(platform: str, room_id: str | None = None,) -> live.Live:
             living = live.BiliLive(room_id)
         living.set_ttl(timedelta(minutes=1))
     else:
-        living = Producer()
-        living.set_default((live.LiveState.Normal,'OFF'))
+        living = live.EmptyLive()
     return living
 
 def gen_device(record_device: bool,device_ip: str, stdout) -> panel.Panel:
@@ -140,7 +139,7 @@ class Main:
         living_seq.start()
 
 
-        ping_device = PingAndState(stable.Pings(list(ips.values())), device, network_speed, living)
+        ping_device = PingAndState(stable.Pings(list(ips.values())), device_seq, network_speed, living)
         ping_device = AutoFlush(ping_device, timedelta(minutes=5))
         if save_log:
             ping_device.add_recorder(
@@ -151,7 +150,7 @@ class Main:
         ping_device.start()
 
         self.obj = ping_device
-        self.living = living
+        self.living = living_seq
 
     def flush(self):
         self.obj.flush()

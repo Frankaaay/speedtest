@@ -141,11 +141,11 @@ class Producer():
         for recorder in self.recorders:
             recorder.flush()
     
-    def __getattr__(self, name):
-        if self.obj:
-            return getattr(self.obj, name)
-        else:
-            super().__getattr__(self, name)
+    # def __getattr__(self, name):
+    #     if self.obj:
+    #         return getattr(self.obj, name)
+    #     else:
+    #         super().__getattr__(self, name)
         
     
 

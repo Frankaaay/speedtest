@@ -1,0 +1,30 @@
+from .api import *
+import random
+from selenium.webdriver.common.by import By
+from selenium.common import exceptions as SEexceptions
+
+
+class EmptyLive(Live):
+    def __init__(self, room_id=None, interval=timedelta(seconds=0.1)):
+        super().__init__('http://localhost', room_id, interval,disable_pic=False)
+        self.res = None
+        self.set_default((LiveState.Normal, 'OFF'))
+
+
+    def find_available(self):
+        # 如果当前没有打开任何窗口
+        try:
+            if not self.driver.current_window_handle:
+                self.driver.quit()
+                self.driver = utils.web_driver(proxy_enable=True, disable_pic=self.driver_disable_pic)
+        except:
+            try:
+                self.driver.quit()
+            except:
+                pass
+            self.driver = utils.web_driver(proxy_enable=True, disable_pic=self.driver_disable_pic)
+        pass
+
+    def update(self):
+        super().update()
+        pass

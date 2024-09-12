@@ -27,6 +27,9 @@ class DouyinLive(Live):
             if 'xgplayer-nostart' in player_class:
                 self.res = (LiveState.End, None)
                 self.find_available()
+            elif 'xgplayer-inactive' in player_class:
+                self.res = (LiveState.End, None)
+                self.find_available()
             elif 'xgplayer-is-error' in player_class:
                 self.res = (LiveState.Error, None)
                 self.find_available()
