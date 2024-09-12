@@ -285,7 +285,7 @@ def get_folders(path):
 
 
 
-path = r"./log/live"
+PATH = r"./log/live"
 empty_ping = {
     'time': [0],
     'ping_www': [0],
@@ -306,7 +306,7 @@ app = Dash(__name__, title = "ping数据整理")
 app.layout = html.Div([
     dcc.Dropdown(
         id='folders-dropdown',
-        options=get_folders(path),  # Populate with folders from the fixed path
+        options=get_folders(PATH),  # Populate with folders from the fixed path
         value=None,
         placeholder="Select a folder",
         style={'fontSize': '18px', 'marginBottom': '20px'}  # Add margin bottom
@@ -427,6 +427,7 @@ app.layout = html.Div([
 @app.callback(
     Output('start-from-raw', 'value'),
     Output('range-raw', 'value'), 
+    Output('folders-dropdown', 'options'),
     Input('select-folder-button', 'n_clicks'),
 
     State('folders-dropdown', 'value'),
@@ -439,7 +440,7 @@ def select_folder(n_clicks, selected_folder):
         if os.path.exists(f'{selected_folder}/stuck.csv'):
             data_stuck = DataStuck(pd.read_csv(f'{selected_folder}/stuck.csv'))
         data_ping.construct_data()
-    return 0, 0.2
+    return 0, 0.2, get_folders(PATH)
 
 
 
@@ -607,4 +608,4 @@ def main():
     app.run_server(debug = False)
 
 if __name__ == "__main__":
-    main()
+    app.run_server(debug = True)

@@ -189,7 +189,7 @@ def get_folders(path):
     return []
 
 
-path = r".\log\speed"
+PATH = r".\log\speed"
 
 
 app = Dash(__name__, title = "测速数据整理")
@@ -303,7 +303,7 @@ def generate_upload_fields(n_clicks, file_count):
             upload_fields.append(
                 html.Div([
                     dcc.Dropdown(
-                        options=get_folders(path),
+                        options=get_folders(PATH),
                         value=None,
                         placeholder="Select a folder",
                         id={'type': 'upload-dropdown', 'index': i+1},
@@ -437,4 +437,4 @@ def main():
     app.run_server(debug = False, port = 250)
 
 if __name__ == "__main__":
-    main()
+    app.run_server(debug = True, port = 250)

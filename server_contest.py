@@ -72,7 +72,7 @@ def get_folders(path):
 
 
 
-path = r"./log/live"
+PATH = r"./log/live"
 
 data_ping = DataPing(['empty_ping'])
 #data_stuck = DataStuck(pd.DataFrame({'start': [], 'end': [], 'duration': []}))
@@ -180,7 +180,7 @@ def generate_upload_fields(n_clicks, file_count):
             upload_fields.append(
                 html.Div([
                     dcc.Dropdown(
-                        options=get_folders(path),
+                        options=get_folders(PATH),
                         value=None,
                         placeholder="Select a folder",
                         id={'type': 'upload-dropdown', 'index': i+1},
@@ -311,4 +311,4 @@ def main():
     app.run_server(debug = False, port = 520)
 
 if __name__ == "__main__":
-    main()
+    app.run_server(debug = True, port = 520)
