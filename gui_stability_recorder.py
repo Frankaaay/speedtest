@@ -28,7 +28,7 @@ class StdoutRedirector:
 class LiveUI:
     def __init__(self, root: tk.Tk):
         try:
-            self.root.title("直播捏~")
+            root.title("测速捏~")
         except:
             pass
         

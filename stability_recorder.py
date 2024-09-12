@@ -26,7 +26,7 @@ class PingAndState(Producer):
         res = [now, self.ping.get(),self.device.get(),'speed']
 
         if self.net_speed.low_speed_since is not None and\
-        self.net_speed.low_speed_since < (now - timedelta(minutes=1)).timestamp():
+        self.net_speed.low_speed_since < (now - timedelta(minutes=2)).timestamp():
             print('[直播]长时间速度低，刷新直播')
             self.live.find_available()
             self.net_speed.low_speed_since = None
