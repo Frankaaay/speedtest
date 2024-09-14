@@ -54,3 +54,28 @@ class Console(Recorder):
     def record(self, pings: dict[str, float]):
         self.file.write(
             f"[Ping]{','.join([str(pings[self.targets[t]])+'ms' for t in self.target_name])}\n")
+
+
+class Statistics:
+    min, max, avg, sum, count ,timeout= float('inf'), float('-inf'), 0, 0, 0, 0
+
+class Summary(Recorder):
+    def __init__(self):
+        super().__init__(None)
+        self.res: dict[str,Statistics] = dict()
+    
+    def record(self, pings: dict[str, float]):
+        for target, delay in pings.items():
+            if target not in self.res:
+                self.res[target] = Statistics()
+            prop = self.res[target]
+            if delay < float('inf') and delay >= 0:
+                prop.sum += delay
+            else:
+                prop.timeout += 1
+            prop.count += 1
+            prop.avg = round(prop.sum / (prop.count-prop.timeout), 2)
+            if delay < prop.min:
+                prop.min = delay
+            if delay > prop.max:
+                prop.max = delay

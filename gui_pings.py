@@ -5,7 +5,7 @@ import common
 from datetime import timedelta
 import utils
 import panel
-import speed_recorder
+import stable
 
 IS_RUNNING: bool = False
 
@@ -54,23 +54,18 @@ class Result2Display(common.Recorder):
     def __init__(self, table: ttk.Treeview):
         super().__init__(None)
         self.table = table
-        # self.len = 0
 
-    def record(self, res: tuple[speedspider.SpeedTestResult,panel.PanelState]):
-        res_speed,res_device = res
-        # if self.len > 8:
-        #     self.table.delete(self.table.get_children()[0])
-        # else:
-        #     self.len += 1
-        self.table.insert("", tk.END,
-                        values=(res_speed.lag, res_speed.jit, res_speed.dl, res_speed.ul))
+    def record(self, res: dict[str,float]):
+        res: list = list(res.items())
+        res.sort(key=lambda x: x[0])
+        self.table.insert("", tk.END,values=[i[1] for i in res])
         self.table.yview_moveto(1)
 
 class SpeedUI:
     def __init__(self, root: tk.Tk):
         self.root = root
         try:
-            root.title("测速捏~")
+            root.title("Ping~")
         except:
             pass
         
@@ -78,20 +73,8 @@ class SpeedUI:
         self.create_widgets()
 
     def create_widgets(self):
-    
-        self.headless = tk.BooleanVar(value=True)
-        tk.Checkbutton(self.root, text="浏览器无头", variable=self.headless).pack()
         
         no_name_frame_1 = ttk.Frame(self.root)
-
-        no_name_frame_1_1 = ttk.Frame(no_name_frame_1)
-        self.record_device = tk.BooleanVar(value=False)
-        tk.Checkbutton(no_name_frame_1_1, text="记录设备状态", variable=self.record_device).pack()
-        tk.Label(no_name_frame_1_1, text="设备IP地址").pack()
-        self.device_ip = tk.Entry(no_name_frame_1_1)
-        self.device_ip.insert(0, utils.which_is_device_ip())
-        self.device_ip.pack()
-        no_name_frame_1_1.pack(side=tk.LEFT)
 
         no_name_frame_1_2 = ttk.Frame(no_name_frame_1)
         self.save_log = tk.BooleanVar(value=True)
@@ -105,9 +88,9 @@ class SpeedUI:
         no_name_frame_1.pack()
 
         # 创建默认项列表
-        tk.Label(self.root, text="测速网站").pack()
+        tk.Label(self.root, text="目标").pack()
         self.url_listbox = tk.Listbox(self.root, selectmode=tk.SINGLE, width=50, height=8)
-        for item in speedspider.URLS:
+        for item in ['www.baidu.com','www.qq.com',utils.which_is_device_ip()]:
             self.url_listbox.insert(tk.END, item)
         self.url_listbox.pack()
 
@@ -122,22 +105,13 @@ class SpeedUI:
         no_name_frame_2.pack()
 
         # 单选列表
-        options = ["Edge", "Chrome", "Firefox"]
-        self.browser_option = tk.StringVar()
-        self.browser_option.set(options[0])
-        browser_frame = ttk.Frame(self.root)
-        for option in options:
-            radio_button = ttk.Radiobutton(
-                browser_frame, text=option, value=option, variable=self.browser_option)
-            radio_button.pack(side="left")
-        browser_frame.pack()
 
         custom_frame = ttk.Frame(self.root)
         tk.Label(custom_frame, text="每隔").pack(side=tk.LEFT)
-        self.delta_custom = tk.Entry(custom_frame, width=3)
-        self.delta_custom.insert(0, "5")
+        self.delta_custom = tk.Entry(custom_frame, width=6)
+        self.delta_custom.insert(0, "1000")
         self.delta_custom.pack(side=tk.LEFT)
-        tk.Label(custom_frame, text="分钟").pack(side=tk.LEFT)
+        tk.Label(custom_frame, text="毫秒").pack(side=tk.LEFT)
         tk.Label(custom_frame, text="总共").pack(side=tk.LEFT)
         self.count_custom = tk.Entry(custom_frame, width=3)
         self.count_custom.insert(0, "∞")
@@ -152,19 +126,23 @@ class SpeedUI:
         stop_button.pack(side=tk.LEFT)
         self.count_label = tk.Label(no_name_frame_3, text="第0次")
         self.count_label.pack(side=tk.LEFT)
-        copy_button = tk.Button(no_name_frame_3, text="复制选中", command=self.copy_selected_to_clipboard)
-        copy_button.pack(side=tk.LEFT)
         clear_button = tk.Button(no_name_frame_3, text="清空历史", command=self.clear_tree)
         clear_button.pack(side=tk.LEFT)
         no_name_frame_3.pack()   
 
-        output_text = tk.Text(self.root, wrap="word", height=15)
+        output_text = tk.Text(self.root, wrap="word", height=3)
         output_text.pack(expand=True, fill=tk.X)
 
         self.not_stdout = StdoutRedirector(output_text)
 
-        columns = ("延迟", "抖动", "下载", "上传")
-        self.tree = ttk.Treeview(self.root, columns=columns, show="headings")
+        columns = ("地址", "平均", "超时")
+        self.statistics = ttk.Treeview(self.root, columns=columns, show="headings", height=6)
+        for col in columns:
+            self.statistics.heading(col, text=col)
+        self.statistics.pack(expand=True, fill=tk.X)
+
+        columns = ("地址1", "地址2", "...")
+        self.tree = ttk.Treeview(self.root, columns=columns, show="headings", height=4)
         for col in columns:
             self.tree.heading(col, text=col)
         self.tree.pack(expand=True, fill=tk.X)
@@ -178,7 +156,7 @@ class SpeedUI:
             self.url_listbox.insert(tk.END, item)
             self.add_url.delete(0, tk.END)
         else:
-            self.not_stdout.write("输入要添加的网站\n")
+            self.not_stdout.write("输入要添加的地址\n")
             pass
             # messagebox.showwarning("警告", "请输入要添加的项！")
 
@@ -188,7 +166,7 @@ class SpeedUI:
         if selected_index:
             self.url_listbox.delete(selected_index)
         else:
-            self.not_stdout.write("选择要删除的网站\n")
+            self.not_stdout.write("选择要删除的地址\n")
             pass
             # messagebox.showwarning("警告", "请选择要删除的项！")
 
@@ -198,42 +176,57 @@ class SpeedUI:
             self.not_stdout.write("Already running! Flushing\n")
             self.obj.flush()
             return
+        
         else:
             self.not_stdout.write("Starting\n")
+
         try:
             interval = float(self.delta_custom.get())
         except ValueError:
             interval = 0
+        delta = timedelta(milliseconds=max(0,interval))
 
         try:
             count = int(self.count_custom.get())
         except ValueError:
             count = -1
 
-        utils.Browser_name = self.browser_option.get()
+        self.clear_tree()
+        urls:list = list(self.url_listbox.get(0, tk.END))
+        urls.sort()
+        print(urls)
 
-        delta = timedelta(minutes=max(0,interval), microseconds=1)
-        self.obj = speed_recorder.Main(
-            self.browser_option.get(),
-            self.url_listbox.get(0, tk.END),
-            self.record_device.get(), self.device_ip.get(),
-            self.save_log.get(), self.headless.get(),
-            self.not_stdout,
-            self.folder_name_addon.get(),
-            faster_version = interval < 0,
-            )
+        
+        self.summary = stable.Summary()
+        
+        self.tree.config(columns=urls, show="headings")
+        for col in urls:
+            self.tree.heading(col, text=col)
         
 
+        self.obj = stable.Pings(urls, delta)
+
         self.obj.add_recorder(Result2Display(self.tree))
+        self.obj.add_recorder(self.summary)
         self.obj.add_recorder(StopCounter(
-            callback_each=lambda cnt:self.count_label.config(text=f"第{cnt}次"),
+            callback_each=lambda cnt:self.update_each_time(cnt),
             callback_final=self.stop_button_clicked,
             target_cnt=count))
         self.obj = common.AutoFlush(self.obj, timedelta(minutes=20))
         self.obj = common.Sequence(self.obj, delta)
         self.obj.start()
+
         global IS_RUNNING
         IS_RUNNING = True
+
+    def update_each_time(self,cnt:int):
+        self.count_label.config(text=f"第{cnt}次")
+        
+        for address in self.summary.res:
+            if address not in self.statistics.get_children():
+                self.statistics.insert("", "end", iid=address, values=(address, 0, 0))
+            self.statistics.item(address, values=(address, self.summary.res[address].avg, self.summary.res[address].timeout))
+            
 
 
     def stop_button_clicked(self,):
@@ -246,27 +239,6 @@ class SpeedUI:
             IS_RUNNING = False
         else:
             self.not_stdout.write("Not running!\n")
-
-
-    def copy_selected_to_clipboard(self,):
-        selected_items: tuple[str, ...] = self.tree.selection()
-        if selected_items:
-            selected_data = []
-            for item in selected_items:
-                row = self.tree.item(item)['values']
-                selected_data.append(row)
-
-            # 将选中的数据转换为制表符分隔的字符串
-            clipboard_text = ""
-            for row in selected_data:
-                clipboard_text += "\t".join(map(str, row)) + "\n"
-
-            # 复制到剪贴板
-            root.clipboard_clear()
-            root.clipboard_append(clipboard_text)
-            root.update()  # 更新剪贴板内容
-
-            print("选中的数据已复制到剪贴板")
     
     def clear_tree(self,):
         for item in self.tree.get_children():
