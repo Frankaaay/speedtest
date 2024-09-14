@@ -32,6 +32,9 @@ class StdoutRedirector:
 
 
 class StopCounter(common.Recorder):
+    '''
+    记录运行次数，当达到目标次数时停止运行
+    '''
     def __init__(self, callback_each, callback_final, target_cnt):
         super().__init__(None)
         self.cnt = 0
@@ -148,7 +151,7 @@ class SpeedUI:
         stop_button.pack(side=tk.LEFT)
         self.count_label = tk.Label(no_name_frame_3, text="第0次")
         self.count_label.pack(side=tk.LEFT)
-        copy_button = tk.Button(no_name_frame_3, text="复制选中到剪贴板", command=self.copy_selected_to_clipboard)
+        copy_button = tk.Button(no_name_frame_3, text="复制选中", command=self.copy_selected_to_clipboard)
         copy_button.pack(side=tk.LEFT)
         clear_button = tk.Button(no_name_frame_3, text="清空历史", command=self.clear_tree)
         clear_button.pack(side=tk.LEFT)
