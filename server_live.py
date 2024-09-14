@@ -8,7 +8,7 @@ import bisect
 import os
 import webbrowser
 
-
+#same thing with the server_speed, pls read comments there
 def summarize(df, column):
     df[column] = df[column].replace([np.inf, -np.inf], np.nan)
 

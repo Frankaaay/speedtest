@@ -6,6 +6,7 @@ import plotly.graph_objs as go
 import os
 import webbrowser
 
+#make stats of mean, max, min std
 def summarize(df, column):
     # Convert the column to numeric, forcing errors to NaN
     df[column] = pd.to_numeric(df[column], errors='coerce')
@@ -21,6 +22,7 @@ def summarize(df, column):
 
     return [round(mean, 2), max, low, round(std, 2)]
 
+#被遗弃的得分算法
 def score(download, lag):
     if download != 0.0 and lag != 0.0:
         download_score = 100 / download
@@ -39,7 +41,7 @@ colors_sinr = ['##808b96','#154360', '#ffdfba', '#ffffba', '#baffc9', '#bae1ff',
 class Speed:
     def __init__(self, files: list):
         self.data = []
-        
+        #storing files name
         self.files_name = files
 
         for i in range(0, len(files)):
@@ -47,10 +49,10 @@ class Speed:
         self.display_start = 0
         self.display_range = len(self.data)
 
-        self.graph_upload = None 
+        self.graph_upload = None    #each data has a graph
         self.graph_lag = None    
         self.graph_download = None 
-        self.graph_jit = None    #the main graph
+        self.graph_jit = None    
 
         self.raw_len = len(self.data[0])
 
@@ -60,13 +62,13 @@ class Speed:
         self.lags = []
 
         # #stats contains mean, max, min, std
-        # self.upload = [0, 0, 0, 0]
 
         #score
         self.score = []
 
     #update everytimes the state changes 
 
+    #update the whole page after the call back function is called
     def update_graph(self):
         self.graph_upload = go.Figure()
         self.graph_lag = go.Figure()
@@ -84,6 +86,7 @@ class Speed:
             self.jits.append(summarize(d, "jit"))
             self.lags.append(summarize(d, "lag"))
 
+            #hovertext data
             hovertext = [f"Time: {row['time']}<br>Band: {row['band']}<br>PCI: {row['pci']}<br>rsrq: {row['rsrq']}db<br>ber: {row['ber']}" 
             for index, row in d.iterrows()]
 
@@ -176,7 +179,7 @@ class Speed:
             
 
             i += 1
-
+            #更新图表，数据一些烂玩意儿
 
 
 
@@ -188,12 +191,10 @@ def get_folders(path):
         return [{'label': folder, 'value': os.path.join(path, folder)} for folder in folders]
     return []
 
-
+#base path
 PATH = r".\log\speed"
 
-
 app = Dash(__name__, title = "测速数据整理")
-
 
 speed = Speed(['empty_speed'])
 
@@ -290,7 +291,7 @@ app.layout = html.Div([
     dcc.Graph(id = 'jit'),
 
 ], style={'textAlign': 'center', 'font-size': '10px', 'marginTop': '50px', 'marginBottom': '20px'})
-
+#upload's callback
 @app.callback(
     Output('upload-container', 'children'),
     Input('generate-button', 'n_clicks'),
@@ -315,7 +316,7 @@ def generate_upload_fields(n_clicks, file_count):
     return None
 
 
-
+#select range 's call back
 @app.callback(
     Output('range-display', 'children'),
     Output('download', 'figure'),

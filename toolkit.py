@@ -14,9 +14,11 @@ import gui_stability_recorder
 
 import os
 
+
+#clicking many times, only one program(same function) is running
 class Lazy:
     def __init__(self, f, default):
-        self.wait = True
+        self.wait = True   #status if last one is finished
         self.f = f
         self.default = default
 
@@ -34,12 +36,14 @@ class MainApp:
         self.root = root
         self.root.title("飞猫品控集成测试平台")
         self.current_module = None  # Track the current module
-        self.create_widgets()
+        self.create_widgets()   #create pages
 
     def create_widgets(self):
+        #sidebar
         self.sidebar = tk.Frame(self.root, width=900, bg='white')
         self.sidebar.pack(side=tk.LEFT, fill=tk.Y)
 
+        #sub sidebar(第二级菜单栏)
         self.sub_sidebar = tk.Frame(self.root, bg='lightyellow')
         self.sub_sidebar.pack(side=tk.LEFT, fill=tk.Y)
         self.sub_sidebar_visible = True
@@ -54,7 +58,6 @@ class MainApp:
         self.buttons = {
             '网络体验稳定性': 'gui_stability_recorder',
             '网络速率稳定性': 'gui_speed_recorder',
-
         }
         button_font = tkFont.Font(family="Comic Sans MS", size=15, weight="bold")
 
@@ -80,21 +83,26 @@ class MainApp:
         button7 = tk.Button(self.sidebar, text="辅助工具", command=lambda c="辅助工具": self.toggle_category(c),
                             width=15, height=1, font=button_font, bg="#3389ff", fg="white")
         button7.pack(pady=15, fill=tk.X)
+    
 
+    #let the sub meau hide after click twice
     def toggle_category(self, category):
         if self.sub_sidebar_visible and self.current_category == category:
             self.hide_submenu()
         else:
             self.show_category(category)
-
+    
+    #show the sub_meau when select a button on the sidebar
     def show_category(self, category):
 
         def thread_with_daemon(target):
             h = threading.Thread(target=target)
-            h.setDaemon(True)
+            h.setDaemon(True)        #守护线程，确保主线程退出时所有子线程也推出
             return h
 
         self.current_category = category  # Set the current category
+
+        #三个网站的实例化，带上lazy类即可实现非常牛逼的功能
         server_live_obj = Lazy(lambda :thread_with_daemon(target=server_live.main).start(),
                                lambda :threading.Thread(target=server_live.open_browser).start())
         
@@ -130,18 +138,18 @@ class MainApp:
                             command=lambda f=func: self.run_and_hide(f))
             btn.pack(pady=15, fill=tk.X)
 
+    #pop out warning page if the current page is still running.
     def check_and_show_page(self, module_name):
         if self.current_module and self.current_module.IS_RUNNING:
             messagebox.showwarning("Warning", "A program is still running. Please stop it before switching.")
             return  # After showing the warning, return and do not switch the page
         self.show_page(module_name)
 
+    #show GUI on the right side when select function
     def show_page(self, module_name):
         for widget in self.content_frame.winfo_children():
             widget.destroy()
 
-        # if module_name == "graph":
-        #     module.main()
 
         module = importlib.import_module(module_name)
         self.current_module = module  # Track the currently running module
@@ -168,7 +176,7 @@ def band_pro():
 def ping_exe():
     os.system(r'start ping_exe.exe')
 
-
+#让你的网络一去不复返
 def forget_networks():
     os.system('netsh wlan delete profile name=* i=*')
 
@@ -179,14 +187,13 @@ def disable_ethernet():
     command = 'Get-NetAdapter | Where-Object { $_.Name -like "以太网 *" } | Disable-NetAdapter -Confirm:$false'
     subprocess.run(['powershell', '-Command', command])
 
-
-
 def enable_ethernet():
     command = 'Get-NetAdapter | Where-Object { $_.Name -like "Ethernet *" } | Enable-NetAdapter -Confirm:$false'
     subprocess.run(['powershell', '-Command', command])
     command = 'Get-NetAdapter | Where-Object { $_.Name -like "以太网 *" } | Enable-NetAdapter -Confirm:$false'
     subprocess.run(['powershell', '-Command', command])
 
+#没用的玩意儿
 def stop_exe():
     os.system("taskkill /f /im toolkit.exe")
 
