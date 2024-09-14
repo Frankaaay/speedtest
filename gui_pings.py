@@ -1,10 +1,8 @@
 import tkinter as tk
 from tkinter import ttk
-import speedspider
 import common
 from datetime import timedelta
 import utils
-import panel
 import stable
 
 IS_RUNNING: bool = False
@@ -60,6 +58,22 @@ class Result2Display(common.Recorder):
         res.sort(key=lambda x: x[0])
         self.table.insert("", tk.END,values=[i[1] for i in res])
         self.table.yview_moveto(1)
+        
+class Result2File(common.Recorder):
+    def __init__(self, file):
+        super().__init__(file)
+        self.record = self.record_first_time
+
+    def record_first_time(self, res: dict[str,float]):
+        self.keys = list(res.keys())
+        self.keys.sort()
+        self.file.write(f"{','.join(self.keys)}\n")
+        self.record = self._record
+        self.record(res)
+
+    def _record(self, res: dict[str,float]):
+        self.file.write(f"{','.join(str(res[i]) for i in self.keys)}\n")
+        
 
 class SpeedUI:
     def __init__(self, root: tk.Tk):
@@ -205,14 +219,15 @@ class SpeedUI:
         
 
         self.obj = stable.Pings(urls, delta)
-
+        if self.save_log.get():
+            self.obj.add_recorder(Result2File(open(f"{common.datetime.now().strftime(f'%Y-%m-%d_%H-%M-%S#{self.folder_name_addon.get()}')}.csv",'w')))
         self.obj.add_recorder(Result2Display(self.tree))
         self.obj.add_recorder(self.summary)
         self.obj.add_recorder(StopCounter(
             callback_each=lambda cnt:self.update_each_time(cnt),
             callback_final=self.stop_button_clicked,
             target_cnt=count))
-        self.obj = common.AutoFlush(self.obj, timedelta(minutes=20))
+        self.obj = common.AutoFlush(self.obj, timedelta(minutes=2))
         self.obj = common.Sequence(self.obj, delta)
         self.obj.start()
 
@@ -226,8 +241,6 @@ class SpeedUI:
             if address not in self.statistics.get_children():
                 self.statistics.insert("", "end", iid=address, values=(address, 0, 0))
             self.statistics.item(address, values=(address, self.summary.res[address].avg, self.summary.res[address].timeout))
-            
-
 
     def stop_button_clicked(self,):
         if self.obj is not None:
