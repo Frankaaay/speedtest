@@ -75,23 +75,31 @@ class ProxySpeed(Producer):
 
     def update(self):
         res = get_sciatic()
+        # 获取当前的上行和下行流量
         if res is None:
             return
+        # 如果获取不到流量，则返回
         super().update()
         rate = {
             'ul' : round((res['ul'] - self.previous['ul']) / (time() - self.previous_time) * 8 / 1024 / 1024,3),
             'dl' : round((res['dl'] - self.previous['dl']) / (time() - self.previous_time) * 8 / 1024 / 1024,3),
         }
+        # 计算当前的上行和下行流量速率
         if rate['ul'] + rate['dl'] < 0.2:
             if self.low_speed_since is None:
                 self.low_speed_since = time()
         else:
             self.low_speed_since = None
 
+        # 如果当前的上行和下行流量速率之和小于0.2，则设置low_speed_since为当前时间
+        # 否则，将low_speed_since设置为None
         self.previous_time = time()
+        # 设置上一次的时间为当前时间
         self.previous = res
 
+        # 设置上一次的上行和下行流量为当前流量
         self.res = ProxyResult(rate['ul'], rate['dl'])
+        # 设置返回结果为当前的上行和下行流量速率
         # sleep(1)
     
     def stop(self):

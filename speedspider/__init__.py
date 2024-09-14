@@ -43,6 +43,7 @@ class SpeedTester(Producer):
     def update(self):
         super().update()
         url = random.choice(self.urls)
+        # 为了减少故障率，每次都重新打开一个浏览器
         driver = web_driver(browser_name=self.browser_name, headless=self.headless,proxy_enable=False)
         driver.implicitly_wait(5)
         driver.get(url)
@@ -119,8 +120,9 @@ class SpeedTester0Interval(Producer):
             sleep(0.1)
         sleep(1.5)
         print('[测速]光速开始第二个测速')
-        h = threading.Thread(target=self.obj2.update)
-        h.start()
+        if not self.stopped:
+            h = threading.Thread(target=self.obj2.update)
+            h.start()
 
         try:
             self.handle.join()
@@ -129,6 +131,8 @@ class SpeedTester0Interval(Producer):
             pass
         self.res = self.obj1.get()
 
+        if self.stopped:
+            return
         self.handle = h
         tmp = self.obj1
         self.obj1 = self.obj2

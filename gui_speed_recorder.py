@@ -9,6 +9,7 @@ import speed_recorder
 
 IS_RUNNING: bool = False
 
+
 class StdoutRedirector:
     def __init__(self, text_widget:tk.Text):
         self.text_widget = text_widget
@@ -30,6 +31,24 @@ class StdoutRedirector:
         pass
 
 
+class StopCounter(common.Recorder):
+    '''
+    记录运行次数，当达到目标次数时停止运行
+    '''
+    def __init__(self, callback_each, callback_final, target_cnt):
+        super().__init__(None)
+        self.cnt = 0
+        self.callback_each = callback_each
+        self.callback_final = callback_final
+        self.target_cnt = target_cnt
+        self.callback_each(0)
+    
+    def record(self, any):
+        super().record(any)
+        self.cnt += 1
+        self.callback_each(self.cnt)
+        if self.target_cnt >= 0 and self.cnt >= self.target_cnt:
+            self.callback_final()
 
 class Result2Display(common.Recorder):
     def __init__(self, table: ttk.Treeview):
@@ -118,6 +137,11 @@ class SpeedUI:
         self.delta_custom.insert(0, "5")
         self.delta_custom.pack(side=tk.LEFT)
         tk.Label(custom_frame, text="分钟").pack(side=tk.LEFT)
+        tk.Label(custom_frame, text="总共").pack(side=tk.LEFT)
+        self.count_custom = tk.Entry(custom_frame, width=3)
+        self.count_custom.insert(0, "∞")
+        self.count_custom.pack(side=tk.LEFT)
+        tk.Label(custom_frame, text="次").pack(side=tk.LEFT)
         custom_frame.pack()
 
         no_name_frame_3 = ttk.Frame(self.root)
@@ -125,7 +149,9 @@ class SpeedUI:
         start_button.pack(side=tk.LEFT)
         stop_button = tk.Button(no_name_frame_3, text="停止", command=self.stop_button_clicked)
         stop_button.pack(side=tk.LEFT)
-        copy_button = tk.Button(no_name_frame_3, text="复制选中到剪贴板", command=self.copy_selected_to_clipboard)
+        self.count_label = tk.Label(no_name_frame_3, text="第0次")
+        self.count_label.pack(side=tk.LEFT)
+        copy_button = tk.Button(no_name_frame_3, text="复制选中", command=self.copy_selected_to_clipboard)
         copy_button.pack(side=tk.LEFT)
         clear_button = tk.Button(no_name_frame_3, text="清空历史", command=self.clear_tree)
         clear_button.pack(side=tk.LEFT)
@@ -175,8 +201,13 @@ class SpeedUI:
             self.not_stdout.write("Starting\n")
         try:
             interval = float(self.delta_custom.get())
-        except:
+        except ValueError:
             interval = 0
+
+        try:
+            count = int(self.count_custom.get())
+        except ValueError:
+            count = -1
 
         utils.Browser_name = self.browser_option.get()
 
@@ -193,6 +224,10 @@ class SpeedUI:
         
 
         self.obj.add_recorder(Result2Display(self.tree))
+        self.obj.add_recorder(StopCounter(
+            callback_each=lambda cnt:self.count_label.config(text=f"第{cnt}次"),
+            callback_final=self.stop_button_clicked,
+            target_cnt=count))
         self.obj = common.AutoFlush(self.obj, timedelta(minutes=20))
         self.obj = common.Sequence(self.obj, delta)
         self.obj.start()
