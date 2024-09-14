@@ -70,9 +70,7 @@ class MainApp:
                             width=15, height=1, font=button_font, bg="#3389ff", fg="white")
         button7.pack(pady=15, fill=tk.X)
 
-        module_name = 'gui_iperf3'
-        text = 'iperf3'
-        button1 = tk.Button(self.sidebar, text=text, command=lambda m=module_name: self.check_and_show_page(m),
+        button1 = tk.Button(self.sidebar, text='iperf3', command=lambda m='gui_iperf3': self.check_and_show_page(m),
                                width=15, height=1, font=button_font,bg="#3389ff", fg="white")
         button1.pack(pady=15, fill=tk.X)
 
@@ -126,7 +124,8 @@ class MainApp:
                        ("禁用以太网", disable_ethernet)]
         elif category == "辅助工具":
             buttons = [("BandwidthMeter", band_pro),
-                       ("Ping包", ping_exe)
+                       ("Ping包", ping_exe),
+                       ("ping三网", self.ping_baidu)
                        ]
         elif category == "体验&网速数据统计":
             buttons = [("直播数据统计", server_live_obj.run),
@@ -168,6 +167,9 @@ class MainApp:
         image = image.resize((100, 100), Image.LANCZOS)
         self.image = ImageTk.PhotoImage(image)
         self.image_label = tk.Label(self.sidebar, image=self.image, bg='white')
+
+    def ping_baidu(self):
+        self.check_and_show_page("gui_pings")
 
 
 def band_pro():
