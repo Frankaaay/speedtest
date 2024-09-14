@@ -2,6 +2,7 @@ import tkinter as tk
 from tkinter import ttk
 import utils
 import stability_recorder
+import time
 
 IS_RUNNING: bool = False
 
@@ -57,6 +58,34 @@ class LiveUI:
         no_name_frame_1_2.pack(side=tk.RIGHT)
 
         no_name_frame_1.pack()
+
+        
+        # 可选输入框
+        no_name_frame_2 = ttk.Frame(self.root)
+        no_name_frame_2_1 = ttk.Frame(no_name_frame_2)
+        tk.Label(no_name_frame_2_1, text="房间号").pack()
+        self.room_id = tk.Entry(no_name_frame_2_1)
+        self.room_id.pack()
+        no_name_frame_2_1.pack(side=tk.LEFT)
+
+        no_name_frame_2_2 = ttk.Frame(no_name_frame_2)
+        # 计时器显示
+        tk.Label(no_name_frame_2_2, text="定时").pack()
+        self.timer_h = tk.Entry(no_name_frame_2_2, width=6)
+        self.timer_h.insert(0, '00')
+        self.timer_h.pack(side=tk.LEFT)
+        tk.Label(no_name_frame_2_2, text=":").pack(side=tk.LEFT)
+        self.timer_m = tk.Entry(no_name_frame_2_2, width=4)
+        self.timer_m.insert(0, '00')
+        self.timer_m.pack(side=tk.LEFT)
+        tk.Label(no_name_frame_2_2, text=":").pack(side=tk.LEFT)
+        self.timer_s = tk.Entry(no_name_frame_2_2, width=4)
+        self.timer_s.insert(0, '00')
+        self.timer_s.pack(side=tk.LEFT)
+        no_name_frame_2_2.pack(side=tk.LEFT)
+        
+        no_name_frame_2.pack()
+
     
 
         # 单选列表
@@ -81,12 +110,6 @@ class LiveUI:
             radio_button.pack(side="left")
         browser_frame.pack()
 
-        # 可选输入框
-        tk.Label(self.root, text="房间号（可不填）").pack()
-        self.room_id = tk.Entry(self.root)
-        self.room_id.pack()
-
-
         self.obj: stability_recorder.Main|None = None
 
         # 开始和停止按钮
@@ -94,8 +117,13 @@ class LiveUI:
 
         start_button = tk.Button(button_frame, text="开始", command=self.start_button_clicked)
         start_button.pack(side=tk.LEFT)
+
+        self.timer_label = tk.Label(button_frame, text="--:--:--")
+        self.timer_label.pack(side=tk.LEFT)
+
         stop_button = tk.Button(button_frame, text="停止", command=self.stop_button_clicked)
-        stop_button.pack(side=tk.RIGHT)
+        stop_button.pack(side=tk.LEFT)
+
 
         button_frame.pack()
 
@@ -116,7 +144,14 @@ class LiveUI:
             return
         global IS_RUNNING
         IS_RUNNING = True
-
+        self.start_time = time.time()
+        try:
+            h = float(self.timer_h.get())
+            m = float(self.timer_m.get())
+            s = float(self.timer_s.get())
+            total_seconds = h * 3600 + m * 60 + s
+        except:
+            total_seconds = 0
         self.obj = stability_recorder.Main(
                                     self.browser_option.get(),
                                     self.record_device.get(),
@@ -129,6 +164,7 @@ class LiveUI:
                                     self.not_stdout,
                                     self.folder_name_addon.get()
                                     )
+        self.update_timer(total_seconds>0, time.time(), total_seconds)
 
 
     def stop_button_clicked(self):
@@ -142,6 +178,18 @@ class LiveUI:
         else:
             self.not_stdout.write("Not running!\n")
 
+    def update_timer(self, countdown:bool,start_time:float, t:float):
+        if self.obj is not None:
+            if countdown:
+                time_to_display = t - (time.time() - start_time)
+                if time_to_display < 1:
+                    self.stop_button_clicked()
+            else:
+                time_to_display = time.time() - start_time
+            hours, remainder = divmod(time_to_display, 3600)
+            minutes, seconds = divmod(remainder, 60)
+            self.timer_label.config(text=f"{int(hours):02}:{int(minutes):02}:{int(seconds):02}")
+            self.root.after(900, self.update_timer,countdown,start_time,t)  # 每秒更新一次
 
 def main(root:tk.Tk):
     return LiveUI(root)

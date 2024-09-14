@@ -119,8 +119,9 @@ class SpeedTester0Interval(Producer):
             sleep(0.1)
         sleep(1.5)
         print('[测速]光速开始第二个测速')
-        h = threading.Thread(target=self.obj2.update)
-        h.start()
+        if not self.stopped:
+            h = threading.Thread(target=self.obj2.update)
+            h.start()
 
         try:
             self.handle.join()
@@ -129,6 +130,8 @@ class SpeedTester0Interval(Producer):
             pass
         self.res = self.obj1.get()
 
+        if self.stopped:
+            return
         self.handle = h
         tmp = self.obj1
         self.obj1 = self.obj2
