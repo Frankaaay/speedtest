@@ -74,7 +74,7 @@ class Summary(Recorder):
             else:
                 prop.timeout += 1
             prop.count += 1
-            prop.avg = round(prop.sum / (prop.count-prop.timeout), 2)
+            prop.avg = round(prop.sum / max(1,prop.count-prop.timeout), 2)
             if delay < prop.min:
                 prop.min = delay
             if delay > prop.max:
