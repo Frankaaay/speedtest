@@ -1,4 +1,4 @@
-param (
+﻿param (
     [string]$Action = "Enable"  # 默认操作为启用
 )
 
