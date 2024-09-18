@@ -34,7 +34,7 @@ class Lazy:
 class MainApp:
     def __init__(self, root):
         self.root = root
-        self.root.title("飞猫品控集成测试平台")
+        self.root.title("飞猫品控集成测试工具平台")
         self.current_module = None  # Track the current module
         self.create_widgets()   #create pages
 
@@ -50,7 +50,7 @@ class MainApp:
         self.current_category = None
 
         self.load_image()
-        self.image_label.pack(side=tk.TOP, pady=8)
+        self.image_label.pack(side=tk.TOP, pady=10)
 
         self.content_frame = tk.Frame(self.root)
         self.content_frame.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True)
@@ -59,28 +59,28 @@ class MainApp:
             '网络体验稳定性': 'gui_stability_recorder',
             '网络速率稳定性': 'gui_speed_recorder',
         }
-        button_font = tkFont.Font(family="Comic Sans MS", size=15, weight="bold")
+        button_font = tkFont.Font(family="Comic Sans MS", size=13, weight="bold")
 
         for text, module_name in self.buttons.items():
             button = tk.Button(self.sidebar, text=text, command=lambda m=module_name: self.check_and_show_page(m),
-                               width=15, height=1, font=button_font,bg="#3389ff", fg="white")
-            button.pack(pady=15, fill=tk.X)
+                               width=15, height=0, font=button_font,bg="#3389ff", fg="white")
+            button.pack(pady=10, fill=tk.X)
 
         button7 = tk.Button(self.sidebar, text="体验&网速数据统计", command=lambda c="体验&网速数据统计": self.toggle_category(c),
-                            width=15, height=1, font=button_font, bg="#3389ff", fg="white")
-        button7.pack(pady=15, fill=tk.X)
+                            width=15, height=0, font=button_font, bg="#3389ff", fg="white")
+        button7.pack(pady=10, fill=tk.X)
 
         button1 = tk.Button(self.sidebar, text='iperf3', command=lambda m='gui_iperf3': self.check_and_show_page(m),
-                               width=15, height=1, font=button_font,bg="#3389ff", fg="white")
-        button1.pack(pady=15, fill=tk.X)
+                               width=15, height=0, font=button_font,bg="#3389ff", fg="white")
+        button1.pack(pady=10, fill=tk.X)
 
         button7 = tk.Button(self.sidebar, text="网络工具", command=lambda c="网络工具": self.toggle_category(c),
-                            width=15, height=1, font=button_font, bg="#3389ff", fg="white")
-        button7.pack(pady=15, fill=tk.X)
+                            width=15, height=0, font=button_font, bg="#3389ff", fg="white")
+        button7.pack(pady=10, fill=tk.X)
 
         button7 = tk.Button(self.sidebar, text="辅助工具", command=lambda c="辅助工具": self.toggle_category(c),
-                            width=15, height=1, font=button_font, bg="#3389ff", fg="white")
-        button7.pack(pady=15, fill=tk.X)
+                            width=15, height=0, font=button_font, bg="#3389ff", fg="white")
+        button7.pack(pady=10, fill=tk.X)
     
 
     #let the sub meau hide after click twice
@@ -135,7 +135,7 @@ class MainApp:
         for button_text, func in buttons:
             btn = tk.Button(self.sub_sidebar, text=button_text, width=15, height=2,
                             command=lambda f=func: self.run_and_hide(f))
-            btn.pack(pady=15, fill=tk.X)
+            btn.pack(pady=10, fill=tk.X)
 
     #pop out warning page if the current page is still running.
     def check_and_show_page(self, module_name):
@@ -205,7 +205,7 @@ def stop_exe():
 if __name__ == "__main__":
     root = tk.Tk()
     root.iconbitmap("flymodem.ico")
-    root.state("zoomed")
+    # root.state("zoomed")
     app = MainApp(root)
     root.mainloop()
     

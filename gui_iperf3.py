@@ -29,31 +29,31 @@ class Iperf3TestApp:
 
     def create_widgets(self):
         # IP address input
-        ttk.Label(self.root, text="192.168.").grid(column=0, row=0, padx=10, pady=5)
+        ttk.Label(self.root, text="192.168.").grid(column=0, row=0, padx=8, pady=5)
         self.ip_suffix1_var = tk.StringVar(value=self.ip_suffix1)
-        ttk.Entry(self.root, textvariable=self.ip_suffix1_var).grid(column=1, row=0, padx=10, pady=5)
+        ttk.Entry(self.root, textvariable=self.ip_suffix1_var).grid(column=1, row=0, padx=8, pady=5)
 
         # Number of runs input
-        ttk.Label(self.root, text="Number of Runs:").grid(column=0, row=2, padx=10, pady=5)
+        ttk.Label(self.root, text="Number of Runs:").grid(column=0, row=2, padx=8, pady=5)
         self.num_runs_var = tk.IntVar(value=self.num_runs)
-        ttk.Entry(self.root, textvariable=self.num_runs_var).grid(column=1, row=2, padx=10, pady=5)
+        ttk.Entry(self.root, textvariable=self.num_runs_var).grid(column=1, row=2, padx=8, pady=5)
 
         # Duration input
-        ttk.Label(self.root, text="Duration (seconds):").grid(column=0, row=3, padx=10, pady=5)
+        ttk.Label(self.root, text="Duration (seconds):").grid(column=0, row=3, padx=8, pady=5)
         self.duration_var = tk.IntVar(value=self.duration)
-        ttk.Entry(self.root, textvariable=self.duration_var).grid(column=1, row=3, padx=10, pady=5)
+        ttk.Entry(self.root, textvariable=self.duration_var).grid(column=1, row=3, padx=8, pady=5)
 
         self.download = tk.BooleanVar(value=False)
-        tk.Checkbutton(self.root, text="Download", variable=self.download).grid(column=1, row=4, padx=10, pady=5)
+        tk.Checkbutton(self.root, text="Download", variable=self.download).grid(column=1, row=4, padx=8, pady=5)
 
         # Start and Stop buttons
-        ttk.Button(self.root, text="Start", command=self.start_test).grid(column=0, row=5, padx=10, pady=10)
-        ttk.Button(self.root, text="Stop", command=self.stop_test).grid(column=1, row=5, padx=10, pady=10)
+        ttk.Button(self.root, text="Start", command=self.start_test).grid(column=0, row=5, padx=8, pady=10)
+        ttk.Button(self.root, text="Stop", command=self.stop_test).grid(column=1, row=5, padx=8, pady=10)
 
         # Output display
-        ttk.Label(self.root, text="Output:").grid(column=0, row=6, padx=10, pady=5)
+        ttk.Label(self.root, text="Output:").grid(column=0, row=6, padx=8, pady=5)
         self.output_text = tk.Text(self.root, height=10, width=80, wrap=tk.WORD)
-        self.output_text.grid(column=1, row=6, padx=10, pady=5)
+        self.output_text.grid(column=1, row=6, padx=8, pady=5)
         self.output_text.config(state=tk.DISABLED)  # Make it read-only initially
 
     def start_test(self):

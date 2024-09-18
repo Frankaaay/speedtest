@@ -158,7 +158,7 @@ class SpeedUI:
         clear_button.pack(side=tk.LEFT)
         no_name_frame_3.pack()   
 
-        output_text = tk.Text(self.root, wrap="word", height=15)
+        output_text = tk.Text(self.root, wrap="word", height=8)
         output_text.pack(expand=True, fill=tk.X)
 
         self.not_stdout = StdoutRedirector(output_text)
