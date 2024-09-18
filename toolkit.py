@@ -11,7 +11,7 @@ import subprocess
 import gui_iperf3
 import gui_speed_recorder
 import gui_stability_recorder
-
+import gui_pings
 import os
 
 
