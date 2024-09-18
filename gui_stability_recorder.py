@@ -171,6 +171,7 @@ class LiveUI:
         # 处理停止按钮点击事件
         if self.obj is not None:
             self.not_stdout.write("Stopping\n")
+            self.obj.flush()
             self.obj.stop()
             self.obj = None
             global IS_RUNNING

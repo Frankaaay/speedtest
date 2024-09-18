@@ -6,7 +6,7 @@ import utils
 import stable
 
 IS_RUNNING: bool = False
-
+PATH = './log/pings'
 
 class StdoutRedirector:
     def __init__(self, text_widget:tk.Text):
@@ -220,7 +220,11 @@ class SpeedUI:
 
         self.obj = stable.Pings(urls, delta*4)
         if self.save_log.get():
-            self.obj.add_recorder(Result2File(open(f"./log/pings/{common.datetime.now().strftime(f'%Y-%m-%d_%H-%M-%S#{self.folder_name_addon.get()}')}.csv",'w')))
+            import os
+            now = common.datetime.now().strftime(f'%Y-%m-%d_%H-%M-%S')
+            folder_name = self.folder_name_addon.get()
+            os.makedirs(f"{PATH}/{now}#{folder_name}/", exist_ok=True)
+            self.obj.add_recorder(Result2File(open(f"{PATH}/{now}#{folder_name}/ping.csv",'w')))
         self.obj.add_recorder(Result2Display(self.tree))
         self.obj.add_recorder(self.summary)
         self.obj.add_recorder(StopCounter(

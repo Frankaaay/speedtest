@@ -13,7 +13,7 @@ import gui_speed_recorder
 import gui_stability_recorder
 import gui_pings
 import os
-
+# from ctypes import windll
 
 #clicking many times, only one program(same function) is running
 class Lazy:
@@ -40,7 +40,7 @@ class MainApp:
 
     def create_widgets(self):
         #sidebar
-        self.sidebar = tk.Frame(self.root, width=900, bg='white')
+        self.sidebar = tk.Frame(self.root, width=1080, height=1920, bg='white')
         self.sidebar.pack(side=tk.LEFT, fill=tk.Y)
 
         #sub sidebar(第二级菜单栏)
@@ -64,23 +64,23 @@ class MainApp:
         for text, module_name in self.buttons.items():
             button = tk.Button(self.sidebar, text=text, command=lambda m=module_name: self.check_and_show_page(m),
                                width=15, height=0, font=button_font,bg="#3389ff", fg="white")
-            button.pack(pady=10, fill=tk.X)
+            button.pack(pady=15, fill=tk.X)
 
         button7 = tk.Button(self.sidebar, text="体验&网速数据统计", command=lambda c="体验&网速数据统计": self.toggle_category(c),
                             width=15, height=0, font=button_font, bg="#3389ff", fg="white")
-        button7.pack(pady=10, fill=tk.X)
+        button7.pack(pady=15, fill=tk.X)
 
         button1 = tk.Button(self.sidebar, text='iperf3', command=lambda m='gui_iperf3': self.check_and_show_page(m),
                                width=15, height=0, font=button_font,bg="#3389ff", fg="white")
-        button1.pack(pady=10, fill=tk.X)
+        button1.pack(pady=15, fill=tk.X)
 
         button7 = tk.Button(self.sidebar, text="网络工具", command=lambda c="网络工具": self.toggle_category(c),
                             width=15, height=0, font=button_font, bg="#3389ff", fg="white")
-        button7.pack(pady=10, fill=tk.X)
+        button7.pack(pady=15, fill=tk.X)
 
         button7 = tk.Button(self.sidebar, text="辅助工具", command=lambda c="辅助工具": self.toggle_category(c),
                             width=15, height=0, font=button_font, bg="#3389ff", fg="white")
-        button7.pack(pady=10, fill=tk.X)
+        button7.pack(pady=15, fill=tk.X)
     
 
     #let the sub meau hide after click twice
@@ -92,6 +92,15 @@ class MainApp:
     
     #show the sub_meau when select a button on the sidebar
     def show_category(self, category):
+        if self.current_module and self.current_module.IS_RUNNING:
+            messagebox.showwarning("任在运行", "请先结束当前任务")
+            return  # After showing the warning, return and do not switch the page
+        for widget in self.content_frame.winfo_children():
+            widget.destroy()
+        _ = tk.Frame(self.content_frame)
+        _.pack()
+        _.destroy()
+        
 
         def thread_with_daemon(target):
             h = threading.Thread(target=target)
@@ -130,25 +139,26 @@ class MainApp:
         elif category == "体验&网速数据统计":
             buttons = [("直播数据统计", server_live_obj.run),
                        ("测速数据统计", server_speed_obj.run),
-                       ("多设备直播数据对比", server_contest_obj.run)]
+                       ("多设备\n直播数据对比", server_contest_obj.run)]
 
         for button_text, func in buttons:
-            btn = tk.Button(self.sub_sidebar, text=button_text, width=15, height=2,
+            # 子菜单按钮
+            btn = tk.Button(self.sub_sidebar, text=button_text, width=20, height=2,
                             command=lambda f=func: self.run_and_hide(f))
             btn.pack(pady=10, fill=tk.X)
 
     #pop out warning page if the current page is still running.
     def check_and_show_page(self, module_name):
         if self.current_module and self.current_module.IS_RUNNING:
-            messagebox.showwarning("Warning", "A program is still running. Please stop it before switching.")
+            messagebox.showwarning("任在运行", "请先结束当前任务")
             return  # After showing the warning, return and do not switch the page
         self.show_page(module_name)
+        self.hide_submenu()
 
     #show GUI on the right side when select function
     def show_page(self, module_name):
         for widget in self.content_frame.winfo_children():
             widget.destroy()
-
 
         module = importlib.import_module(module_name)
         self.current_module = module  # Track the currently running module
@@ -172,7 +182,7 @@ class MainApp:
         self.check_and_show_page("gui_pings")
 
     def ask_to_forget(self):
-        response = messagebox.askquestion("遗忘网络", "您的所有网络将被删除，请确认")
+        response = messagebox.askquestion("遗忘网络", "您保存的Wi-Fi网络将被删除\n请确认")
         if response == 'yes':
             forget_networks()
 
@@ -207,9 +217,10 @@ def stop_exe():
 
 
 if __name__ == "__main__":
+    # windll.shcore.SetProcessDpiAwareness(1)
     root = tk.Tk()
     root.iconbitmap("flymodem.ico")
-    # root.state("zoomed")
+    root.state("zoomed")
     app = MainApp(root)
     root.mainloop()
     
