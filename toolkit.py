@@ -119,13 +119,13 @@ class MainApp:
             widget.destroy()
 
         if category == "网络工具":
-            buttons = [("一键遗忘", forget_networks),
+            buttons = [("Wi-Fi一键遗忘", self.ask_to_forget),
                        ("启用以太网", enable_ethernet),
                        ("禁用以太网", disable_ethernet)]
         elif category == "辅助工具":
             buttons = [("BandwidthMeter", band_pro),
                        ("Ping包", ping_exe),
-                       ("ping三网", self.ping_baidu)
+                       ("Ping三网", self.multi_pings)
                        ]
         elif category == "体验&网速数据统计":
             buttons = [("直播数据统计", server_live_obj.run),
@@ -168,9 +168,13 @@ class MainApp:
         self.image = ImageTk.PhotoImage(image)
         self.image_label = tk.Label(self.sidebar, image=self.image, bg='white')
 
-    def ping_baidu(self):
+    def multi_pings(self):
         self.check_and_show_page("gui_pings")
 
+    def ask_to_forget(self):
+        response = messagebox.askquestion("遗忘网络", "您的所有网络将被删除，请确认")
+        if response == 'yes':
+            forget_networks()
 
 def band_pro():
     os.system(r'start BandwidthMeterPro\BWMeterPro.exe"')
@@ -184,14 +188,14 @@ def forget_networks():
 
 
 def disable_ethernet():
-    subprocess.run(['powershell', '-NoProfile', '-ExecutionPolicy','Bypass','-File','./Operate-Ethernet.ps1','-Action','Disable'],shell=False)
+    subprocess.run(['powershell', '-NoProfile', '-ExecutionPolicy','Bypass','-File','./Operate-Ethernet.ps1','-Action','Disable'])
     # command = 'Get-NetAdapter | Where-Object { $_.Name -like "Ethernet *" } | Disable-NetAdapter -Confirm:$false'
     # subprocess.run(['powershell', '-Command', command])
     # command = 'Get-NetAdapter | Where-Object { $_.Name -like "以太网 *" } | Disable-NetAdapter -Confirm:$false'
     # subprocess.run(['powershell', '-Command', command])
 
 def enable_ethernet():
-    subprocess.run(['powershell', '-NoProfile', '-ExecutionPolicy','Bypass','-File','./Operate-Ethernet.ps1','-Action','Enable'],shell=False)
+    subprocess.run(['powershell', '-NoProfile', '-ExecutionPolicy','Bypass','-File','./Operate-Ethernet.ps1','-Action','Enable'])
     # command = 'Get-NetAdapter | Where-Object { $_.Name -like "Ethernet *" } | Enable-NetAdapter -Confirm:$false'
     # subprocess.run(['powershell', '-Command', command])
     # command = 'Get-NetAdapter | Where-Object { $_.Name -like "以太网 *" } | Enable-NetAdapter -Confirm:$false'
