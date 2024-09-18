@@ -140,7 +140,7 @@ class Main:
         living_seq.start()
 
 
-        ping_device = PingAndState(stable.Pings(list(ips.values())), device_seq, network_speed, living)
+        ping_device = PingAndState(stable.Pings(list(ips.values()),timedelta(seconds=0.75)), device_seq, network_speed, living)
         ping_device = AutoFlush(ping_device, timedelta(minutes=5))
         if save_log:
             ping_device.add_recorder(

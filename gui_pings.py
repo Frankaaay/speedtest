@@ -218,9 +218,9 @@ class SpeedUI:
             self.tree.heading(col, text=col)
         
 
-        self.obj = stable.Pings(urls, delta)
+        self.obj = stable.Pings(urls, delta*4)
         if self.save_log.get():
-            self.obj.add_recorder(Result2File(open(f"{common.datetime.now().strftime(f'%Y-%m-%d_%H-%M-%S#{self.folder_name_addon.get()}')}.csv",'w')))
+            self.obj.add_recorder(Result2File(open(f"./log/pings/{common.datetime.now().strftime(f'%Y-%m-%d_%H-%M-%S#{self.folder_name_addon.get()}')}.csv",'w')))
         self.obj.add_recorder(Result2Display(self.tree))
         self.obj.add_recorder(self.summary)
         self.obj.add_recorder(StopCounter(

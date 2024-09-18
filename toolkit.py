@@ -50,7 +50,7 @@ class MainApp:
         self.current_category = None
 
         self.load_image()
-        self.image_label.pack(side=tk.TOP, pady=10)
+        self.image_label.pack(side=tk.TOP, pady=8)
 
         self.content_frame = tk.Frame(self.root)
         self.content_frame.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True)
