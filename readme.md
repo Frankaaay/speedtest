@@ -34,26 +34,26 @@ The graph shows how ping changes.
 
 
 
-![alt text](ping.png)
+![alt text](./pic/ping.png)
 
 ### graph of speed tester
 
 
 
 
-![alt text](image-1.png)
+![alt text](./pic/image-1.png)
 
 The stats table has the mean, max, min ,stadnard deviation of a set of data. Each data has a graph(upload, download, lag, jit). It also supports uploading multi-files for comparing. 
 
-![alt text](image-2.png)
+![alt text](./pic/image-2.png)
 
 ## ping data of streaming
 
-![alt text](image-3.png)
+![alt text](./pic/image-3.png)
 
 # iperf3 Automatic tool
 
-![alt text](image-4.png)
+![alt text](./pic/image-4.png)
 
 # Network tool
 
@@ -63,5 +63,5 @@ Disable ethernet and enable ehternet are same as doing in control panel. Just fo
 
 # Other tool
 
-![alt text](image-5.png)
+![alt text](./pic/image-5.png)
 
