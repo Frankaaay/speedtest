@@ -66,61 +66,66 @@ class IperfClient:
         self.server_obj = None
         self.client_obj = None
         self.add_port_entry = None
+
+        self.widgets = []
         self.create_widgets()
 
-
     def create_widgets(self):
-        frame1 = ttk.Frame(self.root)
+    
+        def f(x):
+            self.widgets.append(x)
+            return self.widgets[-1]
+        
+        frame1 = tk.Frame(self.root)
 
         client_frame = tk.Frame(frame1)
         client_frame_common = tk.Frame(client_frame)
         # server_ip, server_port, duration, num_streams, reverse
         tk.Label(client_frame_common, text="-c 客户端").pack()
 
-        no_name_frame_2 = ttk.Frame(client_frame_common)
+        no_name_frame_2 = tk.Frame(client_frame_common)
         tk.Label(no_name_frame_2, text="IP").pack(side=tk.LEFT)
         self.client_ip = tk.StringVar(value="127.0.0.1")
-        ttk.Entry(no_name_frame_2, textvariable=self.client_ip,width=13).pack(side=tk.LEFT)
+        f(tk.Entry(no_name_frame_2, textvariable=self.client_ip,width=13)).pack(side=tk.LEFT)
         tk.Label(no_name_frame_2, text="端口").pack(side=tk.LEFT)
         self.client_port = tk.StringVar(value="5201")
-        ttk.Entry(no_name_frame_2, textvariable=self.client_port,width=6).pack(side=tk.LEFT)
+        f(tk.Entry(no_name_frame_2, textvariable=self.client_port,width=6)).pack(side=tk.LEFT)
         no_name_frame_2.pack()
 
-        no_name_frame_3 = ttk.Frame(client_frame_common)
+        no_name_frame_3 = tk.Frame(client_frame_common)
         tk.Label(no_name_frame_3, text="时长").pack(side=tk.LEFT)
         self.client_duration = tk.StringVar(value="5")
-        ttk.Entry(no_name_frame_3, textvariable=self.client_duration,width=5).pack(side=tk.LEFT)
+        f(tk.Entry(no_name_frame_3, textvariable=self.client_duration,width=5)).pack(side=tk.LEFT)
         tk.Label(no_name_frame_3, text="秒").pack(side=tk.LEFT)
         tk.Label(no_name_frame_3, text="线程").pack(side=tk.LEFT)
         self.client_num = tk.StringVar(value="12")
-        ttk.Entry(no_name_frame_3, textvariable=self.client_num,width=5).pack(side=tk.LEFT)
+        f(tk.Entry(no_name_frame_3, textvariable=self.client_num,width=5)).pack(side=tk.LEFT)
         no_name_frame_3.pack()
 
-        no_name_frame_4 = ttk.Frame(client_frame_common)
+        no_name_frame_4 = tk.Frame(client_frame_common)
         self.use_udp = tk.BooleanVar(value=False)
-        tk.Checkbutton(no_name_frame_4, text="UDP", variable=self.use_udp).pack(side=tk.LEFT)
+        f(tk.Checkbutton(no_name_frame_4, text="UDP", variable=self.use_udp)).pack(side=tk.LEFT)
         tk.Label(no_name_frame_4, text="带宽").pack(side=tk.LEFT)
         self.client_bandwidth = tk.StringVar(value="250M")
-        ttk.Entry(no_name_frame_4, textvariable=self.client_bandwidth,width=8).pack(side=tk.LEFT)
+        f(tk.Entry(no_name_frame_4, textvariable=self.client_bandwidth,width=8)).pack(side=tk.LEFT)
         no_name_frame_4.pack()
 
         options = ["上行", "下载"]
         self.dir_option = tk.StringVar()
         self.dir_option.set(options[0])
-        dir_frame = ttk.Frame(client_frame_common)
+        dir_frame = tk.Frame(client_frame_common)
         for option in options:
-            radio_button = ttk.Radiobutton(
-                dir_frame, text=option, value=option, variable=self.dir_option)
+            radio_button = f(tk.Radiobutton(dir_frame, text=option, value=option, variable=self.dir_option))
             radio_button.pack(side=tk.LEFT)
         dir_frame.pack()
 
-        no_name_frame_1 = ttk.Frame(client_frame_common)
+        no_name_frame_1 = tk.Frame(client_frame_common)
         self.repeat_count = tk.StringVar(value="1")
-        ttk.Label(no_name_frame_1, text="重复次数").pack(side=tk.LEFT)
-        ttk.Entry(no_name_frame_1, textvariable=self.repeat_count,width=5).pack(side=tk.LEFT)
+        tk.Label(no_name_frame_1, text="重复次数").pack(side=tk.LEFT)
+        f(tk.Entry(no_name_frame_1, textvariable=self.repeat_count,width=5)).pack(side=tk.LEFT)
         no_name_frame_1.pack()
         
-        button_frame = ttk.Frame(client_frame_common)
+        button_frame = tk.Frame(client_frame_common)
         start_button = tk.Button(button_frame, text="开始", command=self.start_client_button_clicked)
         start_button.pack(side=tk.LEFT)
         stop_button = tk.Button(button_frame, text="停止", command=self.stop_client_button_clicked)
@@ -188,7 +193,8 @@ class IperfClient:
         self.client_obj = common.Sequence(self.client_obj, common.timedelta(seconds=0.5))
         self.client_obj.start()
         global IS_RUNNING
-        IS_RUNNING += 1
+        IS_RUNNING = True
+        self.disable_when_running()
 
     def stop_client_button_clicked(self,):
         if self.client_obj is not None:
@@ -196,9 +202,18 @@ class IperfClient:
             self.client_obj.stop()
             self.client_obj = None
             global IS_RUNNING
-            IS_RUNNING -= 1
+            IS_RUNNING = False
+            self.enable_when_stopped()
         else:
             self.not_stdout.write("已停止!\n")
+        
+    def disable_when_running(self, ):
+        for i in self.widgets:
+            i.configure(state=tk.DISABLED)
+
+    def enable_when_stopped(self, ):
+        for i in self.widgets:
+            i.configure(state=tk.NORMAL)
 
     def copy_selected_to_clipboard(self,):
         selected_items: tuple[str, ...] = self.tree.selection()

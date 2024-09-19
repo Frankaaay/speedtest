@@ -4,7 +4,7 @@ import subprocess
 import iperf
 import utils
 
-IS_RUNNING : int = 0
+IS_RUNNING: bool = False
 
 class StdoutRedirector:
     def __init__(self, text_widget:tk.Text):
@@ -32,10 +32,16 @@ class IperfServer:
         self.server_obj = None
         self.client_obj = None
         self.add_port_entry = None
+
+        self.widgets = []
         self.create_widgets()
 
-
     def create_widgets(self):
+    
+        def f(x):
+            self.widgets.append(x)
+            return self.widgets[-1]
+        
         frame1 = ttk.Frame(self.root)
         server_frame = tk.Frame(frame1)
 
@@ -46,11 +52,11 @@ class IperfServer:
         self.server_ports.pack()
 
         no_name_frame_1 = ttk.Frame(server_frame)
-        self.add_port_entry = tk.Entry(no_name_frame_1, width=8)
+        self.add_port_entry = f(tk.Entry(no_name_frame_1, width=8))
         self.add_port_entry.pack(side=tk.LEFT)
-        add_button = tk.Button(no_name_frame_1, text="添加", command=self.add_port)
+        add_button = f(tk.Button(no_name_frame_1, text="添加", command=self.add_port))
         add_button.pack(side=tk.LEFT)
-        delete_button = tk.Button(no_name_frame_1, text="删除", command=self.delete_port)
+        delete_button = f(tk.Button(no_name_frame_1, text="删除", command=self.delete_port))
         delete_button.pack(side=tk.LEFT)
         no_name_frame_1.pack()
 
@@ -76,7 +82,8 @@ class IperfServer:
         self.server_obj = iperf.Servers(self.server_ports.get(0, tk.END), self.not_stdout)
         self.server_obj.start()
         global IS_RUNNING
-        IS_RUNNING += 1
+        IS_RUNNING = True
+        self.disable_when_running()
 
     def stop_server_button_clicked(self,):
         if self.server_obj is not None:
@@ -84,9 +91,18 @@ class IperfServer:
             self.server_obj.stop()
             self.server_obj = None
             global IS_RUNNING
-            IS_RUNNING -= 1
+            IS_RUNNING = False
+            self.enable_when_stopped()
         else:
             self.not_stdout.write("Not running!\n")
+    
+    def disable_when_running(self, ):
+        for i in self.widgets:
+            i.configure(state=tk.DISABLED)
+
+    def enable_when_stopped(self, ):
+        for i in self.widgets:
+            i.configure(state=tk.NORMAL)
 
     def add_port(self,) -> None:
         item = self.add_port_entry.get()

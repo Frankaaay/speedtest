@@ -75,29 +75,34 @@ class SpeedUI:
             pass
         
         self.root = root
+        self.widgets = []
         self.create_widgets()
 
     def create_widgets(self):
     
+        def f(x):
+            self.widgets.append(x)
+            return self.widgets[-1]
+        
         self.headless = tk.BooleanVar(value=True)
-        tk.Checkbutton(self.root, text="浏览器无头", variable=self.headless).pack()
+        f(tk.Checkbutton(self.root, text="浏览器无头", variable=self.headless)).pack()
         
         no_name_frame_1 = ttk.Frame(self.root)
 
         no_name_frame_1_1 = ttk.Frame(no_name_frame_1)
         self.record_device = tk.BooleanVar(value=False)
-        tk.Checkbutton(no_name_frame_1_1, text="记录设备状态", variable=self.record_device).pack()
+        f(tk.Checkbutton(no_name_frame_1_1, text="记录设备状态", variable=self.record_device)).pack()
         tk.Label(no_name_frame_1_1, text="设备IP地址").pack()
-        self.device_ip = tk.Entry(no_name_frame_1_1)
+        self.device_ip = f(tk.Entry(no_name_frame_1_1))
         self.device_ip.insert(0, utils.which_is_device_ip())
         self.device_ip.pack()
         no_name_frame_1_1.pack(side=tk.LEFT)
 
         no_name_frame_1_2 = ttk.Frame(no_name_frame_1)
         self.save_log = tk.BooleanVar(value=True)
-        tk.Checkbutton(no_name_frame_1_2, text="保存结果到文件", variable=self.save_log).pack()
+        f(tk.Checkbutton(no_name_frame_1_2, text="保存结果到文件", variable=self.save_log)).pack()
         tk.Label(no_name_frame_1_2, text="保存至：时间戳+[...]").pack()
-        self.folder_name_addon = tk.Entry(no_name_frame_1_2)
+        self.folder_name_addon = f(tk.Entry(no_name_frame_1_2))
         self.folder_name_addon.insert(0, '为你的设备命名')
         self.folder_name_addon.pack()
         no_name_frame_1_2.pack(side=tk.RIGHT)
@@ -113,11 +118,11 @@ class SpeedUI:
 
         # 输入框和按钮
         no_name_frame_2 = ttk.Frame(self.root)
-        self.add_url = tk.Entry(no_name_frame_2, width=38)
+        self.add_url = f(tk.Entry(no_name_frame_2, width=38))
         self.add_url.pack(side=tk.LEFT)
-        add_button = tk.Button(no_name_frame_2, text="添加", command=self.add_item)
+        add_button = f(tk.Button(no_name_frame_2, text="添加", command=self.add_item))
         add_button.pack(side=tk.LEFT)
-        delete_button = tk.Button(no_name_frame_2, text="删除", command=self.delete_item)
+        delete_button = f(tk.Button(no_name_frame_2, text="删除", command=self.delete_item))
         delete_button.pack(side=tk.LEFT)
         no_name_frame_2.pack()
 
@@ -127,19 +132,18 @@ class SpeedUI:
         self.browser_option.set(options[0])
         browser_frame = ttk.Frame(self.root)
         for option in options:
-            radio_button = ttk.Radiobutton(
-                browser_frame, text=option, value=option, variable=self.browser_option)
+            radio_button = f(ttk.Radiobutton(browser_frame, text=option, value=option, variable=self.browser_option))
             radio_button.pack(side="left")
         browser_frame.pack()
 
         custom_frame = ttk.Frame(self.root)
         tk.Label(custom_frame, text="每隔").pack(side=tk.LEFT)
-        self.delta_custom = tk.Entry(custom_frame, width=3)
+        self.delta_custom = f(tk.Entry(custom_frame, width=3))
         self.delta_custom.insert(0, "5")
         self.delta_custom.pack(side=tk.LEFT)
         tk.Label(custom_frame, text="分钟").pack(side=tk.LEFT)
         tk.Label(custom_frame, text="总共").pack(side=tk.LEFT)
-        self.count_custom = tk.Entry(custom_frame, width=3)
+        self.count_custom = f(tk.Entry(custom_frame, width=3))
         self.count_custom.insert(0, "∞")
         self.count_custom.pack(side=tk.LEFT)
         tk.Label(custom_frame, text="次").pack(side=tk.LEFT)
@@ -234,6 +238,7 @@ class SpeedUI:
         self.obj.start()
         global IS_RUNNING
         IS_RUNNING = True
+        self.disable_when_running()
 
 
     def stop_button_clicked(self,):
@@ -244,9 +249,17 @@ class SpeedUI:
             self.obj = None
             global IS_RUNNING
             IS_RUNNING = False
+            self.enable_when_stopped()
         else:
             self.not_stdout.write("Not running!\n")
 
+    def disable_when_running(self, ):
+        for i in self.widgets:
+            i.configure(state=tk.DISABLED)
+
+    def enable_when_stopped(self, ):
+        for i in self.widgets:
+            i.configure(state=tk.NORMAL)
 
     def copy_selected_to_clipboard(self,):
         selected_items: tuple[str, ...] = self.tree.selection()

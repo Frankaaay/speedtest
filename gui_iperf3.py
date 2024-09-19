@@ -28,30 +28,30 @@ class Iperf3TestApp:
 
     def create_widgets(self):
         # IP address input
-        ttk.Label(self.root, text="IP地址").grid(column=0, row=0, padx=8, pady=5)
+        tk.Label(self.root, text="IP地址").grid(column=0, row=0, padx=8, pady=5)
         self.ip_var = tk.StringVar(value=self.ip_suffix1)
         self.ip_var.set("192.168.0.100")
-        ttk.Entry(self.root, textvariable=self.ip_var).grid(column=1, row=0, padx=8, pady=5)
+        tk.Entry(self.root, textvariable=self.ip_var).grid(column=1, row=0, padx=8, pady=5)
 
         # Number of runs input
-        ttk.Label(self.root, text="次数:").grid(column=0, row=2, padx=8, pady=5)
+        tk.Label(self.root, text="次数:").grid(column=0, row=2, padx=8, pady=5)
         self.num_runs_var = tk.IntVar(value=self.num_runs)
-        ttk.Entry(self.root, textvariable=self.num_runs_var).grid(column=1, row=2, padx=8, pady=5)
+        tk.Entry(self.root, textvariable=self.num_runs_var).grid(column=1, row=2, padx=8, pady=5)
 
         # Duration input
-        ttk.Label(self.root, text="时长 秒:").grid(column=0, row=3, padx=8, pady=5)
+        tk.Label(self.root, text="时长 秒:").grid(column=0, row=3, padx=8, pady=5)
         self.duration_var = tk.IntVar(value=self.duration)
-        ttk.Entry(self.root, textvariable=self.duration_var).grid(column=1, row=3, padx=8, pady=5)
+        tk.Entry(self.root, textvariable=self.duration_var).grid(column=1, row=3, padx=8, pady=5)
 
         self.download = tk.BooleanVar(value=False)
         tk.Checkbutton(self.root, text="下载", variable=self.download).grid(column=1, row=4, padx=8, pady=5)
 
         # Start and Stop buttons
-        ttk.Button(self.root, text="Start", command=self.start_test).grid(column=0, row=5, padx=8, pady=10)
-        ttk.Button(self.root, text="Stop", command=self.stop_test).grid(column=1, row=5, padx=8, pady=10)
+        tk.Button(self.root, text="Start", command=self.start_test).grid(column=0, row=5, padx=8, pady=10)
+        tk.Button(self.root, text="Stop", command=self.stop_test).grid(column=1, row=5, padx=8, pady=10)
 
         # Output display
-        ttk.Label(self.root, text="Output:").grid(column=0, row=6, padx=8, pady=5)
+        tk.Label(self.root, text="Output:").grid(column=0, row=6, padx=8, pady=5)
         self.output_text = tk.Text(self.root, height=10, width=80, wrap=tk.WORD)
         self.output_text.grid(column=1, row=6, padx=8, pady=5)
         self.output_text.config(state=tk.DISABLED)  # Make it read-only initially

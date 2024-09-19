@@ -232,7 +232,7 @@ if __name__ == "__main__":
     # windll.shcore.SetProcessDpiAwareness(1)
     root = tk.Tk()
     root.iconbitmap("flymodem.ico")
-    # root.state("zoomed")
+    root.state("zoomed")
     app = MainApp(root)
     root.mainloop()
     
