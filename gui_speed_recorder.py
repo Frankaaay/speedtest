@@ -47,7 +47,7 @@ class StopCounter(common.Recorder):
         super().record(any)
         self.cnt += 1
         self.callback_each(self.cnt)
-        if self.target_cnt >= 0 and self.cnt >= self.target_cnt:
+        if self.target_cnt > 0 and self.cnt >= self.target_cnt:
             self.callback_final()
 
 class Result2Display(common.Recorder):

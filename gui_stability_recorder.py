@@ -70,7 +70,7 @@ class LiveUI:
 
         no_name_frame_2_2 = ttk.Frame(no_name_frame_2)
         # 计时器显示
-        tk.Label(no_name_frame_2_2, text="定时").pack()
+        tk.Label(no_name_frame_2_2, text="测试时长").pack()
         self.timer_h = tk.Entry(no_name_frame_2_2, width=6)
         self.timer_h.insert(0, '00')
         self.timer_h.pack(side=tk.LEFT)
@@ -123,8 +123,7 @@ class LiveUI:
 
         stop_button = tk.Button(button_frame, text="停止", command=self.stop_button_clicked)
         stop_button.pack(side=tk.LEFT)
-
-
+        
         button_frame.pack()
 
         # 创建一个滚动文本框
