@@ -12,6 +12,8 @@ import gui_iperf3
 import gui_speed_recorder
 import gui_stability_recorder
 import gui_pings
+import gui_iperf_server 
+import gui_iperf_client
 import os
 # from ctypes import windll
 
@@ -70,11 +72,11 @@ class MainApp:
                             width=15, height=0, font=button_font, bg="#3389ff", fg="white")
         button7.pack(pady=15, fill=tk.X)
 
-        button1 = tk.Button(self.sidebar, text='iperf3', command=lambda m='gui_iperf3': self.check_and_show_page(m),
+        button1 = tk.Button(self.sidebar, text='iperf灌包', command=lambda c="iperf": self.toggle_category(c),
                                width=15, height=0, font=button_font,bg="#3389ff", fg="white")
         button1.pack(pady=15, fill=tk.X)
 
-        button7 = tk.Button(self.sidebar, text="网络工具", command=lambda c="网络工具": self.toggle_category(c),
+        button7 = tk.Button(self.sidebar, text="网络禁用/开启", command=lambda c="网络工具": self.toggle_category(c),
                             width=15, height=0, font=button_font, bg="#3389ff", fg="white")
         button7.pack(pady=15, fill=tk.X)
 
@@ -98,7 +100,7 @@ class MainApp:
         for widget in self.content_frame.winfo_children():
             widget.destroy()
         _ = tk.Frame(self.content_frame)
-        _.pack()
+        _.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
         _.destroy()
         
 
@@ -140,6 +142,10 @@ class MainApp:
             buttons = [("直播数据统计", server_live_obj.run),
                        ("测速数据统计", server_speed_obj.run),
                        ("多设备\n直播数据对比", server_contest_obj.run)]
+        elif category == "iperf":
+            buttons = [("服务端",self.iperf_server),
+                       ("客户端",self.iperf_client),
+                       ]
 
         for button_text, func in buttons:
             # 子菜单按钮
@@ -177,6 +183,12 @@ class MainApp:
         image = image.resize((100, 100), Image.LANCZOS)
         self.image = ImageTk.PhotoImage(image)
         self.image_label = tk.Label(self.sidebar, image=self.image, bg='white')
+
+    def iperf_server(self):
+        self.check_and_show_page("gui_iperf_server")
+        
+    def iperf_client(self):
+        self.check_and_show_page("gui_iperf_client")
 
     def multi_pings(self):
         self.check_and_show_page("gui_pings")
@@ -220,7 +232,7 @@ if __name__ == "__main__":
     # windll.shcore.SetProcessDpiAwareness(1)
     root = tk.Tk()
     root.iconbitmap("flymodem.ico")
-    root.state("zoomed")
+    # root.state("zoomed")
     app = MainApp(root)
     root.mainloop()
     
