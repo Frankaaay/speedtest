@@ -42,7 +42,7 @@ class MainApp:
 
     def create_widgets(self):
         #sidebar
-        self.sidebar = tk.Frame(self.root, width=1080, height=1920, bg='white')
+        self.sidebar = tk.Frame(self.root, bg='white')
         self.sidebar.pack(side=tk.LEFT, fill=tk.Y)
 
         #sub sidebar(第二级菜单栏)
@@ -55,7 +55,7 @@ class MainApp:
         self.image_label.pack(side=tk.TOP, pady=10)
 
         self.content_frame = tk.Frame(self.root)
-        self.content_frame.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True)
+        self.content_frame.pack(side=tk.RIGHT, fill=tk.BOTH,expand=True)
 
         self.buttons = {
             '网络体验稳定性': 'gui_stability_recorder',
@@ -99,9 +99,9 @@ class MainApp:
             return  # After showing the warning, return and do not switch the page
         for widget in self.content_frame.winfo_children():
             widget.destroy()
-        _ = tk.Frame(self.content_frame)
-        _.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
-        _.destroy()
+        self.content_frame.destroy()
+        self.content_frame = tk.Frame(self.root)
+        self.content_frame.pack(side=tk.RIGHT, fill=tk.BOTH,expand=True)
         
 
         def thread_with_daemon(target):

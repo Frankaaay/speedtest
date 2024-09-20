@@ -126,7 +126,7 @@ class IperfClient:
         tk.Label(no_name_frame_1, text="重复次数").pack(side=tk.LEFT)
         f(tk.Entry(no_name_frame_1, textvariable=self.repeat_count,width=5)).pack(side=tk.LEFT)
         self.display_only = tk.BooleanVar(value=False)
-        f(tk.Checkbutton(no_name_frame_1, text="仅显示", variable=self.display_only)).pack(side=tk.LEFT)
+        f(tk.Checkbutton(no_name_frame_1, text="预热", variable=self.display_only)).pack(side=tk.LEFT)
         no_name_frame_1.pack()
         
         button_frame = tk.Frame(client_frame_common)
@@ -146,7 +146,7 @@ class IperfClient:
         client_frame.pack(side=tk.LEFT)
 
         frame1.pack()
-        output_text = tk.Text(self.root, wrap="word", height=12, width=80)
+        output_text = tk.Text(self.root, wrap="word", height=12, width=50)
         output_text.pack(expand=True, fill=tk.X)
         self.not_stdout = StdoutRedirector(output_text)
 
