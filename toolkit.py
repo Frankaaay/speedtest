@@ -8,7 +8,7 @@ import server_contest
 import tkinter.font as tkFont
 from PIL import Image, ImageTk
 import subprocess
-import gui_iperf3
+# import gui_iperf3
 import gui_speed_recorder
 import gui_stability_recorder
 import gui_pings

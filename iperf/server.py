@@ -13,12 +13,9 @@ class Server:
         self.output = output
 
     def start(self):
-        self.process = subprocess.Popen([IPERF_PATH, '-s', '-p', str(self.port)],
-                                        stdout=subprocess.PIPE,
-                                        stderr=subprocess.PIPE,
-                                        )
+        self.process = subprocess.Popen([IPERF_PATH, '-s', '-p', str(self.port)])
         
-        threading.Thread(target=self.read_output).start()
+        # threading.Thread(target=self.read_output).start()
 
     def read_output(self):
         while self.process.poll() is None:

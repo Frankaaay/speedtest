@@ -31,13 +31,14 @@ class Result2Display(common.Recorder):
         self.table = table
         # self.len = 0
 
-    def record(self, res: float):
+    def record(self, res:tuple[str,float]):
+        txt, speed = res
         # if self.len > 8:
         #     self.table.delete(self.table.get_children()[0])
         # else:
         #     self.len += 1
         self.table.insert("", tk.END,
-                        values=(res,))
+                        values=(common.datetime.now().strftime("%H:%M:%S"),txt,speed))
         self.table.yview_moveto(1)
 
 class StdoutRedirector:
@@ -66,6 +67,7 @@ class IperfClient:
         self.server_obj = None
         self.client_obj = None
         self.add_port_entry = None
+        self.display_only= None
 
         self.widgets = []
         self.create_widgets()
@@ -85,7 +87,7 @@ class IperfClient:
 
         no_name_frame_2 = tk.Frame(client_frame_common)
         tk.Label(no_name_frame_2, text="IP").pack(side=tk.LEFT)
-        self.client_ip = tk.StringVar(value="127.0.0.1")
+        self.client_ip = tk.StringVar(value="192.168.0.100")
         f(tk.Entry(no_name_frame_2, textvariable=self.client_ip,width=13)).pack(side=tk.LEFT)
         tk.Label(no_name_frame_2, text="端口").pack(side=tk.LEFT)
         self.client_port = tk.StringVar(value="5201")
@@ -106,11 +108,11 @@ class IperfClient:
         self.use_udp = tk.BooleanVar(value=False)
         f(tk.Checkbutton(no_name_frame_4, text="UDP", variable=self.use_udp)).pack(side=tk.LEFT)
         tk.Label(no_name_frame_4, text="带宽").pack(side=tk.LEFT)
-        self.client_bandwidth = tk.StringVar(value="250M")
+        self.client_bandwidth = tk.StringVar(value="")
         f(tk.Entry(no_name_frame_4, textvariable=self.client_bandwidth,width=8)).pack(side=tk.LEFT)
         no_name_frame_4.pack()
 
-        options = ["上行", "下载"]
+        options = ["上行", "下行"]
         self.dir_option = tk.StringVar()
         self.dir_option.set(options[0])
         dir_frame = tk.Frame(client_frame_common)
@@ -123,6 +125,8 @@ class IperfClient:
         self.repeat_count = tk.StringVar(value="1")
         tk.Label(no_name_frame_1, text="重复次数").pack(side=tk.LEFT)
         f(tk.Entry(no_name_frame_1, textvariable=self.repeat_count,width=5)).pack(side=tk.LEFT)
+        self.display_only = tk.BooleanVar(value=False)
+        f(tk.Checkbutton(no_name_frame_1, text="仅显示", variable=self.display_only)).pack(side=tk.LEFT)
         no_name_frame_1.pack()
         
         button_frame = tk.Frame(client_frame_common)
@@ -146,7 +150,7 @@ class IperfClient:
         output_text.pack(expand=True, fill=tk.X)
         self.not_stdout = StdoutRedirector(output_text)
 
-        columns = ("Mb/秒",)
+        columns = ("时间","方向","Mb/秒",)
         self.tree = ttk.Treeview(self.root, columns=columns, show="headings")
         for col in columns:
             self.tree.heading(col, text=col)
@@ -162,22 +166,25 @@ class IperfClient:
         self.not_stdout.write("正在开始\n")
         if self.use_udp.get():
             self.client_obj = iperf.ClientUdp(
-                self.client_ip.get(),
-                self.client_port.get(),
-                self.client_duration.get(),
-                self.client_num.get(),
-                self.dir_option.get() == '下载',
-                self.client_bandwidth.get(),
-                self.not_stdout
+                server_ip=self.client_ip.get(),
+                server_port=self.client_port.get(),
+                duration=self.client_duration.get(),
+                num_streams=self.client_num.get(),
+                reverse=self.dir_option.get() == '下行',
+                bandwidth=self.client_bandwidth.get(),
+                output=self.not_stdout,
+                capture_output=not self.display_only.get(),
             )
         else:
             self.client_obj = iperf.ClientTcp(
-                self.client_ip.get(),
-                self.client_port.get(),
-                self.client_duration.get(),
-                self.client_num.get(),
-                self.dir_option.get() == '下载',
-                self.not_stdout
+                server_ip=self.client_ip.get(),
+                server_port=self.client_port.get(),
+                duration=self.client_duration.get(),
+                num_streams=self.client_num.get(),
+                reverse=self.dir_option.get() == '下行',
+                bandwidth=self.client_bandwidth.get(),
+                output=self.not_stdout,
+                capture_output=not self.display_only.get(),
             )
         repeat_cnt = self.repeat_count.get()
         try:
@@ -220,7 +227,7 @@ class IperfClient:
         if selected_items:
             selected_data = []
             for item in selected_items:
-                row = self.tree.item(item)['values']
+                row = self.tree.item(item)['values'][-1:]
                 selected_data.append(row)
 
             # 将选中的数据转换为制表符分隔的字符串
