@@ -14,6 +14,7 @@ import gui_stability_recorder
 import gui_pings
 import gui_iperf_server 
 import gui_iperf_client
+import gui_reset_device
 import os
 # from ctypes import windll
 
@@ -136,7 +137,8 @@ class MainApp:
         elif category == "辅助工具":
             buttons = [("BandwidthMeter", band_pro),
                        ("Ping包", ping_exe),
-                       ("Ping三网", self.multi_pings)
+                       ("Ping三网", self.multi_pings),
+                       ("设备重启", self.restart_device),
                        ]
         elif category == "体验&网速数据统计":
             buttons = [("直播数据统计", server_live_obj.run),
@@ -192,6 +194,9 @@ class MainApp:
 
     def multi_pings(self):
         self.check_and_show_page("gui_pings")
+
+    def restart_device(self):
+        self.check_and_show_page("gui_reset_device")
 
     def ask_to_forget(self):
         response = messagebox.askquestion("遗忘网络", "您保存的Wi-Fi网络将被删除\n请确认")

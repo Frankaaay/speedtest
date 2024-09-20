@@ -42,6 +42,7 @@ class Panel_FM(Panel):
     
     def reset(self):
         at = AT(self.ip,self.timeout)
-        res = at.sr1('AT*RESET')
+        res = at.sr1('AT+RESET')
+        self.logger.write(f"[AT]RESET => {res}\n")
         return res
         

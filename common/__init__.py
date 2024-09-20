@@ -187,7 +187,7 @@ class Sequence(Thread, Producer, ):
     '''
     序列，开启线程以一定间隔产生数据并记录
     '''
-    def __init__(self, obj: Producer, interval: timedelta):
+    def __init__(self, obj: Producer, interval: timedelta=timedelta(seconds=1)):
         Thread.__init__(self)
         Producer.__init__(self)
         self.setDaemon(True)
