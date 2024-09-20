@@ -7,6 +7,7 @@ import datetime
 import bisect
 import os
 import webbrowser
+import datetime
 
 #same thing with the server_speed, pls read comments there
 def summarize(df, column):
@@ -96,6 +97,14 @@ class DataPing:
         else:
             start_time = s
             end_time = e
+
+            year = str(datetime.datetime.now().year)
+            start_time = datetime.datetime.strptime(year+"-"+start_time, '%Y-%m-%d %H:%M:%S') - datetime.timedelta(seconds=6)
+            end_time = datetime.datetime.strptime(year+"-"+end_time, '%Y-%m-%d %H:%M:%S') + datetime.timedelta(seconds=6)
+            
+            start_time = start_time.strftime('%m-%d %H:%M:%S')
+            end_time = end_time.strftime('%m-%d %H:%M:%S')
+
             index1 = self.data[self.data['time'] < start_time].index[-1]
             index2 = self.data[self.data['time'] > end_time].index[1]
             data = self.data[index1 : index2]
@@ -404,9 +413,9 @@ app.layout = html.Div([
     id = "table"),
 
     html.Div([
-        html.H4("放大ping图", style= {'fontSize': '20px'}),
+        html.H4("卡顿局部图", style= {'fontSize': '20px'}),
         dcc.Graph(id='range_graph'),  # Placeholder for your graph
-    ], style={'width': '50%', 'display': 'inline-block', 'vertical-align': 'top'}),
+    ], style={'width': '77%', 'display': 'inline-block', 'vertical-align': 'top'}),
 
     html.Div([
         html.H1("直播卡顿",
@@ -416,10 +425,10 @@ app.layout = html.Div([
             id='stuck-table',
             data=data_stuck.data.to_dict('records'),
             columns=[{"name": i, "id": i} for i in data_stuck.data.columns],
-            # filter_action='native',
+            filter_action='native',
             
         ),
-    ], style={'width': '50%', 'display': 'inline-block', 'vertical-align': 'top'})
+    ], style={'width': '23%', 'display': 'inline-block', 'vertical-align': 'top'})
 ], style={'textAlign': 'center', 'font-size': '10px', 'marginTop': '50px', 'marginBottom': '20px'})
 
 
