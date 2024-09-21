@@ -18,16 +18,31 @@ def summarize(df, column):
     return [round(mean, 2), max, low, round(std, 2)]
 
 
+empty_ping = pd.DataFrame({
+    'time': [0],
+    'ping_www': [0],
+    'ping_192': [0],
+    'rsrp': [0],
+    'rsrq': [0],
+    'sinr': [0],
+    'band': [0],
+    'pci' : [0],
+    'ber': [0],
+    'up': [0],
+    'down': [0],
+    'neighbor': [0],
+})
 
 #storing data for updating graphs
 class DataPing:
     def __init__(self, files: list[str]):
-        self.data = []  
+        self.data = [empty_ping, empty_ping] if len(files) == 0 else []  
 
-        self.files_name = files 
+        for file in files:
+            self.data.append(pd.read_csv(f'{file}/ping.csv'))  #all data
 
-        for i in range(0, len(files)):
-            self.data.append(pd.read_csv(f'{files[i]}/ping.csv'))  #all data          #all data
+        self.files_name = files if len(files) >0 else ['empty','also empty']
+
         self.display_start = 0
         self.display_range = len(self.data)
         self.raw_len = len(self.data[0])
@@ -74,7 +89,7 @@ def get_folders(path):
 
 PATH = r"./log/live"
 
-data_ping = DataPing(['empty_ping'])
+data_ping = DataPing([])
 #data_stuck = DataStuck(pd.DataFrame({'start': [], 'end': [], 'duration': []}))
 
 app = Dash(__name__, title = "ping数据对比")
@@ -137,27 +152,29 @@ app.layout = html.Div([
         style={'marginBottom': '20px'}),
     
     
-    #起点
-    html.H1(
-        "显示起点",
-        style={'marginBottom': '20px'}  # Add margin bottom for spacing
-    ),
-    dcc.Slider(
-        0, 1,
-        step=1e-6,
-        marks=None,
-        value=0,
-        id='start-from-raw',
-    ),
-
-    #范围
-    html.H1("显示范围"),
-    dcc.Slider(0, 1,
-        step=1e-6,
-        marks=None,
-        value=1,
-        id='range-raw',
-    ),
+    html.Div([
+        html.Div([
+            html.H1(
+                "显示起点",
+            ),
+            dcc.Slider(
+                0, 1,
+                step=1e-6,
+                marks=None,
+                value=0,
+                id='start-from-raw',
+            )
+        ], style={'width': '30%', 'display': 'inline-block'}),
+        html.Div([
+            html.H1("显示范围"),
+            dcc.Slider(0, 1,
+                step=1e-6,
+                marks=None,
+                value=1,
+                id='range-raw',
+            ),
+        ], style={'width': '30%', 'display': 'inline-block'}),
+    ]),
 
     html.H1(id = 'range-display'),
 
@@ -203,7 +220,7 @@ def generate_upload_fields(n_clicks, file_count):
     Input('range-raw', 'value'), 
     Input('start-from-raw', 'value'),
 
-    Input({'type': 'upload-dropdown', 'index': ALL}, 'value'),
+    State({'type': 'upload-dropdown', 'index': ALL}, 'value'),
 )
 #getting the new range for updating the graph(two bars), positional arguments, same order with call back
 def update_range(n_clicks, range_raw, start_raw, selected_folder):
