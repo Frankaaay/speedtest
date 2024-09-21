@@ -25,7 +25,7 @@ def summarize(df, column):
 #storing data for updating graphs
 class DataPing:
     def __init__(self, data: pd.DataFrame):
-        self.data = data                             #all data
+        self.data = data         #all data
         self.display_start = 0
         self.display_range = len(self.data)
         self.graph_ping = None              #the main graph
@@ -47,40 +47,39 @@ class DataPing:
 
 
         #all xy of dots on graphs
-        self.inf_indices_www = []
-        self.lag_indices_www = []
-        self.inf_values_www = []
-        self.inf_indices_192 = []
-        self.lag_indices_192 = []
-        self.inf_values_192 = []
+        self.lag_www = empty_ping
+        self.inf_www = empty_ping
+        self.lag_192 = empty_ping
+        self.inf_192 = empty_ping
+
+        self.construct_data()
 
     def construct_data(self):
         # 标记 inf 值
         # 获取所有 inf 的索引
+
         #wwws
         temp = 0
-        for row in self.data.iterrows():
-            if np.isinf(row[1]['ping_www']):
-                self.inf_indices_www.append(row[1]['time'])
-                self.inf_values_www.append(temp)
-                # self.infwww_cnt += 1
+        for index, row in self.data.iterrows():
+            if np.isinf(row['ping_www']):
+                row_new = row.copy()
+                row_new['ping_www'] = temp
+                self.inf_www = pd.concat([self.inf_www, pd.DataFrame([row_new])])
             else:
-                temp= row[1]['ping_www']
-                if row[1]["ping_www"] >= 100:
-                    self.lag_indices_www.append(row[1]['time'])
-                    # self.lagwww_cnt += 1
+                temp= row['ping_www']
+                if row["ping_www"] >= 100:
+                    self.lag_www = pd.concat([self.lag_www, pd.DataFrame([row])])
         #192s
         temp = 0
-        for row in self.data.iterrows():
-            if np.isinf(row[1]['ping_192']):
-                self.inf_indices_192.append(row[1]['time'])
-                self.inf_values_192.append(temp)
-                # self.inf192_cnt += 1
+        for index, row in self.data.iterrows():
+            if np.isinf(row['ping_192']):
+                row_new = row.copy()
+                row_new['ping_192'] = temp
+                self.inf_192 = pd.concat([self.inf_192, pd.DataFrame([row_new])])
             else:
-                temp= row[1]['ping_192']
-                if row[1]["ping_192"] >= 20:
-                    self.lag_indices_192.append(row[1]['time'])
-                    # self.lag192_cnt += 1
+                temp= row['ping_192']
+                if row["ping_192"] >= 20:
+                    self.lag_192 = pd.concat([self.lag_192, pd.DataFrame([row])])
 
     #update everytimes the state changes
     def gen_graph(self, s = "", e = ""):
@@ -92,45 +91,28 @@ class DataPing:
         if not s:
             start_time = self.data['time'][self.display_start]
             end_time = self.data['time'][self.display_start+self.display_range - 1]
-            data  = self.data[self.display_start:self.display_start+self.display_range]
         else:
             start_time = s
             end_time = e
 
-            year = str(datetime.datetime.now().year)
-            start_time = datetime.datetime.strptime(year+"-"+start_time, '%Y-%m-%d %H:%M:%S') - datetime.timedelta(seconds=6)
-            end_time = datetime.datetime.strptime(year+"-"+end_time, '%Y-%m-%d %H:%M:%S') + datetime.timedelta(seconds=6)
-            
-            start_time = start_time.strftime('%m-%d %H:%M:%S')
-            end_time = end_time.strftime('%m-%d %H:%M:%S')
-
-            index1 = self.data[self.data['time'] < start_time].index[-1]
-            index2 = self.data[self.data['time'] > end_time].index[1]
-            data = self.data[index1 : index2]
+        def time_filter(data:pd.DataFrame):
+            index = (data.index[data['time'] >= start_time]).intersection(data.index[data['time'] <= end_time])
+            return data.loc[index]
+        
+        data = time_filter(self.data)
+        inf_www = time_filter(self.inf_www)
+        inf_192 = time_filter(self.inf_192)
+        lag_www = time_filter(self.lag_www)
+        lag_192 = time_filter(self.lag_192)
+        
         
         if self.devices > 0:
             data = data[data['neighbor'] == self.devices]
-
-        # Locate the indices
-        start_www = bisect.bisect_right(self.inf_indices_www, start_time)
-        end_www = bisect.bisect_right(self.inf_indices_www, end_time)
-        self.infwww_cnt = end_www - start_www
-
-        start_192 = bisect.bisect_right(self.inf_indices_192, start_time)
-        end_192 = bisect.bisect_right(self.inf_indices_192, end_time)
-        self.inf192_cnt = end_192 - start_192
-
-        #cut the graph in the range we need
-        inf_indices_www = self.inf_indices_www[start_www : end_www]
-        inf_indices_192 = self.inf_indices_192[start_192 : end_192]
-        if self.devices > 0:
-            inf_indices_www = [i for i  in inf_indices_www if self.data[i]['neighbor'] == self.devices]
-            inf_indices_192 = [i for i  in inf_indices_192 if self.data[i]['neighbor'] == self.devices]
-        inf_values_www = self.inf_values_www[start_www : end_www]
-        inf_values_192 = self.inf_values_192[start_192 : end_192]
-
-        self.lagwww_cnt = bisect.bisect_right(self.lag_indices_www, end_time) - bisect.bisect_right(self.lag_indices_www, start_time)
-        self.lag192_cnt = bisect.bisect_right(self.lag_indices_192, end_time) - bisect.bisect_right(self.lag_indices_192, start_time)
+            inf_www = inf_www[inf_www['neighbor'] == self.devices]
+            inf_192 = inf_192[inf_192['neighbor'] == self.devices]
+            lag_www = lag_www[lag_www['neighbor'] == self.devices]
+            lag_192 = lag_192[lag_192['neighbor'] == self.devices]
+        
         
         hovertext = [f"设备数量: {row['neighbor']}<br>Band: {row['band']}<br>ber: {row['ber']}<br>PCI: {row['pci']}" for index, row in data.iterrows()]
 
@@ -200,19 +182,20 @@ class DataPing:
             hovertext = hovertext
         ))
         
+        # print(inf_www,inf_192)
 
         #drawing disconnection dots
         self.graph_ping.add_trace(go.Scatter(
-            x=inf_indices_www,
-            y=inf_values_www,
+            x=list(inf_www['time']),
+            y=list(inf_www['ping_www']),
             mode='markers',
             marker=dict(color = '#0CF2F2', size = 5),
             name='www_不可达'
         ))
 
         self.graph_ping.add_trace(go.Scatter(
-            x=inf_indices_192,
-            y=inf_values_192,
+            x=list(inf_192['time']),
+            y=list(inf_192['ping_192']),
             mode='markers',
             marker=dict(color = '#3A0CF2', size = 5),
             name='192_不可达'
@@ -296,7 +279,7 @@ def get_folders(path):
 
 PATH = r"./log/live"
 empty_ping = pd.DataFrame({
-    'time': [0],
+    'time': ['01-01 11:45:15'],
     'ping_www': [0],
     'ping_192': [0],
     'rsrp': [0],
@@ -464,6 +447,7 @@ app.layout = html.Div([
     Output('range-raw', 'value'), 
     Output('device-num', 'value'),
     Output('folders-dropdown', 'options'),
+    Output('range-button', 'n_clicks'),
     Input('select-folder-button', 'n_clicks'),
 
     State('folders-dropdown', 'value'),
@@ -475,8 +459,8 @@ def select_folder(n_clicks, selected_folder):
         data_ping = DataPing(pd.read_csv(f'{selected_folder}/ping.csv'))
         if os.path.exists(f'{selected_folder}/stuck.csv'):
             data_stuck = DataStuck(pd.read_csv(f'{selected_folder}/stuck.csv'))
-        data_ping.construct_data()
-    return 0, 0.2, 0, get_folders(PATH)
+        
+    return 0, 0.2, 0, get_folders(PATH), 1
 
 
 
@@ -633,6 +617,14 @@ def update_subgraph(active_cell, table):
     if active_cell is not None and active_cell['row'] < len(table):
         s = table[active_cell['row']]['start']
         e = table[active_cell['row']]['end']
+
+        year = str(datetime.datetime.now().year)
+        s = datetime.datetime.strptime(year+"-"+s, '%Y-%m-%d %H:%M:%S') - datetime.timedelta(seconds=10)
+        e = datetime.datetime.strptime(year+"-"+e, '%Y-%m-%d %H:%M:%S') + datetime.timedelta(seconds=10)
+        
+        s = s.strftime('%m-%d %H:%M:%S')
+        e = e.strftime('%m-%d %H:%M:%S')
+
     data_ping.gen_graph(s, e)
     return data_ping.graph_ping,data_ping.upload,data_ping.download
 
