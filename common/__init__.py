@@ -44,7 +44,7 @@ class Recorder():
     '''
     记录器，用于记录生产者产生的数据
     '''
-    def __init__(self, file: TextIOWrapper):
+    def __init__(self, file: TextIOWrapper = sys.stdout):
         super().__init__()
         self.file = file
 
@@ -58,6 +58,7 @@ class Recorder():
 
     def close(self):
         if self.file is not None:
+            self.file.flush()
             self.file.close()
             self.file = None
 
@@ -196,6 +197,7 @@ class Sequence(Thread, Producer, ):
         self.res = obj.get()
         self.stopped = False
         self.last_run = time()-self.interval.total_seconds()
+        self.daemon = True
 
     def update(self):
         super().update()
