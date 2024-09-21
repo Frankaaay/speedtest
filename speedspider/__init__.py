@@ -27,18 +27,18 @@ URLS = [
     "http://wsus.sjtu.edu.cn/speedtest/",
     # "http://speed.neu.edu.cn/", # fuck stupid web always get 502
     "http://test.ustc.edu.cn/", 
-    "http://test.nju.edu.cn/", # sometimes get Timeout
+    # "http://test.nju.edu.cn/", # sometimes get Timeout
     "http://speed.nuaa.edu.cn/",
 ]
 
 class SpeedTester(Producer):
-    def __init__(self, browser_name, headless=True, timeout=timedelta(minutes=1), urls=URLS):
+    def __init__(self, browser_name:str, headless:bool, timeout:timedelta, urls:list[str]):
         super().__init__()
         self.browser_name = browser_name
         self.headless = headless
         self.timeout = timeout.total_seconds()
-        self.urls = urls
-        self.afap = False
+        self.urls = urls if len(urls) > 0 else URLS
+        self.asap = False
 
     def update(self):
         super().update()
@@ -62,7 +62,7 @@ class SpeedTester(Producer):
                     return False
                 
             WebDriverWait(driver, self.timeout).until(afap)
-            self.afap = True
+            self.asap = True
             WebDriverWait(driver, self.timeout).until(
                 lambda driver: int(driver.execute_script("return s.getState()")) == 4)
             lag = driver.find_element(By.ID, "pingText").text
@@ -85,7 +85,7 @@ class SpeedTester(Producer):
             jit = url
             dl = ul = "nan"
         finally:
-            self.afap = True
+            self.asap = True
             threading.Thread(target=driver.quit).start()
             sleep(0.3)
 
@@ -97,7 +97,7 @@ class SpeedTester(Producer):
             self.res = SpeedTestResult(float(lag), float(jit), float(dl), float(ul))
         except ValueError:
             self.res = SpeedTestResult(lag, jit, dl, ul)
-        self.afap = False
+        self.asap = False
     
 class SpeedTester0Interval(Producer):
     '''
@@ -116,7 +116,7 @@ class SpeedTester0Interval(Producer):
 
     def update(self):
 
-        while self.handle.is_alive() and not self.obj1.afap:
+        while self.handle.is_alive() and not self.obj1.asap:
             sleep(0.1)
         sleep(1.5)
         print('[测速]光速开始第二个测速')
