@@ -18,7 +18,12 @@ class ResetDevice(Producer):
         # 创建一个面板对象
         panel = Panel_FM(self.device_ip,self.timeout,self.logger)
         # 重置面板
-        panel.reset()
+        res = panel.reset()
+        if res != 'OK':
+            self.logger.write(f"重置失败\n")
+            self.res = ("Fail",res)
+            super().update()
+            return
         start = time()
         self.logger.write(f"重置\n")
         sleep(5)
