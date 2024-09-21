@@ -107,3 +107,9 @@ class ProxySpeed(Producer):
         stop_proxy()
 
         
+class Console(Recorder):
+    def __init__(self, file: TextIOWrapper):
+        super().__init__(file)
+
+    def record(self, data: ProxyResult):
+        self.file.write(f"[网速] ⇧{data.upload}Mbps ⇩{data.download}Mbps\n")

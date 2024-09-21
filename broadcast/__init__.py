@@ -3,7 +3,8 @@ from common import *
 
 # 设定广播地址和端口
 
-CONTENT = "🥰⬆️↗️➡️↘️⬇️↙️⬅️↖️🥰".encode()
+CONTENT = '''Quod est superius est sicut quod inferius, et quod inferius est sicut quod est superius.'''.encode()
+# As above, so below
 PORT = 62126
 
 
@@ -11,9 +12,7 @@ class Broadcast(Producer):
     def __init__(self, delta:timedelta):
         super().__init__()
         self.delta = delta.total_seconds()
-        self.neighbor = {
-            'ip':time()
-        }
+        self.neighbor: dict[str, float] = {}
         self.server = None
         self.handles = [
             Thread(target=self.broadcast),
@@ -27,19 +26,26 @@ class Broadcast(Producer):
     def broadcast(self):
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+        print(f"[邻居]启动!广播!")
         while not self.stopped:
             sock.sendto(CONTENT, ('<broadcast>', PORT))
             sleep(self.delta)
+        print(f"[邻居]停止!广播!")
 
     def listen(self):
-        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
-        sock.bind(('', PORT))
         while not self.stopped:
+            sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+            try:
+                sock.bind(('', PORT))
+            except socket.error as e:
+                print(f"[邻居] bind error: {e}")
+                continue
+
             data, addr = sock.recvfrom(1024)
             if data != CONTENT:
                 continue
-            print(f"[neighbor] recv {addr[0]}{addr[1]}")
+            # print(f"[邻居] recv {addr[0]}{addr[1]}")
             self.neighbor[addr[0]] = time()
         
 

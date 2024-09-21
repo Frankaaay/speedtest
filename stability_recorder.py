@@ -6,14 +6,15 @@ import sys
 import os
 import utils
 import multi3
-
+import broadcast
 
 class PingAndState(Producer):
-    def __init__(self, ping: stable.Pings, device: panel.Panel | None, net_speed: multi3.ProxySpeed, live:live.Live):
+    def __init__(self, ping: stable.Pings, device: panel.Panel | None, net_speed: multi3.ProxySpeed, live:live.Live, neighbor: broadcast.Broadcast):
         super().__init__()
         self.ping = ping
         self.device = device
         self.net_speed = net_speed
+        self.neighbor = neighbor
         self.live = live
         self.res:tuple[datetime, dict[str, float], panel.PanelState, multi3.ProxyResult]
         self.res = ['time', 'ping', 'device', multi3.ProxyResult(0.03,3)]
@@ -23,7 +24,8 @@ class PingAndState(Producer):
         now = datetime.now()
         self.ping.update()
         self.net_speed.update()
-        res = [now, self.ping.get(),self.device.get(),'speed']
+        self.neighbor.update()
+        res = [now, self.ping.get(),self.device.get(),'speed',len(self.neighbor.get())]
 
         if self.net_speed.low_speed_since is not None and\
         self.net_speed.low_speed_since < (now - timedelta(minutes=2)).timestamp():
@@ -43,6 +45,7 @@ class PingAndState(Producer):
         self.ping.stop()
         self.device.stop()
         self.net_speed.stop()
+        self.neighbor.stop()
 
 
 class ReporterPingAndState(Recorder):
@@ -56,24 +59,27 @@ class ReporterPingAndState(Recorder):
         self.target_name.sort()
         self.file.write("time," + ','.join(self.target_name) +','+
                         ','.join(DEVICE_INFOS)+','\
-                        'up,down'+"\n")
+                        'up,down,neighbor'+"\n")
 
-    def record(self, data: tuple[datetime, dict[str, float], panel.PanelState, multi3.ProxyResult]):
-        time, pings, state,net_speed = data
+    def record(self, data: tuple[datetime, dict[str, float], panel.PanelState, multi3.ProxyResult, int]):
+        time, pings, state,net_speed, neighbor = data
         time_str = time.strftime('%m-%d %H:%M:%S')
         self.file.write(time_str+","+
             ','.join([str(pings[self.targets[t]]) for t in self.target_name])+","+
             ','.join(state.get(i) for i in DEVICE_INFOS)+','+
-            str(net_speed.upload)+','+str(net_speed.download)+"\n")
+            str(net_speed.upload)+','+str(net_speed.download)+','+str(neighbor)+"\n")
 
-class ConsolePingAndState(stable.Console):
+class ConsolePingAndState(Recorder):
     def __init__(self, file: TextIOWrapper, targets: dict[str, str]):
-        super().__init__(file,targets)
+        super().__init__(file)
+        self.pings = stable.Console(file,targets)
+        self.net_speed = multi3.Console(file)
 
-    def record(self, data: tuple[datetime, dict[str, float], panel.PanelState, multi3.ProxyResult]):
-        time, pings, state,net_speed = data
-        super().record(pings)
-        self.file.write(f"[网速] ⇧{net_speed.upload}Mbps ⇩{net_speed.download}Mbps\n")
+    def record(self, data: tuple[datetime, dict[str, float], panel.PanelState, multi3.ProxyResult, int]):
+        time, pings, state,net_speed , neighbor= data
+        self.pings.record(pings)
+        self.net_speed.record(net_speed)
+        self.file.write(f"[邻居] {neighbor}台设备正在运行\n")
 
 
 PATH = './log/live'
@@ -139,8 +145,9 @@ class Main:
         living_seq = Sequence(living_seq, interval=timedelta(seconds=0.33))
         living_seq.start()
 
+        broadcast_obj = broadcast.Broadcast(timedelta(seconds=2))
 
-        ping_device = PingAndState(stable.Pings(list(ips.values()),timedelta(seconds=0.75)), device_seq, network_speed, living)
+        ping_device = PingAndState(stable.Pings(list(ips.values()),timedelta(seconds=0.75)), device_seq, network_speed, living, broadcast_obj)
         ping_device = AutoFlush(ping_device, timedelta(minutes=5))
         if save_log:
             ping_device.add_recorder(

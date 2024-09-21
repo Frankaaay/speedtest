@@ -35,17 +35,30 @@ colors = ['#22aaff', '#ff9900', '#ff0066', '#6600ff', '#ffcc00', '#00ffcc', '#ff
 colors_rsrp = ['#2e4053','#ffe119', '#3cb44b',  '#4363d8', '#f58231', '#911eb4', '#42d4f4', '#f032e6']
 colors_sinr = ['##808b96','#154360', '#ffdfba', '#ffffba', '#baffc9', '#bae1ff',  '#ffb7ff', '#ffd9e6']
 
-
-
+empty_speed = pd.DataFrame({
+    'time': [0],
+    'lag': [0],
+    'jit': [0],
+    'download':[0],
+    'upload':[0],
+    'rsrp': [0],
+    'rsrq': [0],
+    'sinr': [0],
+    'band': [0],
+    'pci' : [0],
+    'ber': [0],
+})
 #storing data for updating graphs
 class Speed:
     def __init__(self, files: list):
-        self.data = []
+        self.data = [empty_speed] if len(files) == 0 else []
         #storing files name
-        self.files_name = files
 
-        for i in range(0, len(files)):
-            self.data.append(pd.read_csv(f'{files[i]}/speed.csv'))  #all data
+        for file in files:
+            self.data.append(pd.read_csv(f'{file}/speed.csv'))  #all data
+
+        self.files_name = files if len(files) >0 else ['empty']
+
         self.display_start = 0
         self.display_range = len(self.data)
 
@@ -196,7 +209,7 @@ PATH = r".\log\speed"
 
 app = Dash(__name__, title = "测速数据整理")
 
-speed = Speed(['empty_speed'])
+speed = Speed([])
 
 # Layout of the app
 app.layout = html.Div([
@@ -253,28 +266,29 @@ app.layout = html.Div([
         id='output-folder-path', 
         style={'marginBottom': '20px'}),
     
-    
-    #起点
-    html.H1(
-        "显示起点",
-        style={'marginBottom': '20px'}  # Add margin bottom for spacing
-    ),
-    dcc.Slider(
-        0, 1,
-        step=1e-6,
-        marks=None,
-        value=0,
-        id='start-from-raw',
-    ),
-
-    #范围
-    html.H1("显示范围"),
-    dcc.Slider(0, 1,
-        step=1e-6,
-        marks=None,
-        value=1,
-        id='range-raw',
-    ),
+    html.Div([
+        html.Div([
+            html.H1(
+                "显示起点",
+            ),
+            dcc.Slider(
+                0, 1,
+                step=1e-6,
+                marks=None,
+                value=0,
+                id='start-from-raw',
+            )
+        ], style={'width': '30%', 'display': 'inline-block'}),
+        html.Div([
+            html.H1("显示范围"),
+            dcc.Slider(0, 1,
+                step=1e-6,
+                marks=None,
+                value=1,
+                id='range-raw',
+            ),
+        ], style={'width': '30%', 'display': 'inline-block'}),
+    ]),
     
 
     # Container for dynamically generated tables
@@ -329,7 +343,7 @@ def generate_upload_fields(n_clicks, file_count):
     Input('range-raw', 'value'), 
     Input('start-from-raw', 'value'),
 
-    Input({'type': 'upload-dropdown', 'index': ALL}, 'value'),
+    State({'type': 'upload-dropdown', 'index': ALL}, 'value'),
 )
 
 

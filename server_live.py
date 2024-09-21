@@ -29,6 +29,7 @@ class DataPing:
         self.display_start = 0
         self.display_range = len(self.data)
         self.graph_ping = None              #the main graph
+        self.devices = 0                    #how many devices
 
         self.upload = None
         self.download = None
@@ -81,9 +82,7 @@ class DataPing:
                     self.lag_indices_192.append(row[1]['time'])
                     # self.lag192_cnt += 1
 
-    #update everytimes the state changes, works for both graph, 
-    # 1 is the main graph, 2 is the sub graph
-
+    #update everytimes the state changes
     def gen_graph(self, s = "", e = ""):
         self.graph_ping = go.Figure()              #the main graph
 
@@ -108,6 +107,9 @@ class DataPing:
             index1 = self.data[self.data['time'] < start_time].index[-1]
             index2 = self.data[self.data['time'] > end_time].index[1]
             data = self.data[index1 : index2]
+        
+        if self.devices > 0:
+            data = data[data['neighbor'] == self.devices]
 
         # Locate the indices
         start_www = bisect.bisect_right(self.inf_indices_www, start_time)
@@ -120,15 +122,17 @@ class DataPing:
 
         #cut the graph in the range we need
         inf_indices_www = self.inf_indices_www[start_www : end_www]
-        inf_values_www = self.inf_values_www[start_www : end_www]
         inf_indices_192 = self.inf_indices_192[start_192 : end_192]
+        if self.devices > 0:
+            inf_indices_www = [i for i  in inf_indices_www if self.data[i]['neighbor'] == self.devices]
+            inf_indices_192 = [i for i  in inf_indices_192 if self.data[i]['neighbor'] == self.devices]
+        inf_values_www = self.inf_values_www[start_www : end_www]
         inf_values_192 = self.inf_values_192[start_192 : end_192]
 
         self.lagwww_cnt = bisect.bisect_right(self.lag_indices_www, end_time) - bisect.bisect_right(self.lag_indices_www, start_time)
         self.lag192_cnt = bisect.bisect_right(self.lag_indices_192, end_time) - bisect.bisect_right(self.lag_indices_192, start_time)
         
-        hovertext = [f"Band: {row['band']}<br>ber: {row['ber']}<br>PCI: {row['pci']}" 
-        for index, row in data.iterrows()]
+        hovertext = [f"设备数量: {row['neighbor']}<br>Band: {row['band']}<br>ber: {row['ber']}<br>PCI: {row['pci']}" for index, row in data.iterrows()]
 
         #drawing lines
         self.graph_ping.add_trace(go.Scatter(
@@ -195,6 +199,7 @@ class DataPing:
             marker=dict(color = '#0C68F2'),
             hovertext = hovertext
         ))
+        
 
         #drawing disconnection dots
         self.graph_ping.add_trace(go.Scatter(
@@ -266,11 +271,6 @@ class DataPing:
         self.stats192 = summarize(data, "ping_192")
         self.statswww = summarize(data, "ping_www")
 
-        
-
-
-
-
 class DataStuck:
     def __init__(self, data: pd.DataFrame):
         self.data = data 
@@ -295,16 +295,21 @@ def get_folders(path):
 
 
 PATH = r"./log/live"
-empty_ping = {
+empty_ping = pd.DataFrame({
     'time': [0],
     'ping_www': [0],
     'ping_192': [0],
     'rsrp': [0],
+    'rsrq': [0],
     'sinr': [0],
     'band': [0],
     'pci' : [0],
-    }
-data_ping = DataPing(pd.DataFrame(empty_ping))
+    'ber': [0],
+    'up': [0],
+    'down': [0],
+    'neighbor': [0],
+})
+data_ping = DataPing(empty_ping)
 data_stuck = DataStuck(pd.DataFrame({'start': [], 'end': [], 'duration': []}))
 
 app = Dash(__name__, title = "ping数据整理")
@@ -349,7 +354,26 @@ app.layout = html.Div([
                 id='range-raw',
             ),
         ], style={'width': '30%', 'display': 'inline-block'}),
+        html.Div([
+            html.H1("筛选同时测试设备数量"),
+            dcc.Input(
+            id='device-num', 
+            type='number', 
+            min=0, 
+            value=0, 
+        ),
+        ], style={'width': '20%', 'display': 'inline-block'}),
     ]),
+    html.Button(
+        'Confirm', 
+        id='range-button', 
+        n_clicks=0, 
+        style={
+            'fontSize': '20px', 
+            'padding': '10px 20px',  # Increase padding for a bigger button
+            'marginBottom': '20px'  # Add margin bottom for spacing
+        }
+    ),
     
 
     html.H1(id='range-display'),
@@ -414,7 +438,9 @@ app.layout = html.Div([
 
     html.Div([
         html.H4("卡顿局部图", style= {'fontSize': '20px'}),
-        dcc.Graph(id='range_graph'),  # Placeholder for your graph
+        dcc.Graph(id='sub-graph-pings'),  # Placeholder for your graph
+        dcc.Graph(id='sub-graph-ups'),  # Placeholder for your graph
+        dcc.Graph(id='sub-graph-downs'),  # Placeholder for your graph
     ], style={'width': '77%', 'display': 'inline-block', 'vertical-align': 'top'}),
 
     html.Div([
@@ -436,6 +462,7 @@ app.layout = html.Div([
 @app.callback(
     Output('start-from-raw', 'value'),
     Output('range-raw', 'value'), 
+    Output('device-num', 'value'),
     Output('folders-dropdown', 'options'),
     Input('select-folder-button', 'n_clicks'),
 
@@ -449,7 +476,7 @@ def select_folder(n_clicks, selected_folder):
         if os.path.exists(f'{selected_folder}/stuck.csv'):
             data_stuck = DataStuck(pd.read_csv(f'{selected_folder}/stuck.csv'))
         data_ping.construct_data()
-    return 0, 0.2, get_folders(PATH)
+    return 0, 0.2, 0, get_folders(PATH)
 
 
 
@@ -464,25 +491,22 @@ def select_folder(n_clicks, selected_folder):
     Output("wwwc", "children"),
     Output('table', 'children'),
 
-    Input('range-raw', 'value'), 
-    Input('start-from-raw', 'value'),
+    Input('range-button', 'n_clicks'),
 
+    State('range-raw', 'value'), 
+    State('start-from-raw', 'value'),
+    State('device-num', 'value'),
     State('visibility-store', 'data'),
 
     prevent_initial_call=True,
 )
 #getting the new range for updating the graph(two bars), positional arguments, same order with call back
-def update_range(range_raw, start_raw, visibility_data):
+def update_range(n_clicks, range_raw, start_raw, device_num, visibility_data):
     global data_stuck, data_ping
 
-    if range_raw is not None:
-        if start_raw is None:
-            start_raw = data_ping.display_start / data_ping.raw_len
-        # 指数缩放
-        data_ping.display_range = max(1, math.ceil(range_raw**2 * data_ping.raw_len))   
-    
-    if start_raw is not None:
-        data_ping.display_start = math.ceil(start_raw * (data_ping.raw_len - data_ping.display_range))
+    data_ping.display_range = max(1, math.ceil(range_raw**2 * data_ping.raw_len))   
+    data_ping.display_start = math.ceil(start_raw * (data_ping.raw_len - data_ping.display_range))
+    data_ping.devices = device_num
 
     #parameter: mode(which graph)
     data_ping.gen_graph()
@@ -506,6 +530,8 @@ def update_range(range_raw, start_raw, visibility_data):
             trace['visible'] = visibility_data.get('rsrp', True)
         elif trace['name'] == 'rsrq':
             trace['visible'] = visibility_data.get('rsrq', True)
+        elif trace['name'] == 'ber':
+            trace['visible'] = visibility_data.get('ber', True)
         
 
     start_time = data_ping.data['time'][data_ping.display_start]
@@ -595,7 +621,9 @@ def update_visibility(restyleData, figure, visibility_data):
 
 #second graph's callback
 @app.callback(
-    Output("range_graph", "figure"),
+    Output("sub-graph-pings", "figure"),
+    Output('sub-graph-ups', 'figure'),
+    Output('sub-graph-downs', 'figure'),
     Input('stuck-table', 'active_cell'),
     State('stuck-table', 'derived_viewport_data')
 )
@@ -606,7 +634,7 @@ def update_subgraph(active_cell, table):
         s = table[active_cell['row']]['start']
         e = table[active_cell['row']]['end']
     data_ping.gen_graph(s, e)
-    return data_ping.graph_ping
+    return data_ping.graph_ping,data_ping.upload,data_ping.download
 
 
 # Function to open the browser automatically
