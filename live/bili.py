@@ -5,10 +5,10 @@ from selenium.common import exceptions as SEexceptions
 
 
 class BiliLive(Live):
-    def __init__(self, browser_name, room_id=None, interval=timedelta(seconds=0.1)):
+    def __init__(self, browser_name, room_id=None, interval=timedelta(seconds=0.1), proxy=None):
         if room_id is None:
             room_id = '31539256'
-        super().__init__(browser_name, 'https://live.bilibili.com/', room_id, interval)
+        super().__init__(browser_name, 'https://live.bilibili.com/', room_id=room_id, interval=interval, proxy=proxy)
 
     def find_available(self):
         i = random.randint(2, 5)

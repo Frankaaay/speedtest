@@ -22,17 +22,18 @@ class LiveState:
 
 class Live(Producer):
     # 初始化函数，设置直播的基本参数
-    def __init__(self, browser_name, base_url, room_id=None, interval=timedelta(seconds=0.1),disable_pic=True):
+    def __init__(self, browser_name, base_url, room_id=None, interval=timedelta(seconds=0.1), disable_pic=True, proxy=None):
         # 打印启动信息
         print('[直播]启动！',base_url)
         # 调用父类的初始化函数
         super().__init__()
+        self.create_web_driver = lambda :utils.web_driver(browser_name, headless=False, proxy=proxy, disable_pic=disable_pic)
         # 设置直播的基本参数
         self.base_url = base_url
         self.driver_browser_name = browser_name
         self.driver_disable_pic = disable_pic
         # 创建浏览器驱动
-        self.driver = utils.web_driver(browser_name, proxy_enable=True, disable_pic=disable_pic)
+        self.driver = self.create_web_driver()
         # 设置直播状态和错误信息
         self.res: tuple[LiveState, str | None] = (LiveState.Error, "initializing")
         # 设置直播的时间间隔
@@ -68,7 +69,7 @@ class Live(Producer):
             except:
                 pass
             # 重新打开浏览器
-            self.driver = utils.web_driver(browser_name=self.driver_browser_name, proxy_enable=True, disable_pic=self.driver_disable_pic)
+            self.driver = self.create_web_driver()
             self.driver.get(self.base_url)
 
         # 获取当前页面的房间ID

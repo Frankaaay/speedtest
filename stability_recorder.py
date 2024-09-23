@@ -1,3 +1,4 @@
+import random
 from common import *
 import panel
 import stable
@@ -84,22 +85,25 @@ class ConsolePingAndState(Recorder):
 
 PATH = './log/live'
 
-def gen_live(browser_name:str, platform: str, room_id: str | None = None,) -> live.Live:
+def gen_live(browser_name:str, platform:str, room_id:str|None, proxy_id:int|None) -> live.Live:
     if len(room_id) == 0:
         room_id = None
-
+    if proxy_id is not None:
+        proxy = f"127.0.0.1:{proxy_id}"
+    else:
+        proxy = None
     if platform != 'OFF':
         if platform == 'B站':
-            living = live.BiliLive(browser_name,room_id)
+            living = live.BiliLive(browser_name, room_id, proxy=proxy)
         elif platform == '抖音':
-            living = live.DouyinLive(browser_name,room_id)
+            living = live.DouyinLive(browser_name, room_id, proxy=proxy)
         elif platform == '西瓜':
-            living = live.Xigua(browser_name,room_id)
+            living = live.Xigua(browser_name, room_id, proxy=proxy)
         else:
-            living = live.BiliLive(browser_name,room_id)
+            living = live.BiliLive(browser_name, room_id, proxy=proxy)
         living.set_ttl(timedelta(minutes=1))
     else:
-        living = live.EmptyLive(browser_name,)
+        living = live.EmptyLive(browser_name, proxy=proxy)
     return living
 
 def gen_device(record_device: bool,device_ip: str, stdout) -> panel.Panel:
@@ -134,9 +138,10 @@ class Main:
         device_seq = SequenceFullSecond(device, timedelta(seconds=1))
         device_seq.start()
 
-    
-        network_speed = multi3.ProxySpeed(utils.proxy_socket,utils.which_is_my_ip())
-        living = gen_live(browser_name, platform, room_id)
+        proxy_id = random.randint(2000,20000)
+
+        network_speed = multi3.ProxySpeed(utils.which_is_my_ip(),proxy_id)
+        living = gen_live(browser_name, platform, room_id, proxy_id)
         if save_log:
             living.add_recorder(live.Reporter(
                 open(f"{PATH}/{now}#{folder_name}/stuck.csv", 'w', encoding='utf-8-sig'), interval=5, threshold=1))

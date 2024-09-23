@@ -44,7 +44,7 @@ class SpeedTester(Producer):
         super().update()
         url = random.choice(self.urls)
         # 为了减少故障率，每次都重新打开一个浏览器
-        driver = web_driver(browser_name=self.browser_name, headless=self.headless,proxy_enable=False)
+        driver = web_driver(browser_name=self.browser_name, headless=self.headless, disable_pic=True)
         driver.implicitly_wait(5)
         driver.get(url)
         try:

@@ -6,10 +6,9 @@ from datetime import datetime, timedelta
 from selenium import webdriver
 
 browser_name = 'Edge'
-proxy_socket = '127.0.0.1:6210'
 
-def web_driver(browser_name=browser_name, headless: bool = False, proxy_enable = False, disable_pic=False):
-    print(f"[浏览器] Creating {browser_name=}, {headless=}, {proxy_enable=}, {disable_pic=}")
+def web_driver(browser_name=browser_name, headless:bool=False, proxy:None|str=None, disable_pic=False):
+    print(f"[浏览器] Creating {browser_name=}, {headless=}, {proxy=}, {disable_pic=}")
     if browser_name == "Edge":
         options = webdriver.EdgeOptions()
         if headless:
@@ -21,8 +20,8 @@ def web_driver(browser_name=browser_name, headless: bool = False, proxy_enable =
                 'profile.managed_default_content_settings.popups':2,
             }
             options.add_experimental_option("prefs", prefs)
-        if proxy_enable:
-            options.add_argument(f'--proxy-server={proxy_socket}')
+        if proxy is not None:
+            options.add_argument(f'--proxy-server={proxy}')
         options.add_argument("--log-level=3")
         return webdriver.Edge(options=options)
     
@@ -37,8 +36,8 @@ def web_driver(browser_name=browser_name, headless: bool = False, proxy_enable =
                 'profile.managed_default_content_settings.popups':2,
             }
             options.add_experimental_option("prefs", prefs)
-        if proxy_enable:
-            options.add_argument(f'--proxy-server={proxy_socket}')
+        if proxy:
+            options.add_argument(f'--proxy-server={proxy}')
         options.add_argument("--log-level=3")
         return webdriver.Chrome(options=options)
     
@@ -51,10 +50,10 @@ def web_driver(browser_name=browser_name, headless: bool = False, proxy_enable =
             options.set_preference('permissions.default.image', 2)
             options.set_preference('dom.ipc.plugins.enabled.libflashplayer.so', 'false')
         options.log.level = 'fatal'
-        if proxy_enable:
+        if proxy:
             options.set_preference('network.proxy.type', 1)
-            options.set_preference('network.proxy.http', proxy_socket.split(':')[0])
-            options.set_preference('network.proxy.http_port', int(proxy_socket.split(':')[1]))
+            options.set_preference('network.proxy.http', proxy.split(':')[0])
+            options.set_preference('network.proxy.http_port', int(proxy.split(':')[1]))
         return webdriver.Firefox(options=options)
 
     else:

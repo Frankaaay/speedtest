@@ -4,13 +4,11 @@ import toml
 import json
 from common import *
 
-LOOK_UP_PORT = 7878
-
-def set_config(proxy_socket, device_ip):
+def set_config(device_ip, id):
     cfg = {
         'tui': True ,
         'ipv6_first': False,
-        'lookup' : f"127.0.0.1:{LOOK_UP_PORT}",
+        'lookup' : f"127.0.0.1:{id+1}",
         'timeout' :{
             'connect' : 5000,
             'retry' :10000,
@@ -18,23 +16,23 @@ def set_config(proxy_socket, device_ip):
         },
         'routing' : [
             {
-                'id': 0,
-                'host': [proxy_socket],
+                'id': id,
+                'host': [f"127.0.0.1:{id}"],
                 'pool': [device_ip],
             }
         ]
     }
     toml.dump(cfg, open('multi3.toml', 'w'))
 
-def get_sciatic():
+def get_sciatic(id):
     stream = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     try:
-        stream.connect(('127.0.0.1', LOOK_UP_PORT))
+        stream.connect(('127.0.0.1', id+1))
     except:
         print("[代理]无法连接到multi3!!")
         start_proxy()
         return None
-    stream.send(b'0')
+    stream.send(str(id).encode())
     res = stream.recv(128).decode('utf-8')
     return json.loads(res)
 
@@ -65,16 +63,17 @@ class ProxyResult:
         self.download = download
 
 class ProxySpeed(Producer):
-    def __init__(self, proxy_socket, device_ip):
+    def __init__(self,device_ip,id):
         super().__init__()
-        set_config(proxy_socket, device_ip)
+        self.id = id
+        set_config(device_ip,self.id)
         start_proxy()
         self.previous_time = time() -  1
         self.previous = {'ul':0,'dl':0}
         self.low_speed_since = None
 
     def update(self):
-        res = get_sciatic()
+        res = get_sciatic(self.id)
         # 获取当前的上行和下行流量
         if res is None:
             return

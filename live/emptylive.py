@@ -5,8 +5,8 @@ from selenium.common import exceptions as SEexceptions
 
 
 class EmptyLive(Live):
-    def __init__(self, browser_name, room_id=None, interval=timedelta(seconds=0.1)):
-        super().__init__(browser_name, 'http://localhost',room_id, interval,disable_pic=False)
+    def __init__(self, browser_name, room_id=None, interval=timedelta(seconds=0.1), proxy=None):
+        super().__init__(browser_name, 'http://localhost',room_id=room_id, interval=interval, disable_pic=False, proxy=proxy)
         self.res = None
         self.set_default((LiveState.Normal, 'OFF'))
 
