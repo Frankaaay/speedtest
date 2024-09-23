@@ -137,9 +137,16 @@ def sanitize_filename(filename) -> str:
 
 @time_it
 def find_free_port() -> int:
-    return random.randint(2000, 40000)
-    # with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-    #     s.bind(('', 0))
-    #     res = s.getsockname()[1]
-    #     print(f"[网络]可用端口：{res}")
-    #     return res
+    def port_occupied(address, port):
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        result = sock.connect_ex((address, port))
+        sock.close()
+        return result == 0
+    
+    res =  random.randint(2000, 40000)
+    while port_occupied('0.0.0.0', res):
+        res = random.randint(2000, 40000)
+
+    print(f"[IP]可用端口：{res}")
+
+    return res
