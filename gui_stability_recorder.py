@@ -1,7 +1,7 @@
 import tkinter as tk
 from tkinter import ttk
 import utils
-import stability_recorder
+import recorder_live
 import time
 
 IS_RUNNING: bool = False
@@ -114,7 +114,7 @@ class LiveUI:
             radio_button.pack(side="left")
         browser_frame.pack()
 
-        self.obj: stability_recorder.Main|None = None
+        self.obj: recorder_live.Main|None = None
 
         # 开始和停止按钮
         button_frame = ttk.Frame(self.root)
@@ -156,7 +156,7 @@ class LiveUI:
             total_seconds = h * 3600 + m * 60 + s
         except:
             total_seconds = 0
-        self.obj = stability_recorder.Main(
+        self.obj = recorder_live.Main(
                                     self.browser_option.get(),
                                     self.record_device.get(),
                                     self.device_ip.get(),

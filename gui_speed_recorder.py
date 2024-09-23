@@ -5,7 +5,7 @@ import common
 from datetime import timedelta
 import utils
 import panel
-import speed_recorder
+import recorder_speed
 
 IS_RUNNING: bool = False
 
@@ -217,7 +217,7 @@ class SpeedUI:
         utils.Browser_name = self.browser_option.get()
 
         delta = timedelta(minutes=max(0,interval), microseconds=1)
-        self.obj = speed_recorder.Main(
+        self.obj = recorder_speed.Main(
             self.browser_option.get(),
             self.url_listbox.get(0, tk.END),
             self.record_device.get(), self.device_ip.get(),
