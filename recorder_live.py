@@ -1,4 +1,3 @@
-import random
 from common import *
 import panel
 import stable
@@ -138,9 +137,9 @@ class Main:
         device_seq = SequenceFullSecond(device, timedelta(seconds=1))
         device_seq.start()
 
-        proxy_id = random.randint(2000,20000)
+        proxy_id = utils.find_free_port()
 
-        network_speed = multi3.ProxySpeed(utils.which_is_my_ip(),proxy_id)
+        network_speed = multi3.ProxySpeed(utils.which_is_my_ip(device_ip),proxy_id)
         living = gen_live(browser_name, platform, room_id, proxy_id)
         if save_log:
             living.add_recorder(live.Reporter(

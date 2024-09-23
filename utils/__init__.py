@@ -4,10 +4,20 @@ import re
 import time
 from datetime import datetime, timedelta
 from selenium import webdriver
+import socket
+import random
 
-browser_name = 'Edge'
 
-def web_driver(browser_name=browser_name, headless:bool=False, proxy:None|str=None, disable_pic=False):
+def time_it(func):
+    def wrapper(*args, **kwargs):
+        start = time.time()
+        res = func(*args, **kwargs)
+        end = time.time()
+        print(f"[耗时] {func.__name__} 耗时: {end - start:.2f}s")
+        return res
+    return wrapper
+
+def web_driver(browser_name='Edge', headless:bool=False, proxy:None|str=None, disable_pic=False):
     print(f"[浏览器] Creating {browser_name=}, {headless=}, {proxy=}, {disable_pic=}")
     if browser_name == "Edge":
         options = webdriver.EdgeOptions()
@@ -72,12 +82,12 @@ def wait_full_second(delta=1, now=time.time()):
     time.sleep(time_to_wait)
 
 
-def which_is_device_ip():
+@time_it
+def which_is_device_ip() -> str:
     hostname = socket.gethostname()
     ip_addresses = socket.getaddrinfo(hostname, None)
     ip_addresses = [ip[4][0] for ip in ip_addresses]
-    ip_addresses = [ip for ip in ip_addresses if ip.startswith(
-        '192.') and not ip.endswith('.1')]
+    ip_addresses = [ip for ip in ip_addresses if ip.startswith('192.') and not ip.endswith('.1')]
     # 替换 .1
     ip_addresses = [re.sub(r'\.\d+$', '.1', ip) for ip in ip_addresses]
     if len(ip_addresses) > 0:
@@ -87,19 +97,14 @@ def which_is_device_ip():
     else: 
         return 'Not Detected'
     
-def which_is_my_ip():
-    hostname = socket.gethostname()
-    ip_addresses = socket.getaddrinfo(hostname, None)
-    ip_addresses = [ip[4][0] for ip in ip_addresses]
-    ip_addresses = [ip for ip in ip_addresses if ip.startswith('192.') and not ip.endswith('.1')]
-    # 替换 .1
-    # ip_addresses = [re.sub(r'\.\d+$', '.1', ip) for ip in ip_addresses]
-    if len(ip_addresses) > 0:
-        ip = '.'.join(map(str,min(list(map(lambda ip:list(map(int,ip.split('.'))),ip_addresses)))))
-        print("[IP]", ip_addresses, "->", ip)
+@time_it
+def which_is_my_ip(device_ip=None) -> str:
+    # UDP连接到设备，返回本地ip
+    with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
+        s.connect((device_ip, 80))
+        ip = s.getsockname()[0]
+        print("[IP]", device_ip, "->", ip)
         return ip
-    else: 
-        return '0.0.0.0'
 
 
 class ThreadWithReturn(threading.Thread):
@@ -120,7 +125,7 @@ class ThreadWithReturn(threading.Thread):
         super().join(timeout)
         return self._return
 
-def sanitize_filename(filename):
+def sanitize_filename(filename) -> str:
     # 替换非法字符为下划线
     sanitized = re.sub(r'[<>:"/\\|?*]', '_', filename)
     # 去除前后空格
@@ -129,3 +134,12 @@ def sanitize_filename(filename):
     if not sanitized:
         sanitized = ''
     return sanitized
+
+@time_it
+def find_free_port() -> int:
+    return random.randint(2000, 40000)
+    # with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+    #     s.bind(('', 0))
+    #     res = s.getsockname()[1]
+    #     print(f"[网络]可用端口：{res}")
+    #     return res
