@@ -79,7 +79,7 @@ class ConsolePingAndState(Recorder):
         time, pings, state,net_speed , neighbor= data
         self.pings.record(pings)
         self.net_speed.record(net_speed)
-        self.file.write(f"[邻居] {neighbor}台设备正在运行\n")
+        self.file.write(f"[组播] {neighbor}台设备正在运行\n")
 
 
 PATH = './log/live'
