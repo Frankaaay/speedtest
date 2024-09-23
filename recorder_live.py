@@ -146,7 +146,7 @@ class Main:
                 open(f"{PATH}/{now}#{folder_name}/stuck.csv", 'w', encoding='utf-8-sig'), interval=5, threshold=1))
         living.add_recorder(live.Console(stdout))
         living_seq = AutoFlush(living, timedelta(minutes=5))
-        living_seq = Sequence(living_seq, interval=timedelta(seconds=0.33))
+        living_seq = Sequence(living_seq, interval=timedelta(seconds=0.3))
         living_seq.start()
 
         broadcast_obj = broadcast.Broadcast(timedelta(seconds=2))

@@ -10,7 +10,7 @@ from PIL import Image, ImageTk
 import subprocess
 # import gui_iperf3
 import gui_speed_recorder
-import gui_stability_recorder
+import gui_live_recorder
 import gui_pings
 import gui_iperf_server 
 import gui_iperf_client
@@ -59,7 +59,7 @@ class MainApp:
         self.content_frame.pack(side=tk.RIGHT, fill=tk.BOTH,expand=True)
 
         self.buttons = {
-            '网络体验稳定性': 'gui_stability_recorder',
+            '网络体验稳定性': 'gui_live_recorder',
             '网络速率稳定性': 'gui_speed_recorder',
         }
         button_font = tkFont.Font(family="Comic Sans MS", size=13, weight="bold")

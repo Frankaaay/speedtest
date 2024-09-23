@@ -28,12 +28,12 @@ class Broadcast(Producer):
 
     def broadcast(self):
         with socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP) as s:
-            ttl = struct.pack('b', 1)
+            ttl = struct.pack('b', 5)
             s.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, ttl)
             print(f"[组播]启动!")
             while not self.stopped:
                 s.sendto(CONTENT, (MULTICAST_GROUP, PORT))
-                sleep(self.delta)
+                sleep(self.delta / 2)
         print(f"[组播]停止!")
 
     def listen(self):
@@ -45,13 +45,13 @@ class Broadcast(Producer):
             while not self.stopped:
                 data, addr = s.recvfrom(1024)
                 if data == CONTENT:
-                    print(f"recv from {addr}")
+                    # print(f"recv from {addr}")
                     self.neighbor[addr] = time()
 
 
     def update(self):
         now = time()
-        self.res = [ip for (ip, timestamp) in self.neighbor.items() if now - timestamp < self.delta]
+        self.res = [ip for (ip, timestamp) in self.neighbor.items() if now - timestamp < self.delta * 2]
         super().update()
 
 
