@@ -201,6 +201,7 @@ class Sequence(Thread, Producer, ):
 
     def update(self):
         super().update()
+        assert self.is_alive(), 'Producer stop before Sequence'
         self.res = self.obj.get()
 
     def run(self):

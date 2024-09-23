@@ -33,8 +33,12 @@ def get_sciatic(id):
         start_proxy()
         return None
     stream.send(str(id).encode())
-    res = stream.recv(128).decode('utf-8')
-    return json.loads(res)
+    try:
+        res =  json.loads(stream.recv(128).decode('utf-8'))
+    except Exception as e:
+        print(f"[代理]无法获取流量: {e}")
+        return {'ul':0,'dl':0}
+    return res
 
 
 
