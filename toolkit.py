@@ -9,9 +9,6 @@ from PIL import Image, ImageTk
 import subprocess
 import os
 
-# import modules and not use it
-# Since we use exec 🥰🥰
-# 统一调用模块 main，通过 IS_RUNNING 判断是否在运行
 import gui_speed_recorder  # noqa: F401
 import gui_live_recorder  # noqa: F401
 import gui_pings  # noqa: F401
@@ -66,8 +63,8 @@ class MainApp:
         self.content_frame.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True)
 
         self.buttons = {
-            "网络体验稳定性": "gui_live_recorder",
-            "网络速率稳定性": "gui_speed_recorder",
+            "网络体验稳定性": gui_live_recorder,
+            "网络速率稳定性": gui_speed_recorder,
         }
         button_font = tkFont.Font(family="Comic Sans MS", size=13, weight="bold")
 
@@ -217,23 +214,20 @@ class MainApp:
             )
             btn.pack(pady=10, fill=tk.X)
 
-    # pop out warning page if the current page is still running.
-    def check_and_show_page(self, module_name):
+    def check_and_show_page(self, m):
+        """
+        pop out warning page if the current page is still running.
+        show GUI on the right side when select function
+        """
         if self.current_module and self.current_module.IS_RUNNING:
             messagebox.showwarning("任在运行", "请先结束当前任务")
             return  # After showing the warning, return and do not switch the page
-        self.show_page(module_name)
-        self.hide_submenu()
-
-    # show GUI on the right side when select function
-    def show_page(self, module_name):
         for widget in self.content_frame.winfo_children():
             widget.destroy()
 
-        # module = importlib.import_module(module_name)
-        # self.current_module = module  # Track the currently running module
-        exec(f"{module_name}.main(self.content_frame)")
-        # 🤓👆
+        self.current_module = m
+        self.current_module.main(self.content_frame)
+        self.hide_submenu()
 
     def run_and_hide(self, func):
         func()
@@ -250,16 +244,16 @@ class MainApp:
         self.image_label = tk.Label(self.sidebar, image=self.image, bg="white")
 
     def iperf_server(self):
-        self.check_and_show_page("gui_iperf_server")
+        self.check_and_show_page(gui_iperf_server)
 
     def iperf_client(self):
-        self.check_and_show_page("gui_iperf_client")
+        self.check_and_show_page(gui_iperf_client)
 
     def multi_pings(self):
-        self.check_and_show_page("gui_pings")
+        self.check_and_show_page(gui_pings)
 
     def restart_device(self):
-        self.check_and_show_page("gui_reset_device")
+        self.check_and_show_page(gui_reset_device)
 
     def ask_to_forget(self):
         response = messagebox.askquestion(

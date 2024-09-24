@@ -4,7 +4,6 @@ from common import (
     Sequence,
     SequenceFullSecond,
     AutoFlush,
-    TextIOWrapper,
     datetime,
     timedelta,
     DEVICE_INFOS,
@@ -78,7 +77,7 @@ class PingAndState(Producer):
 
 
 class ReporterPingAndState(Recorder):
-    def __init__(self, file: TextIOWrapper, targets: dict[str, str]):
+    def __init__(self, file, targets: dict[str, str]):
         super().__init__(file)
         # targets = {
         #     'ip_192':'192.168.0.1'
@@ -116,7 +115,7 @@ class ReporterPingAndState(Recorder):
 
 
 class ConsolePingAndState(Recorder):
-    def __init__(self, file: TextIOWrapper, targets: dict[str, str]):
+    def __init__(self, file, targets: dict[str, str]):
         super().__init__(file)
         self.pings = stable.Console(file, targets)
         self.net_speed = multi3.Console(file)

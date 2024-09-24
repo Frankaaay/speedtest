@@ -1,5 +1,5 @@
 import ping3
-from common import timedelta, Producer, Thread, Recorder, TextIOWrapper
+from common import timedelta, Producer, Thread, Recorder
 from utils import ThreadWithReturn
 
 
@@ -53,7 +53,7 @@ class Pings(Producer):
 
 
 class Console(Recorder):
-    def __init__(self, file: TextIOWrapper, targets: dict[str, str]):
+    def __init__(self, file, targets: dict[str, str]):
         super().__init__(file)
         self.targets = targets
         self.target_name = list(targets.keys())
