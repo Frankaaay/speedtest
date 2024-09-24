@@ -30,7 +30,6 @@ def get_sciatic(id):
         stream.connect(('127.0.0.1', id+1))
     except:
         print("[代理]无法连接到multi3!!")
-        start_proxy()
         return None
     stream.send(str(id).encode())
     try:
@@ -46,9 +45,15 @@ def start_proxy():
     print("[代理]启动!multi3!")
     os.system("start multi3.exe")
 
-def stop_proxy():
+def stop_proxy(id):
     print("[代理]停止!multi3!")
-    os.system("taskkill /f /im multi3.exe")
+    stream = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    try:
+        stream.connect(('127.0.0.1', id+1))
+    except:
+        print("[代理]无法连接到multi3!!")
+        os.system("taskkill /f /im multi3.exe")
+    stream.send("KILL".encode())
 
 def is_running():
     return get_sciatic() is not None    
@@ -69,8 +74,9 @@ class ProxyResult:
 class ProxySpeed(Producer):
     def __init__(self,device_ip,id):
         super().__init__()
+        self.device_ip = device_ip
         self.id = id
-        set_config(device_ip,self.id)
+        set_config(self.device_ip,self.id)
         start_proxy()
         self.previous_time = time() -  1
         self.previous = {'ul':0,'dl':0}
@@ -80,6 +86,8 @@ class ProxySpeed(Producer):
         res = get_sciatic(self.id)
         # 获取当前的上行和下行流量
         if res is None:
+            set_config(self.device_ip,self.id)
+            start_proxy()
             return
         # 如果获取不到流量，则返回
         super().update()
@@ -107,7 +115,7 @@ class ProxySpeed(Producer):
     
     def stop(self):
         super().stop()
-        stop_proxy()
+        stop_proxy(self.id)
 
         
 class Console(Recorder):
