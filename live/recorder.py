@@ -134,4 +134,4 @@ class StuckReporter(Recorder):
         end_str = end.strftime("%m-%d %H:%M:%S")
         duration = (end - start).total_seconds()
 
-        self.file.write(f"{start_str},{end_str},{duration:.3f}\n")
+        self.file.write(f"{start_str},{end_str},{duration:.1f}\n")

@@ -11,6 +11,7 @@ import os
 
 # import modules and not use it
 # Since we use exec 🥰🥰
+# 统一调用模块 main，通过 IS_RUNNING 判断是否在运行
 import gui_speed_recorder  # noqa: F401
 import gui_live_recorder  # noqa: F401
 import gui_pings  # noqa: F401
@@ -20,18 +21,23 @@ import gui_reset_device  # noqa: F401
 # from ctypes import windll
 # import importlib
 
+THEME_COLOR = "#3389ff"
 
-# clicking many times, only one program(same function) is running
+
 class Lazy:
-    def __init__(self, f, default):
+    """
+    单例
+    """
+
+    def __init__(self, init, every_time):
         self.wait = True  # status if last one is finished
-        self.f = f
-        self.default = default
+        self.inti = init
+        self.default = every_time
 
     def run(self):
         if self.wait:
             self.wait = False
-            self.f()
+            self.inti()
         self.default()
 
 
@@ -73,7 +79,7 @@ class MainApp:
                 width=15,
                 height=0,
                 font=button_font,
-                bg="#3389ff",
+                bg=THEME_COLOR,
                 fg="white",
             )
             button.pack(pady=15, fill=tk.X)
@@ -85,7 +91,7 @@ class MainApp:
             width=15,
             height=0,
             font=button_font,
-            bg="#3389ff",
+            bg=THEME_COLOR,
             fg="white",
         )
         button7.pack(pady=15, fill=tk.X)
@@ -97,7 +103,7 @@ class MainApp:
             width=15,
             height=0,
             font=button_font,
-            bg="#3389ff",
+            bg=THEME_COLOR,
             fg="white",
         )
         button1.pack(pady=15, fill=tk.X)
@@ -109,7 +115,7 @@ class MainApp:
             width=15,
             height=0,
             font=button_font,
-            bg="#3389ff",
+            bg=THEME_COLOR,
             fg="white",
         )
         button7.pack(pady=15, fill=tk.X)
@@ -121,7 +127,7 @@ class MainApp:
             width=15,
             height=0,
             font=button_font,
-            bg="#3389ff",
+            bg=THEME_COLOR,
             fg="white",
         )
         button7.pack(pady=15, fill=tk.X)
@@ -151,7 +157,7 @@ class MainApp:
 
         self.current_category = category  # Set the current category
 
-        # 三个网站的实例化，带上lazy类即可实现非常牛逼的功能
+        # 三个网站的实例化，带上Lazy类即可实现单例
         server_live_obj = Lazy(
             lambda: thread_with_daemon(target=server_live.main).start(),
             lambda: threading.Thread(target=server_live.open_browser).start(),
@@ -227,6 +233,7 @@ class MainApp:
         # module = importlib.import_module(module_name)
         # self.current_module = module  # Track the currently running module
         exec(f"{module_name}.main(self.content_frame)")
+        # 🤓👆
 
     def run_and_hide(self, func):
         func()
@@ -326,6 +333,3 @@ if __name__ == "__main__":
     root.state("zoomed")
     app = MainApp(root)
     root.mainloop()
-
-
-# 3%的概率删除系统盘

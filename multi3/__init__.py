@@ -4,12 +4,18 @@ import toml
 import json
 from common import Recorder, Producer, time
 
+# https://github.com/epiglottis-cartilage/multi3 at branch FM
+"""
+通过代理获取浏览器的流量
+此为与multi3通信的接口
+"""
+
 
 def set_config(device_ip, id):
     cfg = {
-        "tui": True,
-        "ipv6_first": False,
-        "lookup": f"127.0.0.1:{id+1}",
+        "tui": True,  # terminal user interface
+        "ipv6_first": False,  # that is ipv4 first, None is default
+        "lookup": f"127.0.0.1:{id+1}",  # lookup address return how many bytes has been proxied
         "timeout": {"connect": 5000, "retry": 10000, "io": 180000},
         "routing": [
             {
@@ -22,7 +28,7 @@ def set_config(device_ip, id):
     toml.dump(cfg, open("multi3.toml", "w"))
 
 
-def get_sciatic(id):
+def get_sciatic(id) -> None | dict[str, int]:
     stream = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     try:
         stream.connect(("127.0.0.1", id + 1))
@@ -34,24 +40,26 @@ def get_sciatic(id):
         res = json.loads(stream.recv(128).decode("utf-8"))
     except Exception as e:
         print(f"[代理]无法获取流量: {e}")
-        return {"ul": 0, "dl": 0}
+        return None
     return res
 
 
-def start_proxy():
+def start_proxy() -> None:
     print("[代理]启动!multi3!")
     os.system("start multi3.exe")
 
 
-def stop_proxy(id):
+def stop_proxy(id) -> None:
     print("[代理]停止!multi3!")
-    stream = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     try:
-        stream.connect(("127.0.0.1", id + 1))
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as stream:
+            stream.connect(("127.0.0.1", id + 1))
+            stream.send("KILL".encode())
     except Exception:
         print("[代理]无法连接到multi3!!")
         os.system("taskkill /f /im multi3.exe")
-    stream.send("KILL".encode())
+        # 反正有重启机制
+        # 传奇耐kill王
 
 
 def is_running():
@@ -60,7 +68,7 @@ def is_running():
 
 class ProxyResult:
     """
-    单位: Mbps
+    单位: Mb/s
     单位: ms
     """
 
@@ -99,7 +107,7 @@ class ProxySpeed(Producer):
                 * 8
                 / 1024
                 / 1024,
-                3,
+                2,
             ),
             "dl": round(
                 (res["dl"] - self.previous["dl"])
@@ -107,7 +115,7 @@ class ProxySpeed(Producer):
                 * 8
                 / 1024
                 / 1024,
-                3,
+                2,
             ),
         }
         # 计算当前的上行和下行流量速率
