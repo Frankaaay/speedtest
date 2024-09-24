@@ -3,29 +3,9 @@ from tkinter import ttk
 import utils
 import recorder_live
 import time
+from gui_common import StdoutRedirector
 
 IS_RUNNING: bool = False
-
-
-class StdoutRedirector:
-    def __init__(self, text_widget: tk.Text):
-        self.text_widget = text_widget
-
-    def write(self, message):
-        self.text_widget.config(state="normal")  # 允许编辑
-        self.text_widget.insert(tk.END, message)  # 在文本框末尾插入消息
-        self.text_widget.see(tk.END)
-        # 删除多余的行
-        lines = self.text_widget.get("1.0", tk.END).split("\n")
-        if len(lines) > 100:
-            self.text_widget.delete("1.0", f"{len(lines) - 100}.0")
-        self.text_widget.config(state="disabled")  # 禁止编辑
-
-    def flush(self):
-        pass
-
-    def close(self):
-        pass
 
 
 class LiveUI:
@@ -42,7 +22,7 @@ class LiveUI:
     def create_widgets(self):
         def f(x):
             self.widgets.append(x)
-            return self.widgets[-1]
+            return x
 
         no_name_frame_1 = ttk.Frame(self.root)
 

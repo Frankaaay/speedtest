@@ -1,23 +1,9 @@
 import tkinter as tk
 from tkinter import ttk
+from gui_common import StdoutRedirector
 import iperf
 
-IS_RUNNING: bool = False
-
-
-class StdoutRedirector:
-    def __init__(self, text_widget: tk.Text):
-        self.text_widget = text_widget
-
-    def write(self, message):
-        self.text_widget.config(state="normal")  # 允许编辑
-        self.text_widget.insert(tk.END, message)  # 在文本框末尾插入消息
-        self.text_widget.see(tk.END)
-        # 删除多余的行
-        lines = self.text_widget.get("1.0", tk.END).split("\n")
-        if len(lines) > 100:
-            self.text_widget.delete("1.0", f"{len(lines) - 100}.0")
-        self.text_widget.config(state="disabled")  # 禁止编辑
+x: bool = False
 
 
 class IperfServer:
@@ -39,7 +25,7 @@ class IperfServer:
     def create_widgets(self):
         def f(x):
             self.widgets.append(x)
-            return self.widgets[-1]
+            return x
 
         frame1 = ttk.Frame(self.root)
         server_frame = tk.Frame(frame1)
@@ -92,8 +78,8 @@ class IperfServer:
             self.server_ports.get(0, tk.END), self.not_stdout
         )
         self.server_obj.start()
-        global IS_RUNNING
-        IS_RUNNING = True
+        global x
+        x = True
         self.disable_when_running()
 
     def stop_server_button_clicked(
@@ -103,8 +89,8 @@ class IperfServer:
             self.not_stdout.write("正在停止…\n")
             self.server_obj.stop()
             self.server_obj = None
-            global IS_RUNNING
-            IS_RUNNING = False
+            global x
+            x = False
             self.enable_when_stopped()
         else:
             self.not_stdout.write("未在运行!\n")
