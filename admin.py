@@ -2,6 +2,7 @@ import ctypes
 import sys
 from winreg import *
 
+
 def add_runas():
     """Add the RUNASADMIN flag to make the Python executable always run as administrator."""
     exe_path = sys.executable
@@ -21,8 +22,9 @@ def add_runas():
     else:
         if runas_value[2:] not in value[0]:
             # Append RUNASADMIN if it's not already set
-            SetValueEx(reg_key, exe_path, 0, REG_SZ, value[0] + ' ' + runas_value[2:])
+            SetValueEx(reg_key, exe_path, 0, REG_SZ, value[0] + " " + runas_value[2:])
     CloseKey(reg_key)
+
 
 def remove_runas():
     """Remove the RUNASADMIN flag to make the Python executable run without admin privileges."""
@@ -35,13 +37,16 @@ def remove_runas():
             # Remove the RUNASADMIN flag from the registry value
             new_value = value.replace("~ RUNASADMIN", "").strip()
             if new_value:
-                SetValueEx(reg_key, exe_path, 0, REG_SZ, new_value)  # Update with the modified value
+                SetValueEx(
+                    reg_key, exe_path, 0, REG_SZ, new_value
+                )  # Update with the modified value
             else:
                 DeleteValue(reg_key, exe_path)  # Delete the value if it's empty
     except FileNotFoundError:
         print("No RUNASADMIN entry found for this executable.")
     finally:
         CloseKey(reg_key)
+
 
 if __name__ == "__main__":
     # Uncomment the one you need

@@ -1,17 +1,27 @@
-from .api import *
-import random
+from .api import Live, timedelta, LiveState
 from selenium.webdriver.common.by import By
 from selenium.common import exceptions as SEexceptions
 
 
 class DouyinLive(Live):
-    def __init__(self, browser_name, room_id=None, interval=timedelta(seconds=8), proxy=None):
-        super().__init__(browser_name, 'https://live.douyin.com/', room_id=room_id, interval=interval, proxy=proxy)
+    def __init__(
+        self, browser_name, room_id=None, interval=timedelta(seconds=8), proxy=None
+    ):
+        super().__init__(
+            browser_name,
+            "https://live.douyin.com/",
+            room_id=room_id,
+            interval=interval,
+            proxy=proxy,
+        )
 
     def find_available(self):
-        i = random.randint(2, 5)
-        super().find_available(lambda driver: driver.find_element(
-            By.XPATH, '//*[@id="player_div"]/div[1]/div/div/div//a').get_attribute("href"))
+        # i = random.randint(2, 5)
+        super().find_available(
+            lambda driver: driver.find_element(
+                By.XPATH, '//*[@id="player_div"]/div[1]/div/div/div//a'
+            ).get_attribute("href")
+        )
         # Stupid path that is different in Edge and Firefox
 
     def update(self):
@@ -21,23 +31,25 @@ class DouyinLive(Live):
 
         try:
             # 直播是否结束
-            player = self.driver.find_element(By.XPATH,"//div[(contains(@class,'basicPlayer'))]")
+            player = self.driver.find_element(
+                By.XPATH, "//div[(contains(@class,'basicPlayer'))]"
+            )
             player_class = player.get_attribute("class")
 
-            if 'xgplayer-nostart' in player_class:
+            if "xgplayer-nostart" in player_class:
                 self.res = (LiveState.End, None)
                 self.find_available()
-            elif 'xgplayer-inactive' in player_class:
+            elif "xgplayer-inactive" in player_class:
                 self.res = (LiveState.End, None)
                 self.find_available()
-            elif 'xgplayer-is-error' in player_class:
+            elif "xgplayer-is-error" in player_class:
                 self.res = (LiveState.Error, None)
                 self.find_available()
-            elif 'xgplayer-isloading' in player_class:
+            elif "xgplayer-isloading" in player_class:
                 self.res = (LiveState.Stuck, None)
             else:
                 self.res = (LiveState.Normal, None)
-            
+
             # try:
             #     end_text = self.driver.find_element(
             #         By.XPATH, '//*[@data-anchor-id="living-basic-player"]/div/div/pace-island[1]/div/span').text
@@ -60,5 +72,5 @@ class DouyinLive(Live):
             self.find_available()
 
         except Exception as e:
-            self.res = (LiveState.Error, "未知错误"+repr(e))
+            self.res = (LiveState.Error, "未知错误" + repr(e))
             self.find_available()

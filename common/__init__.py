@@ -5,8 +5,22 @@ from datetime import datetime, timedelta
 from utils import wait_full_second
 import sys
 
-DEVICE_INFOS = ['rsrq','rsrp','sinr','band','pci','ber',]
-DEVICE_INFOS_UNIT = ['dB','dBm','dB','','','',]
+DEVICE_INFOS = [
+    "rsrq",
+    "rsrp",
+    "sinr",
+    "band",
+    "pci",
+    "ber",
+]
+DEVICE_INFOS_UNIT = [
+    "dB",
+    "dBm",
+    "dB",
+    "",
+    "",
+    "",
+]
 
 # class StupidClassExistOnlyForDebug:
 #     '''
@@ -20,7 +34,7 @@ DEVICE_INFOS_UNIT = ['dB','dBm','dB','','','',]
 #         while frame.f_back and frame.f_back.f_code.co_name.startswith('__'):
 #             frame = frame.f_back
 #         return frame
-    
+
 #     def __display_stack(self):
 #         f = self.__get_caller()
 #         print(f'    at "{f.f_code.co_filename}", line {f.f_lineno}, in {f.f_code.co_name}')
@@ -40,10 +54,12 @@ DEVICE_INFOS_UNIT = ['dB','dBm','dB','','','',]
 #     def set_name(self, name: str=""):
 #         self._StupidClass_name = str(name)
 
-class Recorder():
-    '''
+
+class Recorder:
+    """
     记录器，用于记录生产者产生的数据
-    '''
+    """
+
     def __init__(self, file: TextIOWrapper = sys.stdout):
         super().__init__()
         self.file = file
@@ -67,57 +83,58 @@ class Recorder():
 
     def __exit__(self):
         self.close()
-    
 
-class Producer():
-    '''
+
+class Producer:
+    """
     生产者，用于产生数据
-    '''
+    """
+
     def __init__(self):
         super().__init__()
         self.res = None
         self.recorders: list[Recorder] = []
         self.stopped = False
-        self.ttl = float('inf')
+        self.ttl = float("inf")
         self.last_update = time()
         self.default = None
 
     def set_ttl(self, ttl: timedelta):
-        '''
+        """
         设置数据的过期时间
-        '''
+        """
         self.ttl = ttl.total_seconds()
-    
+
     def set_default(self, default):
-        '''
+        """
         设置数据的默认值
-        '''
+        """
         self.default = default
         if self.res is None:
             self.res = default
 
     def update(self):
-        '''
+        """
         更新数据(self.res)
         需要子类继承
-        '''
+        """
         self.last_update = time()
 
     def get(self):
-        '''
+        """
         获取数据
         过期数据将返回默认值
-        '''
+        """
         if self.last_update + self.ttl < time():
             return self.default
         else:
             return self.res
 
     def consume(self):
-        '''
+        """
         消费数据
         并未实际使用
-        '''
+        """
         x = self.get()
         self.res = self.default
         return x
@@ -130,10 +147,10 @@ class Producer():
             recorder.record(self.get())
 
     def stop(self):
-        '''
+        """
         停止生产者
         注意在后面的Sequence中很大程度上依赖这一个方法
-        '''
+        """
         self.stopped = True
         for recorder in self.recorders:
             recorder.close()
@@ -141,20 +158,19 @@ class Producer():
     def flush(self):
         for recorder in self.recorders:
             recorder.flush()
-    
+
     # def __getattr__(self, name):
     #     if self.obj:
     #         return getattr(self.obj, name)
     #     else:
     #         super().__getattr__(self, name)
-        
-    
 
 
 class AutoFlush(Producer):
-    '''
+    """
     间隔一段时间后自动刷新缓存到文件
-    '''
+    """
+
     def __init__(self, obj: Producer, interval: timedelta):
         super().__init__()
         self.obj = obj
@@ -184,11 +200,15 @@ class AutoFlush(Producer):
         self.obj.record()
 
 
-class Sequence(Thread, Producer, ):
-    '''
+class Sequence(
+    Thread,
+    Producer,
+):
+    """
     序列，开启线程以一定间隔产生数据并记录
-    '''
-    def __init__(self, obj: Producer, interval: timedelta=timedelta(seconds=1)):
+    """
+
+    def __init__(self, obj: Producer, interval: timedelta = timedelta(seconds=1)):
         Thread.__init__(self)
         Producer.__init__(self)
         self.setDaemon(True)
@@ -196,12 +216,12 @@ class Sequence(Thread, Producer, ):
         self.interval = interval
         self.res = obj.get()
         self.stopped = False
-        self.last_run = time()-self.interval.total_seconds()
+        self.last_run = time() - self.interval.total_seconds()
         self.daemon = True
 
     def update(self):
         super().update()
-        assert self.is_alive(), 'Producer stop before Sequence'
+        assert self.is_alive(), "Producer stop before Sequence"
         self.res = self.obj.get()
 
     def run(self):
@@ -209,10 +229,15 @@ class Sequence(Thread, Producer, ):
             while not self.stopped:
                 now = time()
                 if now < self.last_run + self.interval.total_seconds():
-                    '''
+                    """
                     此处为了保证在调用stop之后程序能尽快退出，睡眠时间不超一秒。
-                    '''
-                    sleep(max(0, min(1, self.last_run + self.interval.total_seconds() - now)))
+                    """
+                    sleep(
+                        max(
+                            0,
+                            min(1, self.last_run + self.interval.total_seconds() - now),
+                        )
+                    )
                     continue
                 self.last_run = now
                 self.obj.update()
@@ -225,23 +250,24 @@ class Sequence(Thread, Producer, ):
             self.stop()
             self.obj.stop()
 
-
     def flush(self):
         super().flush()
         self.obj.flush()
 
+
 class SequenceFullSecond(Sequence):
-    '''
+    """
     序列，开启线程以一定间隔产生数据并记录
     确保每次更新都在整秒
-    '''
+    """
+
     def run(self):
         try:
             while not self.stopped:
                 now = time()
                 if now >= self.last_run + self.interval.total_seconds():
                     pass
-                elif now+1 >= self.last_run + self.interval.total_seconds():
+                elif now + 1 >= self.last_run + self.interval.total_seconds():
                     wait_full_second(now=now)
                 else:
                     sleep(max(0, self.last_run + self.interval.total_seconds() - now))
@@ -256,4 +282,3 @@ class SequenceFullSecond(Sequence):
         finally:
             self.stop()
             self.obj.stop()
-

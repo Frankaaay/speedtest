@@ -1,5 +1,5 @@
-from .api import *
-import sys
+from .api import LiveState
+from common import Recorder, time, datetime
 from time import strftime
 
 
@@ -43,9 +43,12 @@ class Logger(Recorder):
         now = time()
         time_str = strftime("%H:%M:%S")
 
-        if state == LiveState.Normal or state == LiveState.Afk and self.start is not None:
-            self.file.write(
-                f"{self.count},{time_str},结束,{now-self.start:.3f}\n")
+        if (
+            state == LiveState.Normal
+            or state == LiveState.Afk
+            and self.start is not None
+        ):
+            self.file.write(f"{self.count},{time_str},结束,{now-self.start:.3f}\n")
             self.start = None
             self.count += 1
 
@@ -64,10 +67,10 @@ class Logger(Recorder):
 
 class MergeResult:
     def __init__(self, interval=5, threshold=5):
-        '''
+        """
         interval:  两次间隔小于interval会被合并记录
         threshold: 小于threshold的将不会被记录
-        '''
+        """
         self.start = None
         self.last_end = None
         self.count = 0
@@ -75,7 +78,9 @@ class MergeResult:
         self.INTERVAL = interval
         self.THRESHOLD = threshold
 
-    def merge(self, res: tuple[LiveState, str | None]) -> tuple[int, datetime, datetime] | None:
+    def merge(
+        self, res: tuple[LiveState, str | None]
+    ) -> tuple[int, datetime, datetime] | None:
         now = datetime.now()
         state, msg = res
         if msg is None:
@@ -85,7 +90,10 @@ class MergeResult:
             if self.last_end is None:
                 self.last_end = now
 
-            if self.start is not None and (now - self.last_end).total_seconds() > self.INTERVAL:
+            if (
+                self.start is not None
+                and (now - self.last_end).total_seconds() > self.INTERVAL
+            ):
                 duration = (self.last_end - self.start).total_seconds()
 
                 going_to_return = None
@@ -110,7 +118,6 @@ class MergeResult:
 
 
 class StuckReporter(Recorder):
-
     def __init__(self, file, interval=5, threshold=5):
         super().__init__(file)
         self.file.write("start,end,duration\n")

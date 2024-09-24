@@ -1,19 +1,31 @@
-from .api import *
+from .api import Live, LiveState, timedelta
 import random
 from selenium.webdriver.common.by import By
 from selenium.common import exceptions as SEexceptions
 
 
 class BiliLive(Live):
-    def __init__(self, browser_name, room_id=None, interval=timedelta(seconds=0.1), proxy=None):
+    def __init__(
+        self, browser_name, room_id=None, interval=timedelta(seconds=0.1), proxy=None
+    ):
         if room_id is None:
-            room_id = '31539256'
-        super().__init__(browser_name, 'https://live.bilibili.com/', room_id=room_id, interval=interval, proxy=proxy)
+            room_id = "31539256"
+        super().__init__(
+            browser_name,
+            "https://live.bilibili.com/",
+            room_id=room_id,
+            interval=interval,
+            proxy=proxy,
+        )
 
     def find_available(self):
         i = random.randint(2, 5)
-        super().find_available(lambda driver: driver.find_element(
-            By.XPATH, f'/html/body/div[1]/div/div[5]/div[3]/div/div[2]/div[1]/div[1]/a[{i}]').get_attribute('href'))
+        super().find_available(
+            lambda driver: driver.find_element(
+                By.XPATH,
+                f"/html/body/div[1]/div/div[5]/div[3]/div/div[2]/div[1]/div[1]/a[{i}]",
+            ).get_attribute("href")
+        )
 
     def update(self):
         super().update()
@@ -21,23 +33,18 @@ class BiliLive(Live):
             return
 
         try:
-
             try:
                 self.driver.implicitly_wait(8)
-                self.driver.find_element(
-                    By.XPATH, '//*[@id="live-player"]/video')
-            except SEexceptions.WebDriverException as e:
+                self.driver.find_element(By.XPATH, '//*[@id="live-player"]/video')
+            except SEexceptions.WebDriverException:
                 self.res = (LiveState.Error, "这似乎不是一个直播间")
                 self.find_available()
             finally:
                 self.driver.implicitly_wait(self.interval)
 
-                
-            
             # 直播是否结束
             try:
-                self.driver.find_element(
-                    By.CLASS_NAME, "web-player-ending-panel")
+                self.driver.find_element(By.CLASS_NAME, "web-player-ending-panel")
                 self.res = (LiveState.End, None)
                 self.find_available()
             except SEexceptions.NoSuchElementException:
@@ -55,7 +62,7 @@ class BiliLive(Live):
         except SEexceptions.WebDriverException as e:
             self.res = (LiveState.Error, str(e))
             self.find_available()
-        
-        except:
+
+        except Exception:
             self.res = (LiveState.Error, "未知错误")
             self.find_available()

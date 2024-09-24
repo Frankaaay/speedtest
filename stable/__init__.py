@@ -1,22 +1,22 @@
 import ping3
-from common import *
+from common import timedelta, Producer, Thread, Recorder, TextIOWrapper
 from utils import ThreadWithReturn
 
 
 def ping(target, timeout=timedelta(seconds=0.75)):
     try:
-        delay = ping3.ping(target, unit='ms', timeout=timeout.total_seconds())
-        delay = round(delay, 1) if isinstance(delay, float) else float('inf')
+        delay = ping3.ping(target, unit="ms", timeout=timeout.total_seconds())
+        delay = round(delay, 1) if isinstance(delay, float) else float("inf")
         # Why there is data like 10000ms ????
-        if delay > timeout.total_seconds()*1000:
-            delay = float('inf')
+        if delay > timeout.total_seconds() * 1000:
+            delay = float("inf")
         return delay
     except ping3.errors.PingError as e:
         print(f"[ping] PingError {e}")
-        return float('inf')
+        return float("inf")
     except Exception as e:
         print(f"[ping] Error {e}")
-        return float('inf')
+        return float("inf")
 
 
 class Pings(Producer):
@@ -33,8 +33,7 @@ class Pings(Producer):
         super().update()
         handles: dict[str, Thread] = {}
         for target in self.target:
-            handles[target] = ThreadWithReturn(
-                target=ping, args=(target, self.timeout))
+            handles[target] = ThreadWithReturn(target=ping, args=(target, self.timeout))
             handles[target].start()
 
         res: dict[str, float] = {}
@@ -43,6 +42,7 @@ class Pings(Producer):
             res[target] = thread.join()
 
         self.res = res
+
 
 class Console(Recorder):
     def __init__(self, file: TextIOWrapper, targets: dict[str, str]):
@@ -53,28 +53,30 @@ class Console(Recorder):
 
     def record(self, pings: dict[str, float]):
         self.file.write(
-            f"[Ping]{','.join([str(pings[self.targets[t]])+'ms' for t in self.target_name])}\n")
+            f"[Ping]{','.join([str(pings[self.targets[t]])+'ms' for t in self.target_name])}\n"
+        )
 
 
 class Statistics:
-    min, max, avg, sum, count ,timeout= float('inf'), float('-inf'), 0, 0, 0, 0
+    min, max, avg, sum, count, timeout = float("inf"), float("-inf"), 0, 0, 0, 0
+
 
 class Summary(Recorder):
     def __init__(self):
         super().__init__(None)
-        self.res: dict[str,Statistics] = dict()
-    
+        self.res: dict[str, Statistics] = dict()
+
     def record(self, pings: dict[str, float]):
         for target, delay in pings.items():
             if target not in self.res:
                 self.res[target] = Statistics()
             prop = self.res[target]
-            if delay < float('inf') and delay >= 0:
+            if delay < float("inf") and delay >= 0:
                 prop.sum += delay
             else:
                 prop.timeout += 1
             prop.count += 1
-            prop.avg = round(prop.sum / max(1,prop.count-prop.timeout), 2)
+            prop.avg = round(prop.sum / max(1, prop.count - prop.timeout), 2)
             if delay < prop.min:
                 prop.min = delay
             if delay > prop.max:
