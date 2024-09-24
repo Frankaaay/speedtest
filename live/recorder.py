@@ -109,7 +109,7 @@ class MergeResult:
             pass
 
 
-class Reporter(Recorder):
+class StuckReporter(Recorder):
 
     def __init__(self, file, interval=5, threshold=5):
         super().__init__(file)

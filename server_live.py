@@ -21,7 +21,6 @@ def summarize(df, column):
     return [round(mean, 2), max, low, round(std, 2)]
 
 
-
 #storing data for updating graphs
 class DataPing:
     def __init__(self, data: pd.DataFrame):
@@ -113,55 +112,69 @@ class DataPing:
             lag_www = lag_www[lag_www['neighbor'] == self.devices]
             lag_192 = lag_192[lag_192['neighbor'] == self.devices]
         
+        IN_LINES = ['ping_www', 'ping_192', 'sinr', 'rsrq', 'rsrp']
+        COLORS = ['#F20C0C', '#F2960C', '#FF00FF', '#3AF20C', '#0C68F2']
+        IN_HOVERTEXT = ['neighbor', 'band', 'ber', 'pci']
         
-        hovertext = [f"设备数量: {row['neighbor']}<br>Band: {row['band']}<br>ber: {row['ber']}<br>PCI: {row['pci']}" for index, row in data.iterrows()]
+        hovertext = ["<br>".join([f"{key}: {row[key]}" for key in IN_HOVERTEXT]) for index, row in data.iterrows()]
+        # hovertext = [f"设备数量: {row['neighbor']}<br>Band: {row['band']}<br>ber: {row['ber']}<br>PCI: {row['pci']}" for index, row in data.iterrows()]
+
+        for i in range(len(IN_LINES)):
+            self.graph_ping.add_trace(go.Scatter(
+                x=data['time'],
+                y=data[IN_LINES[i]],
+                mode='lines',
+                name=IN_LINES[i],
+                marker=dict(color = COLORS[i]),
+                hovertext = hovertext
+            ))
 
         #drawing lines
-        self.graph_ping.add_trace(go.Scatter(
-            x=data['time'],
-            y=data['ping_www'],
-            mode='lines',
-            name='ping_www',
-            marker=dict(color = '#F20C0C'),
-            hovertext = hovertext,
-        ))
-        self.graph_ping.add_trace(go.Scatter(
-            x=data['time'],
-            y=data['ping_192'],
-            mode='lines',
-            name='ping_192',
-            marker=dict(color = '#F2960C'),
-            hovertext = hovertext
-        ))
+        # self.graph_ping.add_trace(go.Scatter(
+        #     x=data['time'],
+        #     y=data['ping_www'],
+        #     mode='lines',
+        #     name='ping_www',
+        #     marker=dict(color = '#F20C0C'),
+        #     hovertext = hovertext,
+        # ))
+        # self.graph_ping.add_trace(go.Scatter(
+        #     x=data['time'],
+        #     y=data['ping_192'],
+        #     mode='lines',
+        #     name='ping_192',
+        #     marker=dict(color = '#F2960C'),
+        #     hovertext = hovertext
+        # ))
 
-        self.graph_ping.add_trace(go.Scatter(
-            x=data['time'],
-            y=data['sinr'],
-            mode='lines',
-            name='sinr',
-            marker=dict(color = '#FF00FF'),
-            hovertext = hovertext
-        ))
-
-
-        self.graph_ping.add_trace(go.Scatter(
-            x=data['time'],
-            y=data['rsrq'],
-            mode='lines',
-            name='rsrq',
-            marker=dict(color = '#3AF20C'),
-            hovertext = hovertext
-        ))
+        # self.graph_ping.add_trace(go.Scatter(
+        #     x=data['time'],
+        #     y=data['sinr'],
+        #     mode='lines',
+        #     name='sinr',
+        #     marker=dict(color = '#FF00FF'),
+        #     hovertext = hovertext
+        # ))
 
 
-        self.graph_ping.add_trace(go.Scatter(
-            x=data['time'],
-            y=data['rsrp'],
-            mode='lines',
-            name='rsrp',
-            marker=dict(color = '#0C68F2'),
-            hovertext = hovertext
-        ))
+        # self.graph_ping.add_trace(go.Scatter(
+        #     x=data['time'],
+        #     y=data['rsrq'],
+        #     mode='lines',
+        #     name='rsrq',
+        #     marker=dict(color = '#3AF20C'),
+        #     hovertext = hovertext
+        # ))
+
+
+        # self.graph_ping.add_trace(go.Scatter(
+        #     x=data['time'],
+        #     y=data['rsrp'],
+        #     mode='lines',
+        #     name='rsrp',
+        #     marker=dict(color = '#0C68F2'),
+        #     hovertext = hovertext
+        # ))
 
         self.upload.add_trace(go.Scatter(
             x=data['time'],
@@ -253,16 +266,33 @@ class DataPing:
         #stats
         self.stats192 = summarize(data, "ping_192")
         self.statswww = summarize(data, "ping_www")
+    
+    def get_neighbor(self, time:str):
+        data = self.data[self.data['time'] >= time]
+        if not data.empty:
+            return data.iloc[0]['neighbor']
+        else:
+            return 0
 
 class DataStuck:
     def __init__(self, data: pd.DataFrame):
         self.data = data 
         self.year = str(datetime.datetime.now().year)
+        self.device_num = 0
         
     def get_range(self, start : str, end: str):
+        global data_ping
         if len(self.data) == 0:
             return pd.DataFrame()
         data =  self.data[(self.data['start'] >= start) & (self.data['end'] <= end)]
+        if self.device_num != 0:
+            # 筛选data_ping.get_neighbor(device_num) == device_num
+            indices_to_drop = []
+            for index, row in data.iterrows():
+                if data_ping.get_neighbor(row['start']) != self.device_num:
+                    indices_to_drop.append(index)
+            data = data.drop(indices_to_drop)
+            
         return data
 
 # Function to list folders in the fixed path
@@ -295,7 +325,7 @@ empty_ping = pd.DataFrame({
 data_ping = DataPing(empty_ping)
 data_stuck = DataStuck(pd.DataFrame({'start': [], 'end': [], 'duration': []}))
 
-app = Dash(__name__, title = "ping数据整理")
+app = Dash(__name__, title = "直播数据整理")
 
 
 
@@ -491,32 +521,15 @@ def update_range(n_clicks, range_raw, start_raw, device_num, visibility_data):
     data_ping.display_range = max(1, math.ceil(range_raw**2 * data_ping.raw_len))   
     data_ping.display_start = math.ceil(start_raw * (data_ping.raw_len - data_ping.display_range))
     data_ping.devices = device_num
+    data_stuck.device_num = device_num
 
     #parameter: mode(which graph)
     data_ping.gen_graph()
 
+    tag_list = ['ping_www','ping_192','www_不可达','192_不可达','upload','download','sinr','rsrp','rsrq','ber']
     for trace in data_ping.graph_ping['data']:
-        if trace['name'] == 'ping_www':
-            trace['visible'] = visibility_data.get('ping_www', True)
-        elif trace['name'] == 'ping_192':
-            trace['visible'] = visibility_data.get('ping_192', True)
-        elif trace['name'] == 'www_不可达':
-            trace['visible'] = visibility_data.get('www_不可达', True)
-        elif trace['name'] == '192_不可达':
-            trace['visible'] = visibility_data.get('192_不可达', True)
-        elif trace['name'] == 'upload':
-            trace['visible'] = visibility_data.get('upload', True)
-        elif trace['name'] == 'download':
-            trace['visible'] = visibility_data.get('download', True)
-        elif trace['name'] == 'sinr':
-            trace['visible'] = visibility_data.get('sinr', True)
-        elif trace['name'] == 'rsrp':
-            trace['visible'] = visibility_data.get('rsrp', True)
-        elif trace['name'] == 'rsrq':
-            trace['visible'] = visibility_data.get('rsrq', True)
-        elif trace['name'] == 'ber':
-            trace['visible'] = visibility_data.get('ber', True)
-        
+        if trace['name'] in tag_list:
+            trace['visible'] = visibility_data.get(trace['name'], True)
 
     start_time = data_ping.data['time'][data_ping.display_start]
     end_time = data_ping.data['time'][data_ping.display_start+data_ping.display_range - 1]
@@ -609,7 +622,7 @@ def update_visibility(restyleData, figure, visibility_data):
     Output('sub-graph-ups', 'figure'),
     Output('sub-graph-downs', 'figure'),
     Input('stuck-table', 'active_cell'),
-    State('stuck-table', 'derived_viewport_data')
+    State('stuck-table', 'derived_viewport_data'),
 )
 def update_subgraph(active_cell, table):
     s = ""

@@ -142,8 +142,8 @@ class Main:
         network_speed = multi3.ProxySpeed(utils.which_is_my_ip(device_ip),proxy_id)
         living = gen_live(browser_name, platform, room_id, proxy_id)
         if save_log:
-            living.add_recorder(live.Reporter(
-                open(f"{PATH}/{now}#{folder_name}/stuck.csv", 'w', encoding='utf-8-sig'), interval=5, threshold=1))
+            living.add_recorder(live.StuckReporter(
+                open(f"{PATH}/{now}#{folder_name}/stuck.csv", 'w', encoding='utf-8-sig'), interval=5, threshold=0.5))
         living.add_recorder(live.Console(stdout))
         living_seq = AutoFlush(living, timedelta(minutes=5))
         living_seq = Sequence(living_seq, interval=timedelta(seconds=0.3))
