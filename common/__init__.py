@@ -1,9 +1,9 @@
-from io import TextIOWrapper
 from threading import Thread
 from time import sleep, time
 from datetime import datetime, timedelta
 from utils import wait_full_second
 import sys
+import io
 
 DEVICE_INFOS = [
     "rsrq",
@@ -24,7 +24,7 @@ DEVICE_INFOS_UNIT = [
 
 # class StupidClassExistOnlyForDebug:
 #     '''
-#     请无视
+#     🤓
 #     '''
 #     _StupidClass_name = ""
 #     _StupidClass_debug = False
@@ -60,11 +60,11 @@ class Recorder:
     记录器，用于记录生产者产生的数据
     """
 
-    def __init__(self, file: TextIOWrapper = sys.stdout):
+    def __init__(self, file: io.TextIOWrapper = sys.stdout) -> None:
         super().__init__()
         self.file = file
 
-    def record(self, res):
+    def record(self, res) -> None:
         if self.file is not None:
             self.file.write(f"{res}\n")
 
@@ -81,7 +81,7 @@ class Recorder:
     def __enter__(self):
         return self
 
-    def __exit__(self):
+    def __exit__(self) -> None:
         self.close()
 
 
@@ -113,14 +113,14 @@ class Producer:
         if self.res is None:
             self.res = default
 
-    def update(self):
+    def update(self) -> None:
         """
         更新数据(self.res)
-        需要子类继承
+        **需要子类继承**
         """
         self.last_update = time()
 
-    def get(self):
+    def get(self):  # -> Any:
         """
         获取数据
         过期数据将返回默认值
@@ -130,10 +130,10 @@ class Producer:
         else:
             return self.res
 
-    def consume(self):
+    def consume(self):  # -> Any:
         """
         消费数据
-        并未实际使用
+        从未实际使用
         """
         x = self.get()
         self.res = self.default
@@ -142,11 +142,11 @@ class Producer:
     def add_recorder(self, recorder: Recorder):
         self.recorders.append(recorder)
 
-    def record(self):
+    def record(self) -> None:
         for recorder in self.recorders:
             recorder.record(self.get())
 
-    def stop(self):
+    def stop(self) -> None:
         """
         停止生产者
         注意在后面的Sequence中很大程度上依赖这一个方法
@@ -155,7 +155,7 @@ class Producer:
         for recorder in self.recorders:
             recorder.close()
 
-    def flush(self):
+    def flush(self) -> None:
         for recorder in self.recorders:
             recorder.flush()
 
@@ -169,6 +169,7 @@ class Producer:
 class AutoFlush(Producer):
     """
     间隔一段时间后自动刷新缓存到文件
+    大部分操作将透明的传递给所持有的Producer
     """
 
     def __init__(self, obj: Producer, interval: timedelta):

@@ -1,31 +1,35 @@
-from common import *
+from common import Producer, Recorder, timedelta
 
-INVALID_VALUE = '-'
+INVALID_VALUE = "-"
+
 
 class PanelState:
-    '''
+    """
     本质上就是字典
-    '''
-    def __init__(self, data: dict={}):
+    """
+
+    def __init__(self, data: dict = {}):
         self.data = data
 
     def __getattr__(self, name):
         self.get(name)
+
     def __getitem__(self, name):
         self.get(name)
 
     def __str__(self):
-        return ' '.join(f'{k}:{v}' for k,v in self.data.items())
-    
+        return " ".join(f"{k}:{v}" for k, v in self.data.items())
+
     def get(self, name):
         return str(self.data.get(name, INVALID_VALUE))
-    
+
 
 class Panel(Producer):
-    '''
+    """
     获取设备的状态
     更新到PanelState中
-    '''
+    """
+
     def __init__(self, device_ip, timeout=timedelta(seconds=5)):
         super().__init__()
         self.ip = device_ip
@@ -37,9 +41,8 @@ class Panel(Producer):
 
 
 class Console(Recorder):
-    def __init__(self, file: TextIOWrapper):
+    def __init__(self, file):
         super().__init__(file)
 
     def record(self, res: PanelState):
-        self.file.write("[设备]"+str(res)+'\n')
-        
+        self.file.write("[设备]" + str(res) + "\n")

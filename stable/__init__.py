@@ -4,6 +4,7 @@ from utils import ThreadWithReturn
 
 
 def ping(target, timeout=timedelta(seconds=0.75)):
+    """Ping target and return delay in ms"""
     try:
         delay = ping3.ping(target, unit="ms", timeout=timeout.total_seconds())
         delay = round(delay, 1) if isinstance(delay, float) else float("inf")
@@ -20,6 +21,13 @@ def ping(target, timeout=timedelta(seconds=0.75)):
 
 
 class Pings(Producer):
+    """
+    Ping targets and return delay in ms
+    get() -> {
+        "target_addr": delay_ms
+    }
+    """
+
     def __init__(self, targets: list[str], timeout=timedelta(seconds=0.75)):
         super().__init__()
         self.target = targets

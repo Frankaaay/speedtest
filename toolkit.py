@@ -1,6 +1,5 @@
 import tkinter as tk
 from tkinter import messagebox
-import importlib
 import threading
 import server_speed
 import server_live
@@ -8,16 +7,18 @@ import server_contest
 import tkinter.font as tkFont
 from PIL import Image, ImageTk
 import subprocess
-
-import gui_speed_recorder
-import gui_live_recorder
-import gui_pings
-import gui_iperf_server
-import gui_iperf_client
-import gui_reset_device
 import os
 
+# import modules and not use it
+# Since we use exec 🥰🥰
+import gui_speed_recorder  # noqa: F401
+import gui_live_recorder  # noqa: F401
+import gui_pings  # noqa: F401
+import gui_iperf_server  # noqa: F401
+import gui_iperf_client  # noqa: F401
+import gui_reset_device  # noqa: F401
 # from ctypes import windll
+# import importlib
 
 
 # clicking many times, only one program(same function) is running
@@ -223,9 +224,9 @@ class MainApp:
         for widget in self.content_frame.winfo_children():
             widget.destroy()
 
-        module = importlib.import_module(module_name)
-        self.current_module = module  # Track the currently running module
-        module.main(self.content_frame)
+        # module = importlib.import_module(module_name)
+        # self.current_module = module  # Track the currently running module
+        exec(f"{module_name}.main(self.content_frame)")
 
     def run_and_hide(self, func):
         func()

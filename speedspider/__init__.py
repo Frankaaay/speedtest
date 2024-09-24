@@ -58,7 +58,11 @@ class SpeedTester(Producer):
                 startStopBtn.click()
             sleep(2)
 
-            def afap(driver):
+            def asap(driver):
+                """
+                As soon as possible
+                当本次测速上传开始时，返回True
+                """
                 try:
                     return (
                         int(driver.execute_script("return s.getState()")) == 4
@@ -67,7 +71,7 @@ class SpeedTester(Producer):
                 except ValueError:
                     return False
 
-            WebDriverWait(driver, self.timeout).until(afap)
+            WebDriverWait(driver, self.timeout).until(asap)
             self.asap = True
             WebDriverWait(driver, self.timeout).until(
                 lambda driver: int(driver.execute_script("return s.getState()")) == 4
