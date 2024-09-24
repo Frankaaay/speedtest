@@ -178,7 +178,7 @@ class ResetUI:
 
     def start_button_clicked(self,):
         if self.obj is not None:
-            self.not_stdout.write("Already running! Flushing\n")
+            self.not_stdout.write("已在运行! 刷新文件缓存\n")
             self.obj.flush()
             return
         else:
@@ -211,7 +211,7 @@ class ResetUI:
 
     def stop_button_clicked(self,):
         if self.obj is not None:
-            self.not_stdout.write("Stopping\n")
+            self.not_stdout.write("正在停止…\n")
             self.obj.flush()
             self.obj.stop()
             self.obj = None
@@ -219,7 +219,7 @@ class ResetUI:
             IS_RUNNING = False
             self.enable_when_stopped()
         else:
-            self.not_stdout.write("Not running!\n")
+            self.not_stdout.write("未在运行!\n")
 
     def disable_when_running(self, ):
         for i in self.widgets:

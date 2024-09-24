@@ -142,9 +142,11 @@ class LiveUI:
     def start_button_clicked(self,):
         # 处理开始按钮点击事件
         if self.obj is not None:
-            self.not_stdout.write("Already running! Flushing\n")
+            self.not_stdout.write("已在运行! 刷新文件缓存\n")
             self.obj.flush()
             return
+        else:
+            self.not_stdout.write("正在开始…\n")
         global IS_RUNNING
         IS_RUNNING = True
         self.disable_when_running()
@@ -156,33 +158,38 @@ class LiveUI:
             total_seconds = h * 3600 + m * 60 + s
         except:
             total_seconds = 0
-        self.obj = recorder_live.Main(
-                                    self.browser_option.get(),
-                                    self.record_device.get(),
-                                    self.device_ip.get(),
-                                    self.save_log.get(),
-                                    self.live_option.get(),
-                                    self.room_id.get(),
-                                    {'ping_www': 'www.baidu.com',
-                                    'ping_192': self.device_ip.get()},
-                                    self.not_stdout,
-                                    self.folder_name_addon.get()
-                                    )
+        try:
+            self.obj = recorder_live.Main(
+                                        self.browser_option.get(),
+                                        self.record_device.get(),
+                                        self.device_ip.get(),
+                                        self.save_log.get(),
+                                        self.live_option.get(),
+                                        self.room_id.get(),
+                                        {'ping_www': 'www.baidu.com',
+                                        'ping_192': self.device_ip.get()},
+                                        self.not_stdout,
+                                        self.folder_name_addon.get()
+                                        )
+        except Exception as e:
+            self.not_stdout.write(f"发生错误: \n{e}\n")
+            self.stop_button_clicked()
         self.update_timer(total_seconds>0, time.time(), total_seconds)
 
 
     def stop_button_clicked(self):
         # 处理停止按钮点击事件
         if self.obj is not None:
-            self.not_stdout.write("Stopping\n")
+            self.not_stdout.write("正在停止…\n")
             self.obj.flush()
             self.obj.stop()
             self.obj = None
-            global IS_RUNNING
-            IS_RUNNING = False
-            self.enable_when_stopped()
+            self.root.after(1000, lambda: self.not_stdout.write("已停止!\n"))
         else:
-            self.not_stdout.write("Not running!\n")
+            self.not_stdout.write("未在运行!\n")
+        global IS_RUNNING
+        IS_RUNNING = False
+        self.enable_when_stopped()
 
     def disable_when_running(self, ):
         for i in self.widgets:

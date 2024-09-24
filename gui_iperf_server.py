@@ -87,14 +87,14 @@ class IperfServer:
 
     def stop_server_button_clicked(self,):
         if self.server_obj is not None:
-            self.not_stdout.write("Stopping\n")
+            self.not_stdout.write("正在停止…\n")
             self.server_obj.stop()
             self.server_obj = None
             global IS_RUNNING
             IS_RUNNING = False
             self.enable_when_stopped()
         else:
-            self.not_stdout.write("Not running!\n")
+            self.not_stdout.write("未在运行!\n")
     
     def disable_when_running(self, ):
         for i in self.widgets:
