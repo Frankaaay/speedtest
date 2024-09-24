@@ -125,7 +125,7 @@ app.layout = html.Div([
             n_clicks=0, 
             style={
                 'fontSize': '20px', 
-                'padding': '10px 20px',  # Increase padding for a bigger button
+                'padding': '5px 15px',  # Increase padding for a bigger button
                 'marginBottom': '20px'  # Add margin bottom for spacing
             }
         )

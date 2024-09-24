@@ -214,7 +214,7 @@ speed = Speed([])
 # Layout of the app
 app.layout = html.Div([
     html.Div([
-        html.Label("Enter number of files to upload:", style={
+        html.Label("日志数量", style={
                 'fontSize': '20px',  # Increase font size
                 'fontWeight': 'bold',  # Optional: make the text bold
                 'marginBottom': '10px'  # Add some spacing below the label
@@ -235,37 +235,33 @@ app.layout = html.Div([
         
         # Button with adjusted spacing
         html.Button(
-            'Confirm', 
+            '确认', 
             id='generate-button', 
             n_clicks=0, 
             style={
                 'fontSize': '20px', 
-                'padding': '10px 20px',  # Increase padding for a bigger button
+                'padding': '5px 15px',  # Increase padding for a bigger button
                 'marginBottom': '20px'  # Add margin bottom for spacing
             }
         )
     ]),
-    
-    # Container to dynamically generate upload fields
-    html.Div(id='upload-container'),
 
     # Select folder button
-    html.Button(
-        'Select Folder', 
-        id='select-folder-button', 
-        n_clicks=0, 
-        style={
-            'fontSize': '20px', 
-            'padding': '15px 25px', 
-            'marginBottom': '30px',  # Add margin bottom for spacing
-            'marginTop': '10px'      # Add margin top for spacing between elements
-        }
-    ),
-
+    html.Div([
+        # Container to dynamically generate upload fields
+        html.Div(id='upload-container'),
+        html.Hr(),
+        html.Button(
+            '导入日志',
+            id='select-folder-button', 
+            n_clicks=0,
+            style={'fontSize': '18px', 'padding': '5px 15px', 'marginBottom': '30px'}  
+        ),
+    ], style={'width': '40%', 'display': 'inline-block'}),
     html.Div(
         id='output-folder-path', 
         style={'marginBottom': '20px'}),
-    
+    html.Hr(),
     html.Div([
         html.Div([
             html.H1(

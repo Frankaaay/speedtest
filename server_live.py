@@ -57,31 +57,30 @@ class DataPing:
         # 标记 inf 值
         # 获取所有 inf 的索引
 
-        #wwws
-        temp = 0
+        temp_www = 0
+        temp_192 = 0
         for index, row in self.data.iterrows():
+        #wwws
             if np.isinf(row['ping_www']):
                 row_new = row.copy()
-                row_new['ping_www'] = temp
+                row_new['ping_www'] = temp_www
                 self.inf_www = pd.concat([self.inf_www, pd.DataFrame([row_new])])
             else:
-                temp= row['ping_www']
+                temp_www= row['ping_www']
                 if row["ping_www"] >= 100:
                     self.lag_www = pd.concat([self.lag_www, pd.DataFrame([row])])
         #192s
-        temp = 0
-        for index, row in self.data.iterrows():
             if np.isinf(row['ping_192']):
                 row_new = row.copy()
-                row_new['ping_192'] = temp
+                row_new['ping_192'] = temp_192
                 self.inf_192 = pd.concat([self.inf_192, pd.DataFrame([row_new])])
             else:
-                temp= row['ping_192']
+                temp_192= row['ping_192']
                 if row["ping_192"] >= 20:
                     self.lag_192 = pd.concat([self.lag_192, pd.DataFrame([row])])
 
     #update everytimes the state changes
-    def gen_graph(self, s = "", e = ""):
+    def gen_graph(self, s = "", e = "", stuck_interval:list[tuple[str,str]]=[]):
         self.graph_ping = go.Figure()              #the main graph
 
         self.upload = go.Figure()   
@@ -117,6 +116,8 @@ class DataPing:
         IN_HOVERTEXT = ['neighbor', 'band', 'ber', 'pci']
         
         hovertext = ["<br>".join([f"{key}: {row[key]}" for key in IN_HOVERTEXT]) for index, row in data.iterrows()]
+        hovertext_inf_www = ["<br>".join([f"{key}: {row[key]}" for key in IN_HOVERTEXT]) for index, row in data.iterrows() if np.isinf(row['ping_www'])]
+        hovertext_inf_192 = ["<br>".join([f"{key}: {row[key]}" for key in IN_HOVERTEXT]) for index, row in data.iterrows() if np.isinf(row['ping_192'])]
         # hovertext = [f"设备数量: {row['neighbor']}<br>Band: {row['band']}<br>ber: {row['ber']}<br>PCI: {row['pci']}" for index, row in data.iterrows()]
 
         for i in range(len(IN_LINES)):
@@ -125,63 +126,16 @@ class DataPing:
                 y=data[IN_LINES[i]],
                 mode='lines',
                 name=IN_LINES[i],
-                marker=dict(color = COLORS[i]),
+                line=dict(color=COLORS[i], width=1),
                 hovertext = hovertext
             ))
-
-        #drawing lines
-        # self.graph_ping.add_trace(go.Scatter(
-        #     x=data['time'],
-        #     y=data['ping_www'],
-        #     mode='lines',
-        #     name='ping_www',
-        #     marker=dict(color = '#F20C0C'),
-        #     hovertext = hovertext,
-        # ))
-        # self.graph_ping.add_trace(go.Scatter(
-        #     x=data['time'],
-        #     y=data['ping_192'],
-        #     mode='lines',
-        #     name='ping_192',
-        #     marker=dict(color = '#F2960C'),
-        #     hovertext = hovertext
-        # ))
-
-        # self.graph_ping.add_trace(go.Scatter(
-        #     x=data['time'],
-        #     y=data['sinr'],
-        #     mode='lines',
-        #     name='sinr',
-        #     marker=dict(color = '#FF00FF'),
-        #     hovertext = hovertext
-        # ))
-
-
-        # self.graph_ping.add_trace(go.Scatter(
-        #     x=data['time'],
-        #     y=data['rsrq'],
-        #     mode='lines',
-        #     name='rsrq',
-        #     marker=dict(color = '#3AF20C'),
-        #     hovertext = hovertext
-        # ))
-
-
-        # self.graph_ping.add_trace(go.Scatter(
-        #     x=data['time'],
-        #     y=data['rsrp'],
-        #     mode='lines',
-        #     name='rsrp',
-        #     marker=dict(color = '#0C68F2'),
-        #     hovertext = hovertext
-        # ))
 
         self.upload.add_trace(go.Scatter(
             x=data['time'],
             y=data['up'],
             mode='lines',
             name='upload',
-            marker=dict(color = '#FF00FF'),
+            line=dict(color = '#FF00FF', width=1),
             hovertext = hovertext
         ))
 
@@ -191,19 +145,18 @@ class DataPing:
             y=data['down'],
             mode='lines',
             name='download',
-            marker=dict(color = '#0C68F2'),
+            line=dict(color = '#0C68F2', width=1),
             hovertext = hovertext
         ))
         
-        # print(inf_www,inf_192)
-
         #drawing disconnection dots
         self.graph_ping.add_trace(go.Scatter(
             x=list(inf_www['time']),
             y=list(inf_www['ping_www']),
             mode='markers',
             marker=dict(color = '#0CF2F2', size = 5),
-            name='www_不可达'
+            name='www_不可达',
+            hovertext = hovertext_inf_www,
         ))
 
         self.graph_ping.add_trace(go.Scatter(
@@ -211,9 +164,38 @@ class DataPing:
             y=list(inf_192['ping_192']),
             mode='markers',
             marker=dict(color = '#3A0CF2', size = 5),
-            name='192_不可达'
+            name='192_不可达',
+            hovertext = hovertext_inf_192,
         ))
 
+        stuck_ranges = []
+        stuck_ranges_y = []
+        for (start, end) in stuck_interval:
+            stuck_ranges.extend([start, end])
+            stuck_ranges_y.extend([0, 0])
+            # 使用nan打断直线
+            stuck_ranges.append(np.nan)
+            stuck_ranges_y.append(np.nan)
+
+        self.graph_ping.add_trace(go.Scatter(
+            x=stuck_ranges, y=stuck_ranges_y,
+            line=dict(color='rgba(0,0,0,0.5)', width=6),
+            mode='lines',
+            name='卡顿',
+        ))
+        self.download.add_trace(go.Scatter(
+            x=stuck_ranges, y=stuck_ranges_y,
+            line=dict(color='#000000', width=6),
+            mode='lines',
+            opacity= 0.5,
+            name='卡顿',
+        ))
+        self.upload.add_trace(go.Scatter(
+            x=stuck_ranges, y=stuck_ranges_y,
+            line=dict(color='#000000', width=6),
+            mode='lines',
+            name='卡顿',
+        ))
 
         self.graph_ping.update_layout(
             title={
@@ -245,7 +227,6 @@ class DataPing:
             },
             height=600
         )
-
         self.upload.update_layout(
             title={
                 'text': 'Upload(Mb/s)',  # Set the title text
@@ -262,7 +243,6 @@ class DataPing:
             height=600
         )
 
-
         #stats
         self.stats192 = summarize(data, "ping_192")
         self.statswww = summarize(data, "ping_www")
@@ -277,7 +257,6 @@ class DataPing:
 class DataStuck:
     def __init__(self, data: pd.DataFrame):
         self.data = data 
-        self.year = str(datetime.datetime.now().year)
         self.device_num = 0
         
     def get_range(self, start : str, end: str):
@@ -331,19 +310,21 @@ app = Dash(__name__, title = "直播数据整理")
 
 # Layout of the app
 app.layout = html.Div([
-    dcc.Dropdown(
-        id='folders-dropdown',
-        options=get_folders(PATH),  # Populate with folders from the fixed path
-        value=None,
-        placeholder="Select a folder",
-        style={'fontSize': '18px', 'marginBottom': '20px'}  # Add margin bottom
-    ),
-    html.Button(
-        'Select Folder',
-        id='select-folder-button', 
-        n_clicks=0,
-        style={'fontSize': '18px', 'padding': '10px 20px', 'marginBottom': '30px'}  
-    ),# Add margin bottom
+    html.Div([
+        dcc.Dropdown(
+            id='folders-dropdown',
+            options=get_folders(PATH),  # Populate with folders from the fixed path
+            value=None,
+            placeholder="选择日志",
+            style={'fontSize': '18px', 'marginBottom': '20px'}  # Add margin bottom
+        ),
+        html.Button(
+            '导入日志',
+            id='select-folder-button', 
+            n_clicks=0,
+            style={'fontSize': '18px', 'padding': '5px 15px', 'marginBottom': '30px'}  
+        ),
+    ], style={'width': '40%', 'display': 'inline-block'}),
     html.Hr(),
     html.Div([
         html.Div([
@@ -378,12 +359,12 @@ app.layout = html.Div([
         ], style={'width': '20%', 'display': 'inline-block'}),
     ]),
     html.Button(
-        'Confirm', 
+        '更新图表', 
         id='range-button', 
         n_clicks=0, 
         style={
             'fontSize': '20px', 
-            'padding': '10px 20px',  # Increase padding for a bigger button
+            'padding': '5px 15px',  # Increase padding for a bigger button
             'marginBottom': '20px'  # Add margin bottom for spacing
         }
     ),
@@ -465,9 +446,10 @@ app.layout = html.Div([
             data=data_stuck.data.to_dict('records'),
             columns=[{"name": i, "id": i} for i in data_stuck.data.columns],
             filter_action='native',
+            page_size=25,
             
         ),
-    ], style={'width': '23%', 'display': 'inline-block', 'vertical-align': 'top'})
+    ], style={'width': '23%', 'display': 'inline-block', 'vertical-align': 'top'}),
 ], style={'textAlign': 'center', 'font-size': '10px', 'marginTop': '50px', 'marginBottom': '20px'})
 
 
@@ -523,23 +505,24 @@ def update_range(n_clicks, range_raw, start_raw, device_num, visibility_data):
     data_ping.devices = device_num
     data_stuck.device_num = device_num
 
-    #parameter: mode(which graph)
-    data_ping.gen_graph()
+    start_time = data_ping.data['time'][data_ping.display_start]
+    end_time = data_ping.data['time'][data_ping.display_start+data_ping.display_range - 1]
+    stuck = data_stuck.get_range(start_time,end_time).to_dict('records')
+    if stuck:
+        stuck_list = [(row['start'],row['end']) for row in stuck]
+    else:
+        stuck_list = []
+    data_ping.gen_graph("", "", stuck_list)
 
     tag_list = ['ping_www','ping_192','www_不可达','192_不可达','upload','download','sinr','rsrp','rsrq','ber']
     for trace in data_ping.graph_ping['data']:
         if trace['name'] in tag_list:
             trace['visible'] = visibility_data.get(trace['name'], True)
 
-    start_time = data_ping.data['time'][data_ping.display_start]
-    end_time = data_ping.data['time'][data_ping.display_start+data_ping.display_range - 1]
-
-    stuck = data_stuck.get_range(start_time,end_time)
-
     start_time_obj = datetime.datetime.strptime(start_time, "%m-%d %H:%M:%S")
     end_time_obj = datetime.datetime.strptime(end_time, "%m-%d %H:%M:%S")
     total_minutes = (end_time_obj - start_time_obj).total_seconds()/60
-    per_minute = lambda n : round( n / total_minutes,2)
+    per_minute = lambda n : round( n / total_minutes, 2)
 
     head = [
         html.Thead([
@@ -578,7 +561,8 @@ def update_range(n_clicks, range_raw, start_raw, device_num, visibility_data):
 
     return (f"显示范围: {start_time} - {end_time}", 
             
-            data_ping.graph_ping, data_ping.upload, data_ping.download, stuck.to_dict('records'),
+            data_ping.graph_ping, data_ping.upload, data_ping.download,
+            stuck,
 
             "到网关(192)"\
             f"断连{per_minute(data_ping.inf192_cnt)}次/分钟,      "
@@ -632,13 +616,14 @@ def update_subgraph(active_cell, table):
         e = table[active_cell['row']]['end']
 
         year = str(datetime.datetime.now().year)
-        s = datetime.datetime.strptime(year+"-"+s, '%Y-%m-%d %H:%M:%S') - datetime.timedelta(seconds=10)
-        e = datetime.datetime.strptime(year+"-"+e, '%Y-%m-%d %H:%M:%S') + datetime.timedelta(seconds=10)
+        start = datetime.datetime.strptime(year+"-"+s, '%Y-%m-%d %H:%M:%S') - datetime.timedelta(seconds=10)
+        end = datetime.datetime.strptime(year+"-"+e, '%Y-%m-%d %H:%M:%S') + datetime.timedelta(seconds=10)
         
-        s = s.strftime('%m-%d %H:%M:%S')
-        e = e.strftime('%m-%d %H:%M:%S')
-
-    data_ping.gen_graph(s, e)
+        start = start.strftime('%m-%d %H:%M:%S')
+        end = end.strftime('%m-%d %H:%M:%S')
+        data_ping.gen_graph(start, end, [(s,e)])
+    else:
+        data_ping.gen_graph(s, e)
     return data_ping.graph_ping,data_ping.upload,data_ping.download
 
 

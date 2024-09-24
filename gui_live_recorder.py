@@ -171,10 +171,10 @@ class LiveUI:
                                         self.not_stdout,
                                         self.folder_name_addon.get()
                                         )
+            self.update_timer(total_seconds>0, time.time(), total_seconds)
         except Exception as e:
-            self.not_stdout.write(f"发生错误: \n{e}\n")
+            self.not_stdout.write(f"发生错误: \n{e}\n请重新打开程序")
             self.stop_button_clicked()
-        self.update_timer(total_seconds>0, time.time(), total_seconds)
 
 
     def stop_button_clicked(self):
