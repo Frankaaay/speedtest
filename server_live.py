@@ -39,7 +39,7 @@ class DataPing:
         self.display_start = 0
         self.display_range = len(self.data)
         self.graph_ping = None  # the main graph
-        self.devices = 0  # how many devices
+        self.devices_num = 0  # how many devices
 
         self.upload = None
         self.download = None
@@ -89,9 +89,15 @@ class DataPing:
                 if row["ping_192"] >= 20:
                     self.lag_192 = pd.concat([self.lag_192, pd.DataFrame([row])])
 
-    def average_data(df, n):
-        # 初始化平均化后的数据字典
-        averaged_data = {"time": df["time"]}  # 取每n个点的第一个时间点并重置索引
+    def average_data(df: pd.DataFrame, n: int):
+        """
+        数据预处理
+        每n个点取一个平均值
+        """
+
+        # 时间列必须全部保留，否则按时间为索引的图会出错
+
+        averaged_data = {"time": df["time"]}
         for column in df.columns:
             if column in ["ping_192", "ping_www", "up", "down"]:
                 averaged_column = []
@@ -100,7 +106,7 @@ class DataPing:
                     finite_segment = pd.to_numeric(segment, errors="coerce")
                     finite_segment = finite_segment[np.isfinite(finite_segment)]
                     if len(finite_segment) > 0:
-                        res = np.mean(segment)
+                        res = np.mean(finite_segment)
                     else:
                         res = segment.iloc[0]
 
@@ -113,7 +119,14 @@ class DataPing:
         return pd.DataFrame(averaged_data)
 
     # update everytimes the state changes
-    def gen_graph(self, s="", e="", stuck_interval: list[tuple[str, str]] = [], step=1):
+    def gen_graph(
+        self,
+        s="",
+        e="",
+        stuck_interval: list[tuple[str, str]] = [],
+        step=1,
+        for_subgraph=False,
+    ):
         self.graph_ping = go.Figure()  # the main graph
 
         self.upload = go.Figure()
@@ -138,12 +151,13 @@ class DataPing:
         lag_www = time_filter(self.lag_www)
         lag_192 = time_filter(self.lag_192)
 
-        if self.devices > 0:
-            data = data[data["neighbor"] == self.devices]
-            inf_www = inf_www[inf_www["neighbor"] == self.devices]
-            inf_192 = inf_192[inf_192["neighbor"] == self.devices]
-            lag_www = lag_www[lag_www["neighbor"] == self.devices]
-            lag_192 = lag_192[lag_192["neighbor"] == self.devices]
+        if self.devices_num > 0:
+            # 筛选同时在线设备数量
+            data = data[data["neighbor"] == self.devices_num]
+            inf_www = inf_www[inf_www["neighbor"] == self.devices_num]
+            inf_192 = inf_192[inf_192["neighbor"] == self.devices_num]
+            lag_www = lag_www[lag_www["neighbor"] == self.devices_num]
+            lag_192 = lag_192[lag_192["neighbor"] == self.devices_num]
         if step > 1:
             data = DataPing.average_data(data, step)
 
@@ -229,34 +243,28 @@ class DataPing:
             stuck_ranges.append(np.nan)
             stuck_ranges_y.append(np.nan)
 
-        self.graph_ping.add_trace(
-            go.Scatter(
-                x=stuck_ranges,
-                y=stuck_ranges_y,
-                line=dict(color="rgba(0,0,0,0.5)", width=6),
-                mode="lines",
-                name="卡顿",
-            )
-        )
-        self.download.add_trace(
-            go.Scatter(
-                x=stuck_ranges,
-                y=stuck_ranges_y,
-                line=dict(color="#000000", width=6),
-                mode="lines",
-                opacity=0.5,
-                name="卡顿",
-            )
-        )
-        self.upload.add_trace(
-            go.Scatter(
-                x=stuck_ranges,
-                y=stuck_ranges_y,
-                line=dict(color="#000000", width=6),
-                mode="lines",
-                name="卡顿",
-            )
-        )
+        if for_subgraph:
+            for graph in [self.graph_ping, self.download, self.upload]:
+                graph.add_trace(
+                    go.Scatter(
+                        x=stuck_ranges,
+                        y=stuck_ranges_y,
+                        line=dict(color="rgba(0,0,0,0.7)", width=6),
+                        mode="lines",
+                        name="卡顿",
+                    )
+                )
+        else:
+            for graph in [self.graph_ping, self.download, self.upload]:
+                graph.add_trace(
+                    go.Scatter(
+                        x=[s for (s, e) in stuck_interval],
+                        y=[0 for _ in stuck_interval],
+                        mode="markers",
+                        marker=dict(color="rgba(0,0,0,0.5)", size=5),
+                        name="卡顿开始",
+                    )
+                )
 
         self.graph_ping.update_layout(
             title={
@@ -561,6 +569,7 @@ app.layout = html.Div(
             [
                 html.H1(
                     "直播卡顿",
+                    id="stuck-title",
                     # style={'marginTop': '5em'}
                 ),
                 dash_table.DataTable(
@@ -601,7 +610,7 @@ def select_folder(n_clicks, selected_folder):
         if os.path.exists(f"{selected_folder}/stuck.csv"):
             data_stuck = DataStuck(pd.read_csv(f"{selected_folder}/stuck.csv"))
 
-    return 0, 0.2, 0, 5, get_folders(PATH), 1
+    return 0, 0.2, 0, max(1, len(data_ping.data) // 10000), get_folders(PATH), 1
 
 
 # Callback to update the output based on the selected datetime
@@ -632,7 +641,7 @@ def update_range(
     data_ping.display_start = math.ceil(
         start_raw * (data_ping.raw_len - data_ping.display_range)
     )
-    data_ping.devices = device_num
+    data_ping.devices_num = device_num
     data_stuck.device_num = device_num
 
     start_time = data_ping.data["time"][data_ping.display_start]
@@ -751,10 +760,12 @@ def update_visibility(restyleData, figure, visibility_data):
     Output("sub-graph-pings", "figure"),
     Output("sub-graph-ups", "figure"),
     Output("sub-graph-downs", "figure"),
+    Output("stuck-title", "children"),
     Input("stuck-table", "active_cell"),
     State("stuck-table", "derived_viewport_data"),
+    State("stuck-table", "data"),
 )
-def update_subgraph(active_cell, table):
+def update_subgraph(active_cell, table, table_all):
     s = ""
     e = ""
     if active_cell is not None and active_cell["row"] < len(table):
@@ -774,7 +785,13 @@ def update_subgraph(active_cell, table):
         data_ping.gen_graph(start, end, [(s, e)])
     else:
         data_ping.gen_graph(s, e, step=1)
-    return data_ping.graph_ping, data_ping.upload, data_ping.download
+
+    return (
+        data_ping.graph_ping,
+        data_ping.upload,
+        data_ping.download,
+        f"直播卡顿 {len(table) if table else len(table_all)}次",
+    )
 
 
 # Function to open the browser automatically

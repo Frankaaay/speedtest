@@ -20,12 +20,20 @@ import broadcast
 
 
 class PingAndState(Producer):
+    """
+    组合 (ping,设备状态,速度,同时在线数量)
+
+    同时负责当长时间速度低时刷新直播, 防止直播有未处理异常
+    """
+
+    res: tuple[datetime, dict[str, float], panel.PanelState, multi3.ProxyResult, int]
+
     def __init__(
         self,
         ping: stable.Pings,
         device: panel.Panel | None,
         net_speed: multi3.ProxySpeed,
-        live: live.Live,
+        live: live.Live,  # 不参与记录
         neighbor: broadcast.Broadcast,
     ):
         super().__init__()
