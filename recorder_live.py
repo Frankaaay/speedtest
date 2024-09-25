@@ -170,7 +170,7 @@ def gen_live(
 
 def gen_device(record_device: bool, device_ip: str, stdout) -> panel.Panel:
     if record_device:
-        device = panel.Panel_FM(device_ip, timeout=datetime(second=10), logger=stdout)
+        device = panel.Panel_FM(device_ip, timeout=timedelta(seconds=10), logger=stdout)
         device.set_ttl(timedelta(minutes=1))
     else:
         device = Producer()
