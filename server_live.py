@@ -436,7 +436,7 @@ app.layout = html.Div(
                             1,
                             step=1e-6,
                             marks=None,
-                            value=0.2,
+                            value=1,
                             id="range-raw",
                         ),
                     ],
@@ -577,7 +577,7 @@ app.layout = html.Div(
                     data=data_stuck.data.to_dict("records"),
                     columns=[{"name": i, "id": i} for i in data_stuck.data.columns],
                     filter_action="native",
-                    page_size=25,
+                    page_size=10000,  # display all rows stupid way
                 ),
             ],
             style={"width": "23%", "display": "inline-block", "vertical-align": "top"},
@@ -610,7 +610,7 @@ def select_folder(n_clicks, selected_folder):
         if os.path.exists(f"{selected_folder}/stuck.csv"):
             data_stuck = DataStuck(pd.read_csv(f"{selected_folder}/stuck.csv"))
 
-    return 0, 0.2, 0, max(1, len(data_ping.data) // 10000), get_folders(PATH), 1
+    return 0, 1, 0, max(1, len(data_ping.data) // 3000), get_folders(PATH), 1
 
 
 # Callback to update the output based on the selected datetime
@@ -764,6 +764,7 @@ def update_visibility(restyleData, figure, visibility_data):
     Input("stuck-table", "active_cell"),
     State("stuck-table", "derived_viewport_data"),
     State("stuck-table", "data"),
+    prevent_initial_call=True,
 )
 def update_subgraph(active_cell, table, table_all):
     s = ""
@@ -782,9 +783,9 @@ def update_subgraph(active_cell, table, table_all):
 
         start = start.strftime("%m-%d %H:%M:%S")
         end = end.strftime("%m-%d %H:%M:%S")
-        data_ping.gen_graph(start, end, [(s, e)])
+        data_ping.gen_graph(start, end, [(s, e)], for_subgraph=True)
     else:
-        data_ping.gen_graph(s, e, step=1)
+        pass
 
     return (
         data_ping.graph_ping,
