@@ -72,7 +72,7 @@ class ResetUI:
         self.root = root
         try:
             root.title("重置捏~")
-        except:  # noqa: E722
+        except Exception:
             pass
 
         self.root = root

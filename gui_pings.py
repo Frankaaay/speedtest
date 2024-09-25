@@ -38,12 +38,16 @@ class Result2File(common.Recorder):
         self.file.write(f"{','.join(str(res[i]) for i in self.keys)}\n")
 
 
-class SpeedUI:
+class PingUI:
+    """
+    同时ping多个目标，并显示结果
+    """
+
     def __init__(self, root: tk.Tk):
         self.root = root
         try:
             root.title("Ping~")
-        except:  # noqa: E722
+        except Exception:
             pass
 
         self.root = root
@@ -278,10 +282,10 @@ class SpeedUI:
 
 
 def main(root: tk.Tk):
-    return SpeedUI(root)
+    return PingUI(root)
 
 
 if __name__ == "__main__":
     root = tk.Tk()
-    SpeedUI(root)
+    PingUI(root)
     root.mainloop()
