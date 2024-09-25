@@ -1,4 +1,4 @@
-from .api import Live, LiveState, timedelta
+from .api import Live, LiveState, timedelta, LONG_WAIT
 import random
 from selenium.webdriver.common.by import By
 from selenium.common import exceptions as SEexceptions
@@ -34,7 +34,7 @@ class BiliLive(Live):
 
         try:
             try:
-                self.driver.implicitly_wait(8)
+                self.driver.implicitly_wait(LONG_WAIT.total_seconds())
                 self.driver.find_element(By.XPATH, '//*[@id="live-player"]/video')
             except SEexceptions.WebDriverException:
                 self.res = (LiveState.Error, "这似乎不是一个直播间")

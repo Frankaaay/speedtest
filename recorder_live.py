@@ -7,6 +7,7 @@ from common import (
     datetime,
     timedelta,
     DEVICE_INFOS,
+    sleep,
 )
 import panel
 import stable
@@ -58,7 +59,7 @@ class PingAndState(Producer):
             < (now - timedelta(minutes=2)).timestamp()
         ):
             print("[直播]长时间速度低，刷新直播")
-            self.live.find_available()
+            self.live.refresh()
             self.net_speed.low_speed_since = None
 
         if self.live.get()[0] == live.LiveState.Afk:
@@ -138,7 +139,7 @@ PATH = "./log/live"
 def gen_live(
     browser_name: str, platform: str, room_id: str | None, proxy_id: int | None
 ) -> live.Live:
-    if len(room_id) == 0:
+    if room_id is None or len(room_id) == 0:
         room_id = None
     if proxy_id is not None:
         proxy = f"127.0.0.1:{proxy_id}"
@@ -250,3 +251,17 @@ class Main:
     def stop(self):
         self.obj.stop()
         self.living.stop()
+
+
+if __name__ == "__main__":
+    obj = Main(
+        browser_name="Edge",
+        record_device=False,
+        device_ip="127.0.0.1",
+        save_log=False,
+        platform="B站",
+        room_id=None,
+        ips={"ping_www": "www.baidu.com"},
+    )
+    while True:
+        sleep(1)

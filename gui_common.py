@@ -1,5 +1,4 @@
 import tkinter as tk
-from tkinter import ttk
 import common
 
 
@@ -16,6 +15,12 @@ class StdoutRedirector:
         if len(lines) > 100:
             self.text_widget.delete("1.0", f"{len(lines) - 100}.0")
         self.text_widget.config(state="disabled")  # 禁止编辑
+
+    def flush(self):
+        pass
+
+    def close(self):
+        pass
 
 
 class StopCounter(common.Recorder):

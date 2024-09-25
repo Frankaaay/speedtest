@@ -1,12 +1,10 @@
-from .api import Live, timedelta, LiveState
+from .api import Live, LiveState, LONG_WAIT
 from selenium.webdriver.common.by import By
 from selenium.common import exceptions as SEexceptions
 
 
 class DouyinLive(Live):
-    def __init__(
-        self, browser_name, room_id=None, interval=timedelta(seconds=8), proxy=None
-    ):
+    def __init__(self, browser_name, room_id=None, interval=LONG_WAIT, proxy=None):
         super().__init__(
             browser_name,
             "https://live.douyin.com/",
