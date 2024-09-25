@@ -3,7 +3,7 @@ from tkinter import ttk
 from gui_common import StdoutRedirector
 import iperf
 
-x: bool = False
+IS_RUNNING: bool = False
 
 
 class IperfServer:
