@@ -20,6 +20,18 @@ def summarize(df, column):
     return [round(mean, 2), max, low, round(std, 2)]
 
 
+IN_LINES = ["ping_www", "ping_192", "sinr", "rsrq", "rsrp"]  # the lines in the graph
+COLORS = [
+    "#F20C0C",
+    "#F2960C",
+    "#FF00FF",
+    "#3AF20C",
+    "#0C68F2",
+]  # the colors of the lines
+
+IN_HOVERTEXT = ["neighbor", "band", "ber", "pci"]  # 将会显示在 hovertext 中的信息
+
+
 # storing data for updating graphs
 class DataPing:
     def __init__(self, data: pd.DataFrame):
@@ -77,8 +89,31 @@ class DataPing:
                 if row["ping_192"] >= 20:
                     self.lag_192 = pd.concat([self.lag_192, pd.DataFrame([row])])
 
+    def average_data(df, n):
+        # 初始化平均化后的数据字典
+        averaged_data = {"time": df["time"]}  # 取每n个点的第一个时间点并重置索引
+        for column in df.columns:
+            if column in ["ping_192", "ping_www", "up", "down"]:
+                averaged_column = []
+                for i in range(0, len(df[column]), n):
+                    segment = df[column].iloc[i : i + n]
+                    finite_segment = pd.to_numeric(segment, errors="coerce")
+                    finite_segment = finite_segment[np.isfinite(finite_segment)]
+                    if len(finite_segment) > 0:
+                        res = np.mean(segment)
+                    else:
+                        res = segment.iloc[0]
+
+                    for _ in range(len(segment)):
+                        averaged_column.append(res)
+
+                averaged_data[column] = averaged_column
+            else:
+                averaged_data[column] = df[column]
+        return pd.DataFrame(averaged_data)
+
     # update everytimes the state changes
-    def gen_graph(self, s="", e="", stuck_interval: list[tuple[str, str]] = []):
+    def gen_graph(self, s="", e="", stuck_interval: list[tuple[str, str]] = [], step=1):
         self.graph_ping = go.Figure()  # the main graph
 
         self.upload = go.Figure()
@@ -109,10 +144,8 @@ class DataPing:
             inf_192 = inf_192[inf_192["neighbor"] == self.devices]
             lag_www = lag_www[lag_www["neighbor"] == self.devices]
             lag_192 = lag_192[lag_192["neighbor"] == self.devices]
-
-        IN_LINES = ["ping_www", "ping_192", "sinr", "rsrq", "rsrp"]
-        COLORS = ["#F20C0C", "#F2960C", "#FF00FF", "#3AF20C", "#0C68F2"]
-        IN_HOVERTEXT = ["neighbor", "band", "ber", "pci"]
+        if step > 1:
+            data = DataPing.average_data(data, step)
 
         hovertext = [
             "<br>".join([f"{key}: {row[key]}" for key in IN_HOVERTEXT])
@@ -148,7 +181,7 @@ class DataPing:
                 y=data["up"],
                 mode="lines",
                 name="upload",
-                line=dict(color="#FF00FF", width=1),
+                line=dict(color="#aa44cc", width=1),
                 hovertext=hovertext,
             )
         )
@@ -170,7 +203,7 @@ class DataPing:
                 x=list(inf_www["time"]),
                 y=list(inf_www["ping_www"]),
                 mode="markers",
-                marker=dict(color="#0CF2F2", size=5),
+                marker=dict(color="#3A8822", size=5),
                 name="www_不可达",
                 hovertext=hovertext_inf_www,
             )
@@ -181,7 +214,7 @@ class DataPing:
                 x=list(inf_192["time"]),
                 y=list(inf_192["ping_192"]),
                 mode="markers",
-                marker=dict(color="#3A0CF2", size=5),
+                marker=dict(color="#3A3CF2", size=5),
                 name="192_不可达",
                 hovertext=hovertext_inf_192,
             )
@@ -401,6 +434,10 @@ app.layout = html.Div(
                     ],
                     style={"width": "30%", "display": "inline-block"},
                 ),
+            ]
+        ),
+        html.Div(
+            [
                 html.Div(
                     [
                         html.H1("筛选同时测试设备数量"),
@@ -411,10 +448,23 @@ app.layout = html.Div(
                             value=0,
                         ),
                     ],
-                    style={"width": "20%", "display": "inline-block"},
+                    style={"width": "30%", "display": "inline-block"},
+                ),
+                html.Div(
+                    [
+                        html.H1("数据步进"),
+                        dcc.Input(
+                            id="data-step",
+                            type="number",
+                            min=1,
+                            value=5,
+                        ),
+                    ],
+                    style={"width": "30%", "display": "inline-block"},
                 ),
             ]
         ),
+        html.Hr(),
         html.Button(
             "更新图表",
             id="range-button",
@@ -537,6 +587,7 @@ app.layout = html.Div(
     Output("start-from-raw", "value"),
     Output("range-raw", "value"),
     Output("device-num", "value"),
+    Output("data-step", "value"),
     Output("folders-dropdown", "options"),
     Output("range-button", "n_clicks"),
     Input("select-folder-button", "n_clicks"),
@@ -550,7 +601,7 @@ def select_folder(n_clicks, selected_folder):
         if os.path.exists(f"{selected_folder}/stuck.csv"):
             data_stuck = DataStuck(pd.read_csv(f"{selected_folder}/stuck.csv"))
 
-    return 0, 0.2, 0, get_folders(PATH), 1
+    return 0, 0.2, 0, 5, get_folders(PATH), 1
 
 
 # Callback to update the output based on the selected datetime
@@ -567,11 +618,14 @@ def select_folder(n_clicks, selected_folder):
     State("range-raw", "value"),
     State("start-from-raw", "value"),
     State("device-num", "value"),
+    State("data-step", "value"),
     State("visibility-store", "data"),
     prevent_initial_call=True,
 )
 # getting the new range for updating the graph(two bars), positional arguments, same order with call back
-def update_range(n_clicks, range_raw, start_raw, device_num, visibility_data):
+def update_range(
+    n_clicks, range_raw, start_raw, device_num, data_step, visibility_data
+):
     global data_stuck, data_ping
 
     data_ping.display_range = max(1, math.ceil(range_raw**2 * data_ping.raw_len))
@@ -590,7 +644,8 @@ def update_range(n_clicks, range_raw, start_raw, device_num, visibility_data):
         stuck_list = [(row["start"], row["end"]) for row in stuck]
     else:
         stuck_list = []
-    data_ping.gen_graph("", "", stuck_list)
+
+    data_ping.gen_graph("", "", stuck_list, step=data_step)
 
     tag_list = [
         "ping_www",
@@ -718,7 +773,7 @@ def update_subgraph(active_cell, table):
         end = end.strftime("%m-%d %H:%M:%S")
         data_ping.gen_graph(start, end, [(s, e)])
     else:
-        data_ping.gen_graph(s, e)
+        data_ping.gen_graph(s, e, step=1)
     return data_ping.graph_ping, data_ping.upload, data_ping.download
 
 
