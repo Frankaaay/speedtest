@@ -6,6 +6,13 @@ IPERF_PATH = r"iperf3\iperf3.exe"
 
 
 class Server:
+    """
+    TODO 输出重定向到GUI
+    TODO 不弹出新窗口
+    TODO iperf3偶尔会卡住在错误中死循环，需要处理
+    目前为在弹出的新窗口中输出
+    """
+
     def __init__(self, port, output):
         self.port = port
         self.process = None
@@ -44,7 +51,7 @@ class Servers:
 
 
 if __name__ == "__main__":
-    ports = [5201]
+    ports = [5201, 5202]
     servers = Servers(ports, sys.stdout)
     servers.start()
     # 停止服务器

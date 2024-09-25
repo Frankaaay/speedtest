@@ -24,6 +24,8 @@ class LiveState:
 
 
 class Live(Producer):
+    res: tuple[LiveState, str | None]
+
     def __init__(
         self,
         browser_name,

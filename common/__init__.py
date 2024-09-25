@@ -1,6 +1,6 @@
 from threading import Thread
 from time import sleep, time
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta  # noqa: F401
 from utils import wait_full_second
 import sys
 import io
@@ -159,6 +159,7 @@ class Producer:
         for recorder in self.recorders:
             recorder.flush()
 
+    # TODO 将操作透明传递给所持有的obj
     # def __getattr__(self, name):
     #     if self.obj:
     #         return getattr(self.obj, name)

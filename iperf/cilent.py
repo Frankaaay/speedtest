@@ -7,6 +7,8 @@ IPERF_PATH = "iperf3/iperf3.exe"
 
 
 class ClientTcp(Producer):
+    res: float
+
     def __init__(
         self,
         server_ip,
@@ -78,6 +80,8 @@ class ClientTcp(Producer):
 
 
 class ClientUdp(Producer):
+    res: float
+
     def __init__(
         self,
         server_ip,

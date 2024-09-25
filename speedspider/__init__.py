@@ -33,6 +33,9 @@ URLS = [
 
 
 class SpeedTester(Producer):
+    res: SpeedTestResult
+    asap: bool
+
     def __init__(
         self, browser_name: str, headless: bool, timeout: timedelta, urls: list[str]
     ):

@@ -22,11 +22,10 @@ def ping(target, timeout=timedelta(seconds=0.75)):
 
 class Pings(Producer):
     """
-    Ping targets and return delay in ms
-    get() -> {
-        "target_addr": delay_ms
-    }
+    同时ping多个网站
     """
+
+    res: dict[str, float]  # ms
 
     def __init__(self, targets: list[str], timeout=timedelta(seconds=0.75)):
         super().__init__()

@@ -14,7 +14,7 @@ from common import Recorder, Producer, time
 def set_config(device_ip, id):
     cfg = {
         "tui": True,  # terminal user interface
-        "ipv6_first": False,  # that is ipv4 first, None is default
+        "ipv6_first": False,  # that is ipv4 first, None means default
         "lookup": f"127.0.0.1:{id+1}",  # lookup address return how many bytes has been proxied
         "timeout": {"connect": 5000, "retry": 10000, "io": 180000},
         "routing": [
@@ -29,6 +29,14 @@ def set_config(device_ip, id):
 
 
 def get_sciatic(id) -> None | dict[str, int]:
+    """
+    向lookup发送id
+    返回json字典
+    {
+        "ul": u64,
+        "dl": u64
+    }
+    """
     stream = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     try:
         stream.connect(("127.0.0.1", id + 1))
@@ -81,6 +89,8 @@ class ProxyResult:
 
 
 class ProxySpeed(Producer):
+    res: ProxyResult
+
     def __init__(self, device_ip, id):
         super().__init__()
         self.device_ip = device_ip

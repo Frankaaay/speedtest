@@ -14,12 +14,12 @@ class AT:
             print("[AT]连接超时")
             self.error = True
 
-    def sr1(self, cmd: str):
+    def sr1(self, cmd: str) -> str:
         """
         Send and recv one AT command
         """
         if self.error:
-            return "ERR: AT connect fail!"
+            return "ERR"
         self.s.sendall(cmd.encode())
         try:
             res = self.s.recv(80).decode().strip()
@@ -27,6 +27,7 @@ class AT:
             return res
         except TimeoutError:
             print(f"[AT]{cmd}超时")
+            # self.error = True
             return f"ERR: AT command {cmd} timed out"
 
     def CESQ(self) -> dict:

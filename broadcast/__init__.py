@@ -5,18 +5,22 @@ from common import Producer, timedelta, sleep, time, Thread, Recorder, Sequence
 # 设定广播地址和端口
 
 # 组播地址和端口
+# TODO 组播选取Adapter时可能会选取错误的网卡，需要手动指定
 MULTICAST_GROUP = "239.11.45.14"
 PORT = 62126
-CONTENT = """Quod est superius est sicut quod inferius, et quod inferius est sicut quod est superius.""".encode()
+
 # As above, so below
+CONTENT = """Quod est superius est sicut quod inferius, et quod inferius est sicut quod est superius.""".encode()
 
 
 class Broadcast(Producer):
+    res: list[tuple[str, int]]
+
     def __init__(self, delta: timedelta):
         super().__init__()
         self.delta = delta.total_seconds()
-        self.neighbor: dict[str, float] = {}
-        self.neighbor_pre: list[str] = []
+        self.neighbor: dict[tuple[str, int], float] = {}
+        self.neighbor_pre: list[tuple[str, int]] = []
         self.server = None
         self.handles = [
             Thread(target=self.broadcast),

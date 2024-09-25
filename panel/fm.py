@@ -25,6 +25,8 @@ class Panel_FM(Panel):
         res: dict = at.BANDIND()
         res.update(at.CESQ())
         res.update(at.RSRP())
+        if len(res) == 0:
+            at.error = True
         self.res = PanelState(res)
         super().update()
 

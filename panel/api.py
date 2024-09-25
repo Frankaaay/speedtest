@@ -25,10 +25,7 @@ class PanelState:
 
 
 class Panel(Producer):
-    """
-    获取设备的状态
-    更新到PanelState中
-    """
+    res: PanelState
 
     def __init__(self, device_ip, timeout=timedelta(seconds=5)):
         super().__init__()
