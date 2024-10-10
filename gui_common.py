@@ -1,6 +1,7 @@
 import tkinter as tk
 import common
 
+from idlelib.util import fix_win_hidpi
 
 class StdoutRedirector:
     def __init__(self, text_widget: tk.Text):

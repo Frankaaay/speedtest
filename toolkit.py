@@ -9,14 +9,13 @@ from PIL import Image, ImageTk
 import subprocess
 import os
 
-import gui_speed_recorder  # noqa: F401
-import gui_live_recorder  # noqa: F401
-import gui_pings  # noqa: F401
-import gui_iperf_server  # noqa: F401
-import gui_iperf_client  # noqa: F401
-import gui_reset_device  # noqa: F401
-# from ctypes import windll
-# import importlib
+import gui_speed_recorder
+import gui_live_recorder
+import gui_pings
+import gui_iperf_server
+import gui_iperf_client
+import gui_reset_device
+from gui_common import fix_win_hidpi
 
 THEME_COLOR = "#3389ff"
 
@@ -322,6 +321,7 @@ def stop_exe():
 if __name__ == "__main__":
     # improve for high DPI displays but with bugs
     # windll.shcore.SetProcessDpiAwareness(1)
+    fix_win_hidpi()
     root = tk.Tk()
     root.iconbitmap("flymodem.ico")
     root.state("zoomed")
