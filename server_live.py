@@ -67,27 +67,18 @@ class DataPing:
         # 标记 inf 值
         # 获取所有 inf 的索引
 
-        temp_www = 0
-        temp_192 = 0
-        for index, row in self.data.iterrows():
-            # wwws
-            if np.isinf(row["ping_www"]):
-                row_new = row.copy()
-                row_new["ping_www"] = temp_www
-                self.inf_www = pd.concat([self.inf_www, pd.DataFrame([row_new])])
-            else:
-                temp_www = row["ping_www"]
-                if row["ping_www"] >= 100:
-                    self.lag_www = pd.concat([self.lag_www, pd.DataFrame([row])])
-            # 192s
-            if np.isinf(row["ping_192"]):
-                row_new = row.copy()
-                row_new["ping_192"] = temp_192
-                self.inf_192 = pd.concat([self.inf_192, pd.DataFrame([row_new])])
-            else:
-                temp_192 = row["ping_192"]
-                if row["ping_192"] >= 20:
-                    self.lag_192 = pd.concat([self.lag_192, pd.DataFrame([row])])
+        self.inf_www = self.data.where(self.data["ping_www"] == np.inf)
+        self.inf_192 = self.data.where(self.data["ping_192"] == np.inf)
+
+        self.lag_www = self.data.where(self.data["ping_www"] >= 100)
+        self.lag_192 = self.data.where(self.data["ping_192"] >= 20)
+
+        # 仅对 'ping_www' 和 'ping_192' 列进行操作
+        self.data["ping_www"].replace([np.inf, -np.inf], np.nan)
+        self.data["ping_www"].ffill()
+
+        self.data["ping_192"].replace([np.inf, -np.inf], np.nan)
+        self.data["ping_192"].ffill()
 
     def average_data(df: pd.DataFrame, n: int):
         """
