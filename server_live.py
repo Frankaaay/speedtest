@@ -83,8 +83,8 @@ class DataPing:
         data["ping_www"] = data["ping_www"].ffill()
         data["ping_192"] = data["ping_192"].ffill()
 
-        self.inf_www = data.where(inf_www_filter)
-        self.inf_192 = data.where(inf_192_filter)
+        self.inf_www = data.where(inf_www_filter).dropna()
+        self.inf_192 = data.where(inf_192_filter).dropna()
 
 
     @time_it
@@ -148,8 +148,8 @@ class DataPing:
             data = DataPing.average_data(data, step)
 
         hovertext = self.data.apply(lambda row: "<br>".join([f"{key}: {row[key]}" for key in IN_HOVERTEXT]), axis=1).tolist()
-        hovertext_inf_www = self.data.where(self.data["ping_www"] == np.inf).apply(lambda row: "<br>".join([f"{key}: {row[key]}" for key in IN_HOVERTEXT]), axis=1).tolist()
-        hovertext_inf_192 = self.data.where(self.data["ping_192"] == np.inf).apply(lambda row: "<br>".join([f"{key}: {row[key]}" for key in IN_HOVERTEXT]), axis=1).tolist()
+        hovertext_inf_www = self.data.where(self.data["ping_www"] == np.inf).dropna().apply(lambda row: "<br>".join([f"{key}: {row[key]}" for key in IN_HOVERTEXT]), axis=1).tolist()
+        hovertext_inf_192 = self.data.where(self.data["ping_192"] == np.inf).dropna().apply(lambda row: "<br>".join([f"{key}: {row[key]}" for key in IN_HOVERTEXT]), axis=1).tolist()
         # hovertext_inf_www = [
         #     "<br>".join([f"{key}: {row[key]}" for key in IN_HOVERTEXT])
         #     for index, row in data.iterrows()
