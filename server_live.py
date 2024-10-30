@@ -6,6 +6,7 @@ import plotly.graph_objs as go
 import datetime
 import os
 import webbrowser
+from utils import time_it
 
 
 # same thing with the server_speed, pls read comments there
@@ -63,23 +64,30 @@ class DataPing:
 
         self.construct_data()
 
+    @time_it
     def construct_data(self):
         # 标记 inf 值
         # 获取所有 inf 的索引
 
-        self.inf_www = self.data.where(self.data["ping_www"] == np.inf)
-        self.inf_192 = self.data.where(self.data["ping_192"] == np.inf)
+        inf_www_filter = self.data["ping_www"] == np.inf
+        inf_192_filter = self.data["ping_192"] == np.inf
 
         self.lag_www = self.data.where(self.data["ping_www"] >= 100)
         self.lag_192 = self.data.where(self.data["ping_192"] >= 20)
 
-        # 仅对 'ping_www' 和 'ping_192' 列进行操作
-        self.data["ping_www"].replace([np.inf, -np.inf], np.nan)
-        self.data["ping_www"].ffill()
+        # 将inf值补全以绘图
+        data = self.data.copy()
 
-        self.data["ping_192"].replace([np.inf, -np.inf], np.nan)
-        self.data["ping_192"].ffill()
+        data["ping_www"] = data["ping_www"].replace([np.inf, -np.inf], np.nan)
+        data["ping_192"] = data["ping_192"].replace([np.inf, -np.inf], np.nan)
+        data["ping_www"] = data["ping_www"].ffill()
+        data["ping_192"] = data["ping_192"].ffill()
 
+        self.inf_www = data.where(inf_www_filter)
+        self.inf_192 = data.where(inf_192_filter)
+
+
+    @time_it
     def average_data(df: pd.DataFrame, n: int):
         """
         数据预处理
@@ -87,29 +95,16 @@ class DataPing:
         """
 
         # 时间列必须全部保留，否则按时间为索引的图会出错
-
-        averaged_data = {"time": df["time"]}
-        for column in df.columns:
-            if column in ["ping_192", "ping_www", "up", "down"]:
-                averaged_column = []
-                for i in range(0, len(df[column]), n):
-                    segment = df[column].iloc[i : i + n]
-                    finite_segment = pd.to_numeric(segment, errors="coerce")
-                    finite_segment = finite_segment[np.isfinite(finite_segment)]
-                    if len(finite_segment) > 0:
-                        res = np.mean(finite_segment)
-                    else:
-                        res = segment.iloc[0]
-
-                    for _ in range(len(segment)):
-                        averaged_column.append(res)
-
-                averaged_data[column] = averaged_column
-            else:
-                averaged_data[column] = df[column]
-        return pd.DataFrame(averaged_data)
+        df["ping_www"] = df["ping_www"].replace([np.inf, -np.inf], np.nan)
+        df["ping_192"] = df["ping_192"].replace([np.inf, -np.inf], np.nan)
+        df["ping_www"] = df["ping_www"].ffill()
+        df["ping_192"] = df["ping_192"].ffill()
+        for col in ["ping_www", "ping_192", "up", "down"]:
+            df[col] = df[col].rolling(window=n).mean()
+        return df
 
     # update everytimes the state changes
+    @time_it
     def gen_graph(
         self,
         s="",
@@ -601,7 +596,7 @@ def select_folder(n_clicks, selected_folder):
         if os.path.exists(f"{selected_folder}/stuck.csv"):
             data_stuck = DataStuck(pd.read_csv(f"{selected_folder}/stuck.csv"))
 
-    return 0, 1, 0, max(1, len(data_ping.data) // 3000), get_folders(PATH), 1
+    return 0, 1, 0, max(1, len(data_ping.data) // 2000), get_folders(PATH), 1
 
 
 # Callback to update the output based on the selected datetime
