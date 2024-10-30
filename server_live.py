@@ -147,20 +147,23 @@ class DataPing:
         if step > 1:
             data = DataPing.average_data(data, step)
 
-        hovertext = [
-            "<br>".join([f"{key}: {row[key]}" for key in IN_HOVERTEXT])
-            for index, row in data.iterrows()
-        ]
-        hovertext_inf_www = [
-            "<br>".join([f"{key}: {row[key]}" for key in IN_HOVERTEXT])
-            for index, row in data.iterrows()
-            if np.isinf(row["ping_www"])
-        ]
-        hovertext_inf_192 = [
-            "<br>".join([f"{key}: {row[key]}" for key in IN_HOVERTEXT])
-            for index, row in data.iterrows()
-            if np.isinf(row["ping_192"])
-        ]
+        hovertext = self.data.apply(lambda row: "<br>".join([f"{key}: {row[key]}" for key in IN_HOVERTEXT]), axis=1).tolist()
+        hovertext_inf_www = self.data.where(self.data["ping_www"] == np.inf).apply(lambda row: "<br>".join([f"{key}: {row[key]}" for key in IN_HOVERTEXT]), axis=1).tolist()
+        hovertext_inf_192 = self.data.where(self.data["ping_192"] == np.inf).apply(lambda row: "<br>".join([f"{key}: {row[key]}" for key in IN_HOVERTEXT]), axis=1).tolist()
+        # hovertext_inf_www = [
+        #     "<br>".join([f"{key}: {row[key]}" for key in IN_HOVERTEXT])
+        #     for index, row in data.iterrows()
+        #     if np.isinf(row["ping_www"])
+        # ]
+        # hovertext_inf_192 = [
+        #     "<br>".join([f"{key}: {row[key]}" for key in IN_HOVERTEXT])
+        #     for index, row in data.iterrows()
+        #     if np.isinf(row["ping_192"])
+        # ]
+        # hovertext = [
+        #     "<br>".join([f"{key}: {row[key]}" for key in IN_HOVERTEXT])
+        #     for index, row in data.iterrows()
+        # ]
         # hovertext = [f"设备数量: {row['neighbor']}<br>Band: {row['band']}<br>ber: {row['ber']}<br>PCI: {row['pci']}" for index, row in data.iterrows()]
 
         for i in range(len(IN_LINES)):
