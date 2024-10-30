@@ -118,7 +118,7 @@ class DataPing:
         self.upload = go.Figure()
         self.download = go.Figure()
 
-        if not s:
+        if not s or not e:
             start_time = self.data["time"][self.display_start]
             end_time = self.data["time"][self.display_start + self.display_range - 1]
         else:
@@ -147,25 +147,10 @@ class DataPing:
         if step > 1:
             data = DataPing.average_data(data, step)
 
-        hovertext = self.data.apply(lambda row: "<br>".join([f"{key}: {row[key]}" for key in IN_HOVERTEXT]), axis=1).tolist()
-        hovertext_inf_www = self.data.where(self.data["ping_www"] == np.inf).dropna().apply(lambda row: "<br>".join([f"{key}: {row[key]}" for key in IN_HOVERTEXT]), axis=1).tolist()
-        hovertext_inf_192 = self.data.where(self.data["ping_192"] == np.inf).dropna().apply(lambda row: "<br>".join([f"{key}: {row[key]}" for key in IN_HOVERTEXT]), axis=1).tolist()
-        # hovertext_inf_www = [
-        #     "<br>".join([f"{key}: {row[key]}" for key in IN_HOVERTEXT])
-        #     for index, row in data.iterrows()
-        #     if np.isinf(row["ping_www"])
-        # ]
-        # hovertext_inf_192 = [
-        #     "<br>".join([f"{key}: {row[key]}" for key in IN_HOVERTEXT])
-        #     for index, row in data.iterrows()
-        #     if np.isinf(row["ping_192"])
-        # ]
-        # hovertext = [
-        #     "<br>".join([f"{key}: {row[key]}" for key in IN_HOVERTEXT])
-        #     for index, row in data.iterrows()
-        # ]
-        # hovertext = [f"设备数量: {row['neighbor']}<br>Band: {row['band']}<br>ber: {row['ber']}<br>PCI: {row['pci']}" for index, row in data.iterrows()]
-
+        hovertext = data.apply(lambda row: "<br>".join([f"{key}: {row[key]}" for key in IN_HOVERTEXT]), axis=1).tolist()
+        hovertext_inf_www = data.where(data["ping_www"] == np.inf).dropna().apply(lambda row: "<br>".join([f"{key}: {row[key]}" for key in IN_HOVERTEXT]), axis=1).tolist()
+        hovertext_inf_192 = data.where(data["ping_192"] == np.inf).dropna().apply(lambda row: "<br>".join([f"{key}: {row[key]}" for key in IN_HOVERTEXT]), axis=1).tolist()
+        
         for i in range(len(IN_LINES)):
             self.graph_ping.add_trace(
                 go.Scatter(
@@ -255,49 +240,30 @@ class DataPing:
                     )
                 )
 
+        style = {
+            "font": {
+                    "size": 24,  # Set the font size
+                    "family": "Arial, sans-serif",  # Set the font family
+                    "color": "RebeccaPurple",  # Set the font color
+                },
+            "x": 0.5,  # Set the x position (0 = left, 1 = right, 0.5 = center)
+            "xanchor": "center",  # Anchor the title to the center
+            "y": 0.95,  # Set the y position (0 = bottom, 1 = top)
+            "yanchor": "top",  # Anchor the title to the top
+        }
+        style.update(text="Ping(ms)"),  # Set the title text})
         self.graph_ping.update_layout(
-            title={
-                "text": "Ping(ms)",  # Set the title text
-                "font": {
-                    "size": 24,  # Set the font size
-                    "family": "Arial, sans-serif",  # Set the font family
-                    "color": "RebeccaPurple",  # Set the font color
-                },
-                "x": 0.5,  # Set the x position (0 = left, 1 = right, 0.5 = center)
-                "xanchor": "center",  # Anchor the title to the center
-                "y": 0.95,  # Set the y position (0 = bottom, 1 = top)
-                "yanchor": "top",  # Anchor the title to the top
-            },
+            title=style.copy(),
             height=600,
         )
+        style.update(text="Download(Mb/s)")
         self.download.update_layout(
-            title={
-                "text": "Download(Mb/s)",  # Set the title text
-                "font": {
-                    "size": 24,  # Set the font size
-                    "family": "Arial, sans-serif",  # Set the font family
-                    "color": "RebeccaPurple",  # Set the font color
-                },
-                "x": 0.5,  # Set the x position (0 = left, 1 = right, 0.5 = center)
-                "xanchor": "center",  # Anchor the title to the center
-                "y": 0.95,  # Set the y position (0 = bottom, 1 = top)
-                "yanchor": "top",  # Anchor the title to the top
-            },
+            title=style.copy(),
             height=600,
         )
+        style.update(text="Upload(Mb/s)")
         self.upload.update_layout(
-            title={
-                "text": "Upload(Mb/s)",  # Set the title text
-                "font": {
-                    "size": 24,  # Set the font size
-                    "family": "Arial, sans-serif",  # Set the font family
-                    "color": "RebeccaPurple",  # Set the font color
-                },
-                "x": 0.5,  # Set the x position (0 = left, 1 = right, 0.5 = center)
-                "xanchor": "center",  # Anchor the title to the center
-                "y": 0.95,  # Set the y position (0 = bottom, 1 = top)
-                "yanchor": "top",  # Anchor the title to the top
-            },
+            title=style.copy(),
             height=600,
         )
 
