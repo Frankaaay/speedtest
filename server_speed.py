@@ -128,11 +128,11 @@ class Speed:
             self.lags.append(summarize(d, "lag"))
 
             # hovertext data
-            hovertext = [
-                f"Time: {row['time']}<br>Band: {row['band']}<br>PCI: {row['pci']}<br>rsrq: {row['rsrq']}db<br>ber: {row['ber']}"
-                for index, row in d.iterrows()
-            ]
-
+            # hovertext = [
+            #     f"Time: {row['time']}<br>Band: {row['band']}<br>PCI: {row['pci']}<br>rsrq: {row['rsrq']}db<br>ber: {row['ber']}"
+            #     for index, row in d.iterrows()
+            # ]
+            hovertext = d.apply(lambda row:"<br>".join(f"{key}: {row[key]}" for key in ["time", "band", "pci", "rsrq", "ber"]), axis=1).to_list()
             # Apply score function to each row
             # for _, row in d.iterrows():
             #     calculated_score = score(row['download'], row['lag'])
@@ -140,19 +140,19 @@ class Speed:
 
             self.graph_download.update_layout(
                 title_text="Download(Mb/s)",
-                title_x=0.5,  # Center the title (0 = left, 1 = right, 0.5 = center)
+                title_x=0.5,
             )
             self.graph_upload.update_layout(
                 title_text="Upload(Mb/s)",
-                title_x=0.5,  # Center the title (0 = left, 1 = right, 0.5 = center)
+                title_x=0.5,
             )
             self.graph_lag.update_layout(
                 title_text="Lag(ms)",
-                title_x=0.5,  # Center the title (0 = left, 1 = right, 0.5 = center)
+                title_x=0.5,
             )
             self.graph_jit.update_layout(
                 title_text="Jit(ms)",
-                title_x=0.5,  # Center the title (0 = left, 1 = right, 0.5 = center)
+                title_x=0.5,
             )
 
             self.graph_download.update_yaxes(title_text="Download speed")
