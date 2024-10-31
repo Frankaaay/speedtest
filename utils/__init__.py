@@ -12,7 +12,7 @@ def time_it(func):
         start = time.time()
         res = func(*args, **kwargs)
         end = time.time()
-        print(f"[耗时] {func.__name__} 耗时: {end - start:.2f}s")
+        print(f"[耗时] {func.__name__} : {end - start:.2f}s")
         return res
 
     return wrapper

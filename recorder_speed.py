@@ -1,5 +1,5 @@
 import sys
-from common import Recorder, Producer, Sequence, DEVICE_INFOS, datetime, timedelta
+from common import Recorder, Producer, Sequence, DEVICE_INFOS, datetime, timedelta, DATETIME_FORMAT
 import utils
 from speedspider import SpeedTester, SpeedTestResult, SpeedTester0Interval
 from panel import PanelState, Panel_FM
@@ -11,7 +11,7 @@ class Reporter(Recorder):
         self.file.write("time,lag,jit,download,upload," + ",".join(DEVICE_INFOS) + "\n")
 
     def record(self, res: tuple[SpeedTestResult, PanelState]):
-        now = datetime.now().strftime("%m-%d %H:%M:%S")
+        now = datetime.now().strftime(DATETIME_FORMAT)
         speed, state = res
         self.file.write(
             now

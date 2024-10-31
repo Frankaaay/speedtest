@@ -5,7 +5,7 @@ import numpy as np
 import datetime
 import os
 import webbrowser
-
+from common import DATETIME_FORMAT, convert_old_time_str
 
 def summarize(df, column):
     df[column] = df[column].replace([np.inf, -np.inf], np.nan)
@@ -42,7 +42,9 @@ class DataPing:
         self.data = [empty_ping, empty_ping] if len(files) == 0 else []
 
         for file in files:
-            self.data.append(pd.read_csv(f"{file}/ping.csv"))  # all data
+            data = pd.read_csv(f"{file}/ping.csv")
+            data['time'] = data['time'].apply(convert_old_time_str)
+            self.data.append(data)  # all data
 
         self.files_name = files if len(files) > 0 else ["empty", "also empty"]
 
@@ -67,6 +69,9 @@ class DataPing:
 
 class DataStuck:
     def __init__(self, data: pd.DataFrame):
+        data['start'] = data['start'].apply(convert_old_time_str)
+        data['end'] = data['end'].apply(convert_old_time_str)
+        
         self.data = data
         self.year = str(datetime.datetime.now().year)
 
@@ -258,8 +263,8 @@ def update_range(n_clicks, range_raw, start_raw, selected_folder):
 
     # stuck = data_stuck.get_range(start_time,end_time)
 
-    # start_time_obj = datetime.datetime.strptime(start_time, "%m-%d %H:%M:%S")
-    # end_time_obj = datetime.datetime.strptime(end_time, "%m-%d %H:%M:%S")
+    # start_time_obj = datetime.datetime.strptime(start_time, DATETIME_FORMAT)
+    # end_time_obj = datetime.datetime.strptime(end_time, DATETIME_FORMAT)
     # total_minutes = (end_time_obj - start_time_obj).total_seconds()/60
     # per_minute = lambda n : round( n / total_minutes,2)
 

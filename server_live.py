@@ -7,7 +7,7 @@ import datetime
 import os
 import webbrowser
 from utils import time_it
-
+from common import DATETIME_FORMAT, convert_old_time_str
 
 # same thing with the server_speed, pls read comments there
 def summarize(df, column):
@@ -36,6 +36,8 @@ IN_HOVERTEXT = ["neighbor", "band", "ber", "pci"]  # 将会显示在 hovertext �
 # storing data for updating graphs
 class DataPing:
     def __init__(self, data: pd.DataFrame):
+        data['time'] = data['time'].apply(convert_old_time_str)
+
         self.data = data  # all data
         self.display_start = 0
         self.display_range = len(self.data)
@@ -281,6 +283,9 @@ class DataPing:
 
 class DataStuck:
     def __init__(self, data: pd.DataFrame):
+        data['start'] = data['start'].apply(convert_old_time_str)
+        data['end'] = data['end'].apply(convert_old_time_str)
+
         self.data = data
         self.device_num = 0
 
@@ -314,7 +319,7 @@ def get_folders(path):
 PATH = r"./log/live"
 empty_ping = pd.DataFrame(
     {
-        "time": ["01-01 11:45:15"],
+        "time": [datetime.datetime.now().strftime(DATETIME_FORMAT)],
         "ping_www": [0],
         "ping_192": [0],
         "rsrp": [0],
@@ -565,6 +570,7 @@ def select_folder(n_clicks, selected_folder):
         if os.path.exists(f"{selected_folder}/stuck.csv"):
             data_stuck = DataStuck(pd.read_csv(f"{selected_folder}/stuck.csv"))
 
+
     return 0, 1, 0, max(1, len(data_ping.data) // 2000), get_folders(PATH), 1
 
 
@@ -627,8 +633,8 @@ def update_range(
         if trace["name"] in tag_list:
             trace["visible"] = visibility_data.get(trace["name"], True)
 
-    start_time_obj = datetime.datetime.strptime(start_time, "%m-%d %H:%M:%S")
-    end_time_obj = datetime.datetime.strptime(end_time, "%m-%d %H:%M:%S")
+    start_time_obj = datetime.datetime.strptime(start_time, DATETIME_FORMAT)
+    end_time_obj = datetime.datetime.strptime(end_time, DATETIME_FORMAT)
     total_minutes = (end_time_obj - start_time_obj).total_seconds() / 60
 
     def per_minute(n):
@@ -728,16 +734,12 @@ def update_subgraph(active_cell, table, table_all):
         s = table[active_cell["row"]]["start"]
         e = table[active_cell["row"]]["end"]
 
-        year = str(datetime.datetime.now().year)
-        start = datetime.datetime.strptime(
-            year + "-" + s, "%Y-%m-%d %H:%M:%S"
-        ) - datetime.timedelta(seconds=10)
-        end = datetime.datetime.strptime(
-            year + "-" + e, "%Y-%m-%d %H:%M:%S"
-        ) + datetime.timedelta(seconds=10)
+        # year = str(datetime.datetime.now().year)
+        start = datetime.datetime.strptime(DATETIME_FORMAT) - datetime.timedelta(seconds=10)
+        end = datetime.datetime.strptime(DATETIME_FORMAT) + datetime.timedelta(seconds=10)
 
-        start = start.strftime("%m-%d %H:%M:%S")
-        end = end.strftime("%m-%d %H:%M:%S")
+        start = start.strftime(DATETIME_FORMAT)
+        end = end.strftime(DATETIME_FORMAT)
         data_ping.gen_graph(start, end, [(s, e)], for_subgraph=True)
     else:
         pass

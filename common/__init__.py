@@ -22,6 +22,8 @@ DEVICE_INFOS_UNIT = [
     "",
 ]
 
+DATETIME_FORMAT = "'%Y-%m-%d %H:%M:%S"
+
 # class StupidClassExistOnlyForDebug:
 #     '''
 #     🤓
@@ -284,3 +286,9 @@ class SequenceFullSecond(Sequence):
         finally:
             self.stop()
             self.obj.stop()
+
+def convert_old_time_str(time_str:str) -> str:
+    try:
+        return datetime.strptime(time_str, DATETIME_FORMAT).strftime(DATETIME_FORMAT)
+    except:
+        return datetime.strptime(f"2000-{time_str}", "%Y-%m-%d %H:%M:%S").strftime(DATETIME_FORMAT)

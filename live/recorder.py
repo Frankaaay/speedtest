@@ -1,5 +1,5 @@
 from .api import LiveState
-from common import Recorder, time, datetime
+from common import Recorder, time, datetime, DATETIME_FORMAT
 from time import strftime
 
 
@@ -130,8 +130,8 @@ class StuckReporter(Recorder):
 
         count, start, end = res
 
-        start_str = start.strftime("%m-%d %H:%M:%S")
-        end_str = end.strftime("%m-%d %H:%M:%S")
+        start_str = start.strftime(DATETIME_FORMAT)
+        end_str = end.strftime(DATETIME_FORMAT)
         duration = (end - start).total_seconds()
 
         self.file.write(f"{start_str},{end_str},{duration:.1f}\n")

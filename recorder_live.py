@@ -8,6 +8,7 @@ from common import (
     timedelta,
     DEVICE_INFOS,
     sleep,
+    DATETIME_FORMAT
 )
 import panel
 import stable
@@ -106,7 +107,7 @@ class ReporterPingAndState(Recorder):
         ],
     ):
         time, pings, state, net_speed, neighbor = data
-        time_str = time.strftime("%m-%d %H:%M:%S")
+        time_str = time.strftime(DATETIME_FORMAT)
         self.file.write(
             time_str
             + ","

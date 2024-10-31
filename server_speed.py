@@ -6,6 +6,7 @@ import numpy as np
 import plotly.graph_objs as go
 import os
 import webbrowser
+from common import convert_old_time_str
 
 
 # make stats of mean, max, min std
@@ -81,7 +82,9 @@ class Speed:
         # storing files name
 
         for file in files:
-            self.data.append(pd.read_csv(f"{file}/speed.csv"))  # all data
+            data = pd.read_csv(f"{file}/speed.csv")
+            data['time'] = data['time'].apply(convert_old_time_str)
+            self.data.append(data)  # all data
 
         self.files_name = files if len(files) > 0 else ["empty"]
 
