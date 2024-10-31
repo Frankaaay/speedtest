@@ -15,7 +15,7 @@ import gui_pings
 import gui_iperf_server
 import gui_iperf_client
 import gui_reset_device
-from gui_common import fix_win_hidpi
+# from gui_common import fix_win_hidpi
 
 THEME_COLOR = "#3389ff"
 

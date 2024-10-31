@@ -5,7 +5,8 @@ import numpy as np
 import datetime
 import os
 import webbrowser
-from common import DATETIME_FORMAT, convert_old_time_str
+from common import convert_old_time_str
+
 
 def summarize(df, column):
     df[column] = df[column].replace([np.inf, -np.inf], np.nan)
@@ -43,7 +44,7 @@ class DataPing:
 
         for file in files:
             data = pd.read_csv(f"{file}/ping.csv")
-            data['time'] = data['time'].apply(convert_old_time_str)
+            data["time"] = data["time"].apply(convert_old_time_str)
             self.data.append(data)  # all data
 
         self.files_name = files if len(files) > 0 else ["empty", "also empty"]
@@ -69,9 +70,9 @@ class DataPing:
 
 class DataStuck:
     def __init__(self, data: pd.DataFrame):
-        data['start'] = data['start'].apply(convert_old_time_str)
-        data['end'] = data['end'].apply(convert_old_time_str)
-        
+        data["start"] = data["start"].apply(convert_old_time_str)
+        data["end"] = data["end"].apply(convert_old_time_str)
+
         self.data = data
         self.year = str(datetime.datetime.now().year)
 

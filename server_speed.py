@@ -83,7 +83,7 @@ class Speed:
 
         for file in files:
             data = pd.read_csv(f"{file}/speed.csv")
-            data['time'] = data['time'].apply(convert_old_time_str)
+            data["time"] = data["time"].apply(convert_old_time_str)
             self.data.append(data)  # all data
 
         self.files_name = files if len(files) > 0 else ["empty"]
@@ -135,7 +135,13 @@ class Speed:
             #     f"Time: {row['time']}<br>Band: {row['band']}<br>PCI: {row['pci']}<br>rsrq: {row['rsrq']}db<br>ber: {row['ber']}"
             #     for index, row in d.iterrows()
             # ]
-            hovertext = d.apply(lambda row:"<br>".join(f"{key}: {row[key]}" for key in ["time", "band", "pci", "rsrq", "ber"]), axis=1).to_list()
+            hovertext = d.apply(
+                lambda row: "<br>".join(
+                    f"{key}: {row[key]}"
+                    for key in ["time", "band", "pci", "rsrq", "ber"]
+                ),
+                axis=1,
+            ).to_list()
             # Apply score function to each row
             # for _, row in d.iterrows():
             #     calculated_score = score(row['download'], row['lag'])

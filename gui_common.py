@@ -1,7 +1,8 @@
 import tkinter as tk
 import common
 
-from idlelib.util import fix_win_hidpi
+from idlelib.util import fix_win_hidpi  # noqa: F401
+
 
 class StdoutRedirector:
     def __init__(self, text_widget: tk.Text):

@@ -1,5 +1,13 @@
 import sys
-from common import Recorder, Producer, Sequence, DEVICE_INFOS, datetime, timedelta, DATETIME_FORMAT
+from common import (
+    Recorder,
+    Producer,
+    Sequence,
+    DEVICE_INFOS,
+    datetime,
+    timedelta,
+    DATETIME_FORMAT,
+)
 import utils
 from speedspider import SpeedTester, SpeedTestResult, SpeedTester0Interval
 from panel import PanelState, Panel_FM

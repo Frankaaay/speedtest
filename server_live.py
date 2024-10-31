@@ -9,6 +9,7 @@ import webbrowser
 from utils import time_it
 from common import DATETIME_FORMAT, convert_old_time_str
 
+
 # same thing with the server_speed, pls read comments there
 def summarize(df, column):
     df[column] = df[column].replace([np.inf, -np.inf], np.nan)
@@ -36,7 +37,7 @@ IN_HOVERTEXT = ["neighbor", "band", "ber", "pci"]  # 将会显示在 hovertext �
 # storing data for updating graphs
 class DataPing:
     def __init__(self, data: pd.DataFrame):
-        data['time'] = data['time'].apply(convert_old_time_str)
+        data["time"] = data["time"].apply(convert_old_time_str)
 
         self.data = data  # all data
         self.display_start = 0
@@ -87,7 +88,6 @@ class DataPing:
 
         self.inf_www = data.where(inf_www_filter).dropna()
         self.inf_192 = data.where(inf_192_filter).dropna()
-
 
     @time_it
     def average_data(df: pd.DataFrame, n: int):
@@ -149,10 +149,29 @@ class DataPing:
         if step > 1:
             data = DataPing.average_data(data, step)
 
-        hovertext = data.apply(lambda row: "<br>".join([f"{key}: {row[key]}" for key in IN_HOVERTEXT]), axis=1).tolist()
-        hovertext_inf_www = data.where(data["ping_www"] == np.inf).dropna().apply(lambda row: "<br>".join([f"{key}: {row[key]}" for key in IN_HOVERTEXT]), axis=1).tolist()
-        hovertext_inf_192 = data.where(data["ping_192"] == np.inf).dropna().apply(lambda row: "<br>".join([f"{key}: {row[key]}" for key in IN_HOVERTEXT]), axis=1).tolist()
-        
+        hovertext = data.apply(
+            lambda row: "<br>".join([f"{key}: {row[key]}" for key in IN_HOVERTEXT]),
+            axis=1,
+        ).tolist()
+        hovertext_inf_www = (
+            data.where(data["ping_www"] == np.inf)
+            .dropna()
+            .apply(
+                lambda row: "<br>".join([f"{key}: {row[key]}" for key in IN_HOVERTEXT]),
+                axis=1,
+            )
+            .tolist()
+        )
+        hovertext_inf_192 = (
+            data.where(data["ping_192"] == np.inf)
+            .dropna()
+            .apply(
+                lambda row: "<br>".join([f"{key}: {row[key]}" for key in IN_HOVERTEXT]),
+                axis=1,
+            )
+            .tolist()
+        )
+
         for i in range(len(IN_LINES)):
             self.graph_ping.add_trace(
                 go.Scatter(
@@ -244,16 +263,16 @@ class DataPing:
 
         style = {
             "font": {
-                    "size": 24,  # Set the font size
-                    "family": "Arial, sans-serif",  # Set the font family
-                    "color": "RebeccaPurple",  # Set the font color
-                },
+                "size": 24,  # Set the font size
+                "family": "Arial, sans-serif",  # Set the font family
+                "color": "RebeccaPurple",  # Set the font color
+            },
             "x": 0.5,  # Set the x position (0 = left, 1 = right, 0.5 = center)
             "xanchor": "center",  # Anchor the title to the center
             "y": 0.95,  # Set the y position (0 = bottom, 1 = top)
             "yanchor": "top",  # Anchor the title to the top
         }
-        style.update(text="Ping(ms)"),  # Set the title text})
+        (style.update(text="Ping(ms)"),)  # Set the title text})
         self.graph_ping.update_layout(
             title=style.copy(),
             height=600,
@@ -283,8 +302,8 @@ class DataPing:
 
 class DataStuck:
     def __init__(self, data: pd.DataFrame):
-        data['start'] = data['start'].apply(convert_old_time_str)
-        data['end'] = data['end'].apply(convert_old_time_str)
+        data["start"] = data["start"].apply(convert_old_time_str)
+        data["end"] = data["end"].apply(convert_old_time_str)
 
         self.data = data
         self.device_num = 0
@@ -570,7 +589,6 @@ def select_folder(n_clicks, selected_folder):
         if os.path.exists(f"{selected_folder}/stuck.csv"):
             data_stuck = DataStuck(pd.read_csv(f"{selected_folder}/stuck.csv"))
 
-
     return 0, 1, 0, max(1, len(data_ping.data) // 2000), get_folders(PATH), 1
 
 
@@ -735,8 +753,12 @@ def update_subgraph(active_cell, table, table_all):
         e = table[active_cell["row"]]["end"]
 
         # year = str(datetime.datetime.now().year)
-        start = datetime.datetime.strptime(DATETIME_FORMAT) - datetime.timedelta(seconds=10)
-        end = datetime.datetime.strptime(DATETIME_FORMAT) + datetime.timedelta(seconds=10)
+        start = datetime.datetime.strptime(s, DATETIME_FORMAT) - datetime.timedelta(
+            seconds=15
+        )
+        end = datetime.datetime.strptime(e, DATETIME_FORMAT) + datetime.timedelta(
+            seconds=10
+        )
 
         start = start.strftime(DATETIME_FORMAT)
         end = end.strftime(DATETIME_FORMAT)

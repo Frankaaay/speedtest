@@ -8,7 +8,7 @@ from common import (
     timedelta,
     DEVICE_INFOS,
     sleep,
-    DATETIME_FORMAT
+    DATETIME_FORMAT,
 )
 import panel
 import stable
