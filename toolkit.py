@@ -320,8 +320,7 @@ def stop_exe():
 
 if __name__ == "__main__":
     # improve for high DPI displays but with bugs
-    # windll.shcore.SetProcessDpiAwareness(1)
-    fix_win_hidpi()
+    # fix_win_hidpi()
     root = tk.Tk()
     root.iconbitmap("flymodem.ico")
     root.state("zoomed")
