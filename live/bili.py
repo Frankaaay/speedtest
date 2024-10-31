@@ -8,8 +8,8 @@ class BiliLive(Live):
     def __init__(
         self, browser_name, room_id=None, interval=timedelta(seconds=0.1), proxy=None
     ):
-        if room_id is None:
-            room_id = "31539256"
+        # if room_id is None:
+        #     room_id = "31539256"
         super().__init__(
             browser_name,
             "https://live.bilibili.com/",
